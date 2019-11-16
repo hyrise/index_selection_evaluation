@@ -5,6 +5,12 @@ Install Python and PostgreSQL.
 * `brew install postgres`
 * `pip3 install psycopg2-binary`
 
+Create PostgreSQL user with superuser privileges.
+```
+sudo -u postgres createuser -s $(whoami);
+eval "sudo -u postgres psql -c 'alter user \"$(whoami)\" with superuser;'"
+```
+
 Install development tools for TPC-H or TPC-DS generation:
 * https://github.com/gregrahn/tpch-kit
 * https://github.com/gregrahn/tpcds-kit
