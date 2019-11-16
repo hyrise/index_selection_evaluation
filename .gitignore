@@ -1,0 +1,14 @@
+**__pycache__
+**.pyc
+
+tags
+.coverage
+htmlcov/
+
+**.DS_Store
+**.tbl
+query_0.sql
+
+database_connection.json
+benchmark_results/plans
+benchmark_results/*.csv
