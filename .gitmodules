@@ -1,0 +1,13 @@
+[submodule "tpcds-kit"]
+	path = tpcds-kit
+	url = git@github.com:gregrahn/tpcds-kit.git
+[submodule "tpch-kit"]
+	path = tpch-kit
+	url = git@github.com:marcelja/tpch-kit.git
+[submodule "dexter"]
+	path = dexter
+	url = git@github.com:ankane/dexter.git
+[submodule "hypopg"]
+	path = hypopg
+	url = git@github.com:HypoPG/hypopg.git
+	branch = REL1_STABLE
