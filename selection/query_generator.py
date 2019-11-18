@@ -27,7 +27,6 @@ class QueryGenerator:
         queries_string = self._run_command(['./qgen', '-c', '-d', '-s',
                                             str(self.scale_factor)],
                                            return_output=True)
-        print('asdf')
         for query in queries_string.split('Query (Q'):
             query_id_and_text = query.split(')\n', 1)
             if len(query_id_and_text) == 2:
