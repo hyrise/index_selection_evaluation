@@ -8,6 +8,12 @@ class Workload:
         self.database_name = database_name
         self.queries = queries
 
+    def indexable_columns(self):
+        indexable_columns = []
+        for query in self.queries:
+            indexable_columns.extend(query.columns)
+        return list(set(indexable_columns))
+
 
 class Column:
     def __init__(self, identifier, name, table):
