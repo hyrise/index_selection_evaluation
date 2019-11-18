@@ -1,4 +1,3 @@
-from .database_connector import DatabaseConnector
 from .workload import Table, Column
 
 import logging
@@ -9,12 +8,10 @@ import re
 
 
 class TableGenerator:
-    def __init__(self, benchmark_name, scale_factor, database_system):
+    def __init__(self, benchmark_name, scale_factor, database_connector):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
-        self.database_system = database_system
-        self.db_connector = DatabaseConnector(None, database_system,
-                                              autocommit=True)
+        self.db_connector = database_connector
 
         self.database_names = self.db_connector.database_names()
         self.tables = []
@@ -71,18 +68,14 @@ class TableGenerator:
             data = file.read()
         # Do not create primary keys
         data = re.sub(r',\s*primary key (.*)', '', data)
-        # TODO move into db_connector
-        database_connector = DatabaseConnector(self.database_name(),
-                                               self.database_system)
-        # TODO move into db_connector
-        if self.database_system == 'postgres':
-            logging.info('Add hypopg extension')
-            database_connector.exec_only('create extension hypopg')
+        self.db_connector.db_name = self.database_name()
+        self.db_connector.create_connection()
+        self.db_connector.enable_simulation()
         logging.info('Creating tables')
-        database_connector.exec_only(data)
-        database_connector.commit()
-        self._load_table_data(database_connector)
-        database_connector.close()
+        self.db_connector.exec_only(data)
+        self.db_connector.commit()
+        self._load_table_data(self.db_connector)
+        self.db_connector.close()
 
     def _load_table_data(self, database_connector):
         logging.info('Loading data into the tables')

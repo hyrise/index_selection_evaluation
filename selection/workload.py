@@ -49,14 +49,8 @@ class Query:
         self.db_connector = database_connector
         self.columns = []
 
-        # TODO
-        # self.text = self.db_connector.update_query_text(text)
+        self.text = self.db_connector.update_query_text(self.text)
         self._retrieve_columns()
-
-    #  def indexable_columns(self):
-    #      # TODO: only relevant columns... (maybe multiple options)
-    #      # run sqlparse when query object constructs
-    #      return self.columns
 
     def _retrieve_columns(self):
         if not self.db_connector:

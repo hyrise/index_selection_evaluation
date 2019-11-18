@@ -5,7 +5,9 @@ from .benchmark import Benchmark
 #  from .algorithms.epic_algorithm import EPICAlgorithm
 #  from .algorithms.dexter_algorithm import DexterAlgorithm
 #  from .algorithms.ibm_algorithm import IBMAlgorithm
-from .database_connector import DatabaseConnector
+#  from .database_connector import DatabaseConnector
+from .dbms.postgres_dbms import PostgresDatabaseConnector
+#  from .dbms.hana_dbms import HanaDatabaseConnector
 #  from .index import Index
 from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
 from .table_generator import TableGenerator
@@ -29,6 +31,11 @@ import copy
 ALGORITHMS = {'no_index': NoIndexAlgorithm,
               'all_indexes': AllIndexesAlgorithm}
 
+#  DBMSYSTEMS = {'postgres': PostgresDatabaseConnector,
+#                'hana': HanaDatabaseConnector}
+
+DBMSYSTEMS = {'postgres': PostgresDatabaseConnector}
+
 
 class IndexSelection:
     def __init__(self):
@@ -51,9 +58,11 @@ class IndexSelection:
         self._run_algorithms(config_file)
 
     def _setup_config(self, config):
+        dbms_class = DBMSYSTEMS[config['database_system']]
+        generating_connector = dbms_class(None, autocommit=True)
         table_generator = TableGenerator(config['benchmark_name'],
                                          config['scale_factor'],
-                                         config['database_system'])
+                                         generating_connector)
         database_name = table_generator.database_name()
         self.setup_db_connector(database_name,
                                 config['database_system'],
@@ -155,5 +164,5 @@ class IndexSelection:
         if self.db_connector:
             logging.info('Create new database connector (closing old)')
             self.db_connector.close()
-        self.db_connector = DatabaseConnector(database_name, database_system,
-                                              columns=columns)
+        self.db_connector = DBMSYSTEMS[database_system](database_name,
+                                                        columns=columns)
