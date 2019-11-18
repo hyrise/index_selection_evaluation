@@ -47,7 +47,7 @@ class Query:
         self.nr = query_id
         self.text = query_text.lower()
         self.db_connector = database_connector
-        self.columns = None
+        self.columns = []
 
         # TODO
         # self.text = self.db_connector.update_query_text(text)

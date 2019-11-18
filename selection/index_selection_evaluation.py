@@ -1,5 +1,5 @@
 from .workload import Workload
-#  from .benchmark import Benchmark
+from .benchmark import Benchmark
 #  from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
 #  from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 #  from .algorithms.epic_algorithm import EPICAlgorithm
