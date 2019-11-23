@@ -1,3 +1,3 @@
 psycopg2-binary
 coverage
-pyhdb
+git+https://github.com/hpi-epic/pyhana.git

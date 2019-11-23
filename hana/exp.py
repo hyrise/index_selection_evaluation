@@ -41,16 +41,27 @@ class DatabaseConnector:
         print('import')
         self.run("import indexselection_tpch___1.lineitem as csv from '/usr/sap/JA1/HDB00/work/newexport' with rename schema indexselection_tpch___1 to tpchsf1_test_import replace statistics only")
 
+    def get_cost(self):
+        self.connection.commit()
+        result = self.cursor.execute("explain plan set statement_name = 'test1' for select l_comment from indexselection_tpch___1.lineitem where l_comment = 'abc'")
+        import pdb; pdb.set_trace()
+
 
 def main():
     with open('connection.json', 'r') as file:
         connection_data = json.load(file)
     db_conn = DatabaseConnector(*connection_data)
     db_conn.get_statistics()
+    db_conn.drop_all_statistics()
+    db_conn.get_statistics()
     db_conn.create_statistics_data_schema()
     db_conn.export_statistics()
     db_conn.get_statistics()
-    db_conn.drop_all_statistics()
+
+    db_conn.get_cost()
+
+
+    #  db_conn.drop_all_statistics()
     db_conn.get_statistics()
 
 
