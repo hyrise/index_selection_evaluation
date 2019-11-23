@@ -6,3 +6,5 @@ tags
 htmlcov/
 
 **.DS_Store
+
+hana/**
