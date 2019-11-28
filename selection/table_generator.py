@@ -121,7 +121,7 @@ class TableGenerator:
         if self.benchmark_name == 'tpch':
             self.make_command = ['make', 'DATABASE=POSTGRESQL']
             if platform.system() == 'Darwin':
-                self.make_command.append('OS=MACOS')
+                self.make_command.append('MACHINE=MACOS')
 
             self.directory = './tpch-kit/dbgen'
             self.create_table_statements_file = 'dss.ddl'
