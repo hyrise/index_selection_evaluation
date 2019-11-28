@@ -17,7 +17,9 @@ class HanaDatabaseConnector(DatabaseConnector):
 
         logging.getLogger(name='pyhdb').setLevel(logging.ERROR)
         self.read_connection_file()
+
         self.create_connection()
+        self._alter_configuration()
 
         logging.debug('HANA connector created: {}'.format(db_name))
 
@@ -25,6 +27,22 @@ class HanaDatabaseConnector(DatabaseConnector):
         with open('database_connection.json', 'r') as file:
             connection_data = json.load(file)
         self.host, self.port, self.user, self.password = connection_data
+
+    def _alter_configuration(self):
+        logging.info('Setting HANA variables')
+        variables = [('indexserver.ini', 'SYSTEM', 'datastatistics',
+                      'dev_force_use_non_runtime_datastatistics', 'true'),
+                     ('global.ini', 'SYSTEM', 'datastatistics',
+                      'dev_force_use_non_runtime_datastatistics', 'true'),
+                     ('indexserver.ini', 'database', 'import_export',
+                      'enable_csv_import_path_filter', 'false')]
+        string = ("alter system alter configuration ('{}', '{}') "
+                  "set ('{}','{}')='{}' WITH RECONFIGURE")
+
+        for database_variable in variables:
+            execute_string = string.format(*database_variable)
+            logging.debug(execute_string)
+            self.exec_only(execute_string)
 
     def create_connection(self):
         if self._connection:
@@ -46,11 +64,9 @@ class HanaDatabaseConnector(DatabaseConnector):
     #      # TODO
     #      return text
 
-    #  def create_database(self, database_name):
-    #      if self.db_system != 'postgres':
-    #          raise NotImplementedError('only postgres')
-    #      self.exec_only('create database {}'.format(database_name))
-    #      logging.info('Database {} created'.format(database_name))
+    def create_database(self, database_name):
+        self.exec_only('create schema {}'.format(database_name))
+        logging.info('Database (schema) {} created'.format(database_name))
 
     #  def copy_data(self, table, text, delimiter='|'):
     #      if self.db_system != 'postgres':
@@ -91,9 +107,6 @@ class HanaDatabaseConnector(DatabaseConnector):
     #      if self.db_system == 'postgres':
     #          return True
     #      return False
-
-    #  def exec_only(self, statement):
-    #      self._cursor.execute(statement)
 
 
     #  def simulate_index(self, index):

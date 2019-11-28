@@ -12,8 +12,8 @@ class DatabaseConnector:
 
         logging.debug('Database connector created: {}'.format(db_name))
 
-    #  def exec_only(self, statement):
-    #      self._cursor.execute(statement)
+    def exec_only(self, statement):
+        self._cursor.execute(statement)
 
     def exec_fetch(self, statement, one=True):
         self._cursor.execute(statement)

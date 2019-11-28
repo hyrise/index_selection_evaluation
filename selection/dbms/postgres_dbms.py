@@ -84,9 +84,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
             return True
         return False
 
-    def exec_only(self, statement):
-        self._cursor.execute(statement)
-
     def simulate_index(self, index):
         if self.db_system != 'postgres':
             raise NotImplementedError('only postgres')
