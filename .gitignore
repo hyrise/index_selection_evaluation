@@ -6,5 +6,6 @@ tags
 htmlcov/
 
 **.DS_Store
+**.tbl
 
 database_connection.json
