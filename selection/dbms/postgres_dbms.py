@@ -163,16 +163,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 # drop view and commit would be an alternative
                 self.rollback()
 
-    def commit(self):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
-        self._connection.commit()
-
-    def close(self):
-        self._connection.close()
-        logging.debug('Database connector closed: {}'.format(self.db_name))
-        del self
-
     def rollback(self):
         if self.db_system != 'postgres':
             raise NotImplementedError('only postgres')

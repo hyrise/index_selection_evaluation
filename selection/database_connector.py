@@ -21,6 +21,17 @@ class DatabaseConnector:
             return self._cursor.fetchone()
         return self._cursor.fetchall()
 
+    def enable_simulation(self):
+        pass
+
+    def commit(self):
+        self._connection.commit()
+
+    def close(self):
+        self._connection.close()
+        logging.debug('Database connector closed: {}'.format(self.db_name))
+        del self
+
     #  def create_index(self, index):
     #      if self.db_system != 'postgres':
     #          raise NotImplementedError('only postgres')

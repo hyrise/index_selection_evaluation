@@ -15,6 +15,9 @@ class HanaDatabaseConnector(DatabaseConnector):
         self.columns = columns
         self._connection = None
 
+        if not self.db_name:
+            self.db_name = 'SYSTEM'
+
         logging.getLogger(name='pyhdb').setLevel(logging.ERROR)
         self.read_connection_file()
 
@@ -55,6 +58,7 @@ class HanaDatabaseConnector(DatabaseConnector):
         )
         self._connection.autocommit = self.autocommit
         self._cursor = self._connection.cursor()
+        self.exec_only('set schema {}'.format(self.db_name))
 
     def database_names(self):
         result = self.exec_fetch('select schema_name from schemas', False)
@@ -65,7 +69,7 @@ class HanaDatabaseConnector(DatabaseConnector):
     #      return text
 
     def create_database(self, database_name):
-        self.exec_only('create schema {}'.format(database_name))
+        self.exec_only('Create schema {}'.format(database_name))
         logging.info('Database (schema) {} created'.format(database_name))
 
     #  def copy_data(self, table, text, delimiter='|'):
@@ -187,11 +191,6 @@ class HanaDatabaseConnector(DatabaseConnector):
     #              # Rollback to not have too many transaction locks
     #              # drop view and commit would be an alternative
     #              self.rollback()
-
-    #  def commit(self):
-    #      if self.db_system != 'postgres':
-    #          raise NotImplementedError('only postgres')
-    #      self._connection.commit()
 
     #  def close(self):
     #      self._connection.close()

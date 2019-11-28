@@ -72,7 +72,8 @@ class TableGenerator:
         self.db_connector.create_connection()
         self.db_connector.enable_simulation()
         logging.info('Creating tables')
-        self.db_connector.exec_only(data)
+        for create_statement in data.split(';')[:-1]:
+            self.db_connector.exec_only(create_statement)
         self.db_connector.commit()
         self._load_table_data(self.db_connector)
         self.db_connector.close()
