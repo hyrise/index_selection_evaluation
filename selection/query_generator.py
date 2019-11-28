@@ -85,7 +85,7 @@ class QueryGenerator:
     #      return query_text
 
     def _run_make(self):
-        if 'qgen' not in self._files() and 'dsqgen' not in self._files:
+        if 'qgen' not in self._files() and 'dsqgen' not in self._files():
             logging.info('Running make in {}'.format(self.directory))
             self._run_command(self.make_command)
         else:
