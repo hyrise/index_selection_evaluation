@@ -7,4 +7,4 @@ htmlcov/
 
 **.DS_Store
 
-hana/**
+database_connection.json

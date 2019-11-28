@@ -7,7 +7,7 @@ from .benchmark import Benchmark
 #  from .algorithms.ibm_algorithm import IBMAlgorithm
 #  from .database_connector import DatabaseConnector
 from .dbms.postgres_dbms import PostgresDatabaseConnector
-#  from .dbms.hana_dbms import HanaDatabaseConnector
+from .dbms.hana_dbms import HanaDatabaseConnector
 #  from .index import Index
 from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
 from .table_generator import TableGenerator
@@ -31,10 +31,8 @@ import copy
 ALGORITHMS = {'no_index': NoIndexAlgorithm,
               'all_indexes': AllIndexesAlgorithm}
 
-#  DBMSYSTEMS = {'postgres': PostgresDatabaseConnector,
-#                'hana': HanaDatabaseConnector}
-
-DBMSYSTEMS = {'postgres': PostgresDatabaseConnector}
+DBMSYSTEMS = {'postgres': PostgresDatabaseConnector,
+              'hana': HanaDatabaseConnector}
 
 
 class IndexSelection:
