@@ -15,6 +15,7 @@ class HanaDatabaseConnector(DatabaseConnector):
         self.columns = columns
         self._connection = None
 
+        logging.getLogger(name='pyhdb').setLevel(logging.ERROR)
         self.read_connection_file()
         self.create_connection()
 
