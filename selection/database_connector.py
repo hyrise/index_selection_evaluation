@@ -15,11 +15,11 @@ class DatabaseConnector:
     #  def exec_only(self, statement):
     #      self._cursor.execute(statement)
 
-    #  def exec_fetch(self, statement, one=True):
-    #      self._cursor.execute(statement)
-    #      if one:
-    #          return self._cursor.fetchone()
-    #      return self._cursor.fetchall()
+    def exec_fetch(self, statement, one=True):
+        self._cursor.execute(statement)
+        if one:
+            return self._cursor.fetchone()
+        return self._cursor.fetchall()
 
     #  def create_index(self, index):
     #      if self.db_system != 'postgres':

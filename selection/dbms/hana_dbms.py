@@ -38,12 +38,9 @@ class HanaDatabaseConnector(DatabaseConnector):
         self._connection.autocommit = self.autocommit
         self._cursor = self._connection.cursor()
 
-    #  def enable_simulation(self):
-    #      self.exec_only('create extension hypopg')
-
-    #  def database_names(self):
-    #      result = self.exec_fetch('select datname from pg_database', False)
-    #      return [x[0] for x in result]
+    def database_names(self):
+        result = self.exec_fetch('select schema_name from schemas', False)
+        return [x[0] for x in result]
 
     #  def update_query_text(self, text):
     #      # TODO
@@ -98,11 +95,6 @@ class HanaDatabaseConnector(DatabaseConnector):
     #  def exec_only(self, statement):
     #      self._cursor.execute(statement)
 
-    #  def exec_fetch(self, statement, one=True):
-    #      self._cursor.execute(statement)
-    #      if one:
-    #          return self._cursor.fetchone()
-    #      return self._cursor.fetchall()
 
     #  def simulate_index(self, index):
     #      if self.db_system != 'postgres':
