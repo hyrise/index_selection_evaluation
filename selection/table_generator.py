@@ -86,9 +86,8 @@ class TableGenerator:
             table = filename.replace('.tbl', '').replace('.dat', '')
             path = self.directory + '/' + filename
             size = os.path.getsize(path)
-            logging.debug('    Copy data of size {} b'.format(size))
-            with open(path, 'r') as file:
-                database_connector.copy_data(table, file)
+            logging.debug('    Import data of size {} b'.format(size))
+            database_connector.import_data(table, path)
         database_connector.commit()
 
     def drop_database(self):

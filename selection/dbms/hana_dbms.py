@@ -1,4 +1,5 @@
 import pyhdb
+import subprocess
 import json
 import logging
 
@@ -29,7 +30,12 @@ class HanaDatabaseConnector(DatabaseConnector):
     def read_connection_file(self):
         with open('database_connection.json', 'r') as file:
             connection_data = json.load(file)
-        self.host, self.port, self.user, self.password = connection_data
+        self.host = connection_data['host']
+        self.port = connection_data['port']
+        self.db_user = connection_data['db_user']
+        self.db_user_password = connection_data['db_user_password']
+        self.import_directory = connection_data['import_directory']
+        self.ssh_user = connection_data['ssh_user']
 
     def _alter_configuration(self):
         logging.info('Setting HANA variables')
@@ -53,8 +59,8 @@ class HanaDatabaseConnector(DatabaseConnector):
         self._connection = pyhdb.connect(
             host=self.host,
             port=self.port,
-            user=self.user,
-            password=self.password
+            user=self.db_user,
+            password=self.db_user_password
         )
         self._connection.autocommit = self.autocommit
         self._cursor = self._connection.cursor()
@@ -71,6 +77,17 @@ class HanaDatabaseConnector(DatabaseConnector):
     def create_database(self, database_name):
         self.exec_only('Create schema {}'.format(database_name))
         logging.info('Database (schema) {} created'.format(database_name))
+
+    def import_data(self, table, path):
+        scp_target = f'{self.ssh_user}@{self.host}:{self.import_directory}'
+        # TODO pass scp output to logger
+        subprocess.run(['scp', path, scp_target])
+        csv_file = self.import_directory + '/' + path.split('/')[-1]
+        import_statement = (f"import from csv file '{csv_file}' "
+                            f"into {table} with record delimited by '\\n' "
+                            "field delimited by '|'")
+        logging.debug('Import csv statement {}'.format(table))
+        self.exec_only(import_statement)
 
     #  def copy_data(self, table, text, delimiter='|'):
     #      if self.db_system != 'postgres':

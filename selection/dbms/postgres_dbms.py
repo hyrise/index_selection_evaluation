@@ -44,10 +44,9 @@ class PostgresDatabaseConnector(DatabaseConnector):
         self.exec_only('create database {}'.format(database_name))
         logging.info('Database {} created'.format(database_name))
 
-    def copy_data(self, table, text, delimiter='|'):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
-        self._cursor.copy_from(text, table, sep=delimiter, null='')
+    def import_data(self, table, path, delimiter='|'):
+        with open(path, 'r') as file:
+            self._cursor.copy_from(file, table, sep=delimiter, null='')
 
     def indexes_size(self):
         if self.db_system != 'postgres':
