@@ -68,7 +68,7 @@ class HanaDatabaseConnector(DatabaseConnector):
 
     def database_names(self):
         result = self.exec_fetch('select schema_name from schemas', False)
-        return [x[0] for x in result]
+        return [x[0].lower() for x in result]
 
     #  def update_query_text(self, text):
     #      # TODO
