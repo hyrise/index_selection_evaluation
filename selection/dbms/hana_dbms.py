@@ -98,8 +98,9 @@ class HanaDatabaseConnector(DatabaseConnector):
     def indexable_columns(self, query):
         indexable_columns = []
         plan = self.get_plan(query)
+        plan_items = ''.join([x[1].read() for x in plan])
         for column in self.columns:
-            if column.name in str(plan):
+            if column.name in plan_items.lower():
                 indexable_columns.append(column)
         return indexable_columns
 
