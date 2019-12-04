@@ -9,13 +9,12 @@ from ..database_connector import DatabaseConnector
 
 class HanaDatabaseConnector(DatabaseConnector):
     def __init__(self, db_name, autocommit=False, columns=[]):
-        DatabaseConnector(db_name, 'hana')
-        self.db_name = db_name
+        DatabaseConnector.__init__(self, db_name, autocommit=autocommit,
+                                   columns=columns)
         self.db_system = 'hana'
-        self.autocommit = autocommit
-        self.columns = columns
         self._connection = None
 
+        # `db_name` is the schema name
         if not self.db_name:
             self.db_name = 'SYSTEM'
 
@@ -70,9 +69,15 @@ class HanaDatabaseConnector(DatabaseConnector):
         result = self.exec_fetch('select schema_name from schemas', False)
         return [x[0].lower() for x in result]
 
-    #  def update_query_text(self, text):
-    #      # TODO
-    #      return text
+    def enable_simulation(self):
+        create_schema = f'create schema {self.db_name}_empty'
+        self.exec_only(create_schema)
+        self.exec_only(f'set schema {self.db_name}_empty')
+        self.create_tables()
+
+    def update_query_text(self, text):
+        # TODO
+        return text
 
     def create_database(self, database_name):
         self.exec_only('Create schema {}'.format(database_name))
@@ -88,6 +93,15 @@ class HanaDatabaseConnector(DatabaseConnector):
                             "field delimited by '|'")
         logging.debug('Import csv statement {}'.format(table))
         self.exec_only(import_statement)
+
+    def indexable_columns(self, query):
+        indexable_columns = []
+        plan = self.get_plan(query)
+        for column in self.columns:
+            if column.name in str(plan):
+                indexable_columns.append(column)
+        return indexable_columns
+
 
     #  def copy_data(self, table, text, delimiter='|'):
     #      if self.db_system != 'postgres':

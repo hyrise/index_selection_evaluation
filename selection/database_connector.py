@@ -2,14 +2,12 @@ import logging
 
 
 class DatabaseConnector:
-    def __init__(self, db_name, db_system, autocommit=False, columns=[]):
-        """db_system 'postgres' or 'hana'
-        """
+    def __init__(self, db_name, autocommit=False, columns=[]):
         self.db_name = db_name
-        self.db_system = db_system
         self.autocommit = autocommit
         self.columns = columns
 
+        self.create_statements = None
         logging.debug('Database connector created: {}'.format(db_name))
 
     def exec_only(self, statement):
@@ -24,6 +22,14 @@ class DatabaseConnector:
     def enable_simulation(self):
         pass
 
+    def create_tables(self, create_statements=None):
+        logging.info('Creating tables')
+        if not self.create_statements and create_statements:
+            self.create_statements = create_statements
+        for create_statement in self.create_statements.split(';')[:-1]:
+            self.exec_only(create_statement)
+        self.commit()
+
     def commit(self):
         self._connection.commit()
 
@@ -31,6 +37,9 @@ class DatabaseConnector:
         self._connection.close()
         logging.debug('Database connector closed: {}'.format(self.db_name))
         del self
+
+    def rollback(self):
+        self._connection.rollback()
 
     #  def create_index(self, index):
     #      if self.db_system != 'postgres':

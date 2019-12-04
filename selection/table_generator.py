@@ -65,17 +65,15 @@ class TableGenerator:
         self.db_connector.create_database(self.database_name())
         filename = self.directory + '/' + self.create_table_statements_file
         with open(filename, 'r') as file:
-            data = file.read()
+            create_statements = file.read()
         # Do not create primary keys
-        data = re.sub(r',\s*primary key (.*)', '', data)
+        create_statements = re.sub(r',\s*primary key (.*)', '',
+                                   create_statements)
         self.db_connector.db_name = self.database_name()
         self.db_connector.create_connection()
-        self.db_connector.enable_simulation()
-        logging.info('Creating tables')
-        for create_statement in data.split(';')[:-1]:
-            self.db_connector.exec_only(create_statement)
-        self.db_connector.commit()
+        self.db_connector.create_tables(create_statements=create_statements)
         self._load_table_data(self.db_connector)
+        self.db_connector.enable_simulation()
         self.db_connector.close()
 
     def _load_table_data(self, database_connector):
@@ -137,4 +135,4 @@ class TableGenerator:
             if int(self.scale_factor) - self.scale_factor != 0:
                 raise Exception('Wrong TPCDS scale factor')
         else:
-            raise NotImplementedError('only tpch implemented.')
+            raise NotImplementedError('only tpch/ds implemented.')

@@ -7,11 +7,9 @@ from ..database_connector import DatabaseConnector
 
 class PostgresDatabaseConnector(DatabaseConnector):
     def __init__(self, db_name, autocommit=False, columns=[]):
-        DatabaseConnector(db_name, 'postgres')
-        self.db_name = db_name
+        DatabaseConnector.__init__(self, db_name, autocommit=autocommit,
+                                   columns=columns)
         self.db_system = 'postgres'
-        self.autocommit = autocommit
-        self.columns = columns
         self._connection = None
 
         if not self.db_name:
@@ -29,6 +27,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
 
     def enable_simulation(self):
         self.exec_only('create extension hypopg')
+        self.commit()
 
     def database_names(self):
         result = self.exec_fetch('select datname from pg_database', False)
@@ -161,11 +160,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 # Rollback to not have too many transaction locks
                 # drop view and commit would be an alternative
                 self.rollback()
-
-    def rollback(self):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
-        self._connection.rollback()
 
     def get_cost(self, query):
         if self.db_system != 'postgres':
