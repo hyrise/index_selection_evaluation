@@ -53,7 +53,7 @@ class Query:
         self._retrieve_columns()
 
     def _retrieve_columns(self):
-        print(self.text)
+        #  print(self.text)
         if not self.db_connector:
             logging.info('{}:'.format(self))
             logging.info('No database connector to get indexable columns')

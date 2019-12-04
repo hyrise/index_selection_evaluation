@@ -77,6 +77,7 @@ class HanaDatabaseConnector(DatabaseConnector):
 
     def update_query_text(self, text):
         # TODO
+        text = text.replace(';\nlimit ', ' limit ')
         return text
 
     def create_database(self, database_name):
@@ -102,6 +103,23 @@ class HanaDatabaseConnector(DatabaseConnector):
                 indexable_columns.append(column)
         return indexable_columns
 
+    def get_plan(self, query):
+        statement_name = f'{self.db_name}_q{query.nr}'
+        statement = (f"explain plan set "
+                     f"statement_name='{statement_name}' for "
+                     f"{query.text}")
+        try:
+            self.exec_only(statement)
+        except Exception as e:
+            # pdb returns this even if the explain statement worked
+            if str(e) != 'Invalid or unsupported function code received: 7':
+                raise e
+        result = self.exec_fetch('select operator_name, operator_details '
+                                 'output_size, subtree_cost, execution_engine '
+                                 'from explain_plan_table '
+                                 f"where statement_name='{statement_name}'",
+                                 one=False)
+        return result
 
     #  def copy_data(self, table, text, delimiter='|'):
     #      if self.db_system != 'postgres':

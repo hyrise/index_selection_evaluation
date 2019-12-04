@@ -85,7 +85,7 @@ class IndexSelection:
             # There are multiple configs if there is a parameter range
             # configured (as a list in the .json file)
             configs = self._find_parameter_range(algorithm_config)
-            parameter_range = True if len(configs) > 1 else False
+            parameter_range = len(configs) > 1
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
