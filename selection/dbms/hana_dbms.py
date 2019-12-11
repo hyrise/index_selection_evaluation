@@ -76,7 +76,7 @@ class HanaDatabaseConnector(DatabaseConnector):
         self.create_tables()
 
     def update_query_text(self, text):
-        # TODO
+        # TODO 'tpch' / 'tpcds' custom rules
         text = text.replace(';\nlimit ', ' limit ')
         return text
 
@@ -121,6 +121,17 @@ class HanaDatabaseConnector(DatabaseConnector):
                                  f"where statement_name='{statement_name}'",
                                  one=False)
         return result
+
+    def drop_indexes(self):
+        logging.info('Dropping indexes')
+        statement = 'select index_name from indexes where schema_name='
+        statement += f"'{self.db_name.upper()}'"
+        indexes = self.exec_fetch(statement, one=False)
+        for index in indexes:
+            index_name = index[0]
+            drop_stmt = 'drop index {}'.format(index_name)
+            logging.debug('Dropping index {}'.format(index_name))
+            self.exec_only(drop_stmt)
 
     #  def copy_data(self, table, text, delimiter='|'):
     #      if self.db_system != 'postgres':
