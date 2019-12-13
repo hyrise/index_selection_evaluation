@@ -41,6 +41,13 @@ class DatabaseConnector:
     def rollback(self):
         self._connection.rollback()
 
+    def _prepare_query(self, query):
+        for query_statement in query.text.split(';'):
+            if 'create view' in query_statement:
+                self.exec_only(query_statement)
+            elif 'select' in query_statement:
+                return query_statement
+
     #  def create_index(self, index):
     #      if self.db_system != 'postgres':
     #          raise NotImplementedError('only postgres')

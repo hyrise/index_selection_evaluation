@@ -120,10 +120,11 @@ class HanaDatabaseConnector(DatabaseConnector):
         return indexable_columns
 
     def get_plan(self, query):
+        query_text = self._prepare_query(query)
         statement_name = f'{self.db_name}_q{query.nr}'
         statement = (f"explain plan set "
                      f"statement_name='{statement_name}' for "
-                     f"{query.text}")
+                     f"{query_text}")
         try:
             self.exec_only(statement)
         except Exception as e:
@@ -138,7 +139,13 @@ class HanaDatabaseConnector(DatabaseConnector):
                                  one=False)
         self.exec_only('delete from explain_plan_table where '
                        f"statement_name='{statement_name}'")
+        self._cleanup_query(query)
         return result
+
+    def _cleanup_query(self, query):
+        for query_statement in query.text.split(';'):
+            if 'drop view' in query_statement:
+                self.exec_only(query_statement)
 
     def get_cost(self, query):
         # TODO how to get cost when simulating indexes
