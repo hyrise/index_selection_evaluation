@@ -124,6 +124,7 @@ class HanaDatabaseConnector(DatabaseConnector):
             # pdb returns this even if the explain statement worked
             if str(e) != 'Invalid or unsupported function code received: 7':
                 raise e
+        # TODO store result in dictionary-like format
         result = self.exec_fetch('select operator_name, operator_details, '
                                  'output_size, subtree_cost, execution_engine '
                                  'from explain_plan_table '

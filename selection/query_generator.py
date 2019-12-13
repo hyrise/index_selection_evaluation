@@ -31,6 +31,7 @@ class QueryGenerator:
             query_id_and_text = query.split(')\n', 1)
             if len(query_id_and_text) == 2:
                 query_id, text = query_id_and_text
+                text = self._add_alias_subquery(text)
                 query_id = int(query_id)
                 self.queries.append(Query(query_id, text,
                                           self.db_connector))
@@ -63,26 +64,27 @@ class QueryGenerator:
     #                        self.db_connector)
     #          self.queries.append(query)
 
-    #  def _add_alias_subquery(self, query_text):
-    #      text = query_text.lower()
-    #      positions = []
-    #      for match in re.finditer(r'((from)|,)[  \n]*\(', text):
-    #          counter = 1
-    #          pos = match.span()[1]
-    #          while counter > 0:
-    #              char = text[pos]
-    #              if char == '(':
-    #                  counter += 1
-    #              elif char == ')':
-    #                  counter -= 1
-    #              pos += 1
-    #          next_word = query_text[pos:].lstrip().split(' ')[0].split('\n')[0]
-    #          if next_word[0] in [')', ','] or next_word in ['limit',
-    #                                                         'order', 'where']:
-    #              positions.append(pos)
-    #      for pos in sorted(positions, reverse=True):
-    #          query_text = query_text[:pos] + ' as alias123 ' + query_text[pos:]
-    #      return query_text
+    # PostgreSQL requires an alias for subqueries
+    def _add_alias_subquery(self, query_text):
+        text = query_text.lower()
+        positions = []
+        for match in re.finditer(r'((from)|,)[  \n]*\(', text):
+            counter = 1
+            pos = match.span()[1]
+            while counter > 0:
+                char = text[pos]
+                if char == '(':
+                    counter += 1
+                elif char == ')':
+                    counter -= 1
+                pos += 1
+            next_word = query_text[pos:].lstrip().split(' ')[0].split('\n')[0]
+            if next_word[0] in [')', ','] or next_word in ['limit',
+                                                           'order', 'where']:
+                positions.append(pos)
+        for pos in sorted(positions, reverse=True):
+            query_text = query_text[:pos] + ' as alias123 ' + query_text[pos:]
+        return query_text
 
     def _run_make(self):
         if 'qgen' not in self._files() and 'dsqgen' not in self._files():

@@ -34,7 +34,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return [x[0] for x in result]
 
     def update_query_text(self, text):
-        # TODO
+        text = text.replace(';\nlimit ', ' limit ').replace('limit -1', '')
         return text
 
     def create_database(self, database_name):
