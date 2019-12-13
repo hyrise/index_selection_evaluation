@@ -115,12 +115,21 @@ class HanaDatabaseConnector(DatabaseConnector):
             # pdb returns this even if the explain statement worked
             if str(e) != 'Invalid or unsupported function code received: 7':
                 raise e
-        result = self.exec_fetch('select operator_name, operator_details '
+        result = self.exec_fetch('select operator_name, operator_details, '
                                  'output_size, subtree_cost, execution_engine '
                                  'from explain_plan_table '
                                  f"where statement_name='{statement_name}'",
                                  one=False)
+        self.exec_only('delete from explain_plan_table where '
+                       f"statement_name='{statement_name}'")
         return result
+
+    def get_cost(self, query):
+        # TODO how to get cost when simulating indexes
+        query_plan = self.get_plan(query)
+        print(query_plan)
+        total_cost = query_plan[0][3]
+        return total_cost
 
     def drop_indexes(self):
         logging.info('Dropping indexes')
@@ -132,6 +141,20 @@ class HanaDatabaseConnector(DatabaseConnector):
             drop_stmt = 'drop index {}'.format(index_name)
             logging.debug('Dropping index {}'.format(index_name))
             self.exec_only(drop_stmt)
+
+    def create_statistics(self):
+        logging.info('HANA')
+
+    def create_index(self, index):
+        table_name = index.columns[0].table
+        statement = (f'create index {index.index_idx()} '
+                     f'on {table_name} ({index.joined_column_names()})')
+        self.exec_only(statement)
+        #  size = self.exec_fetch(f'select relpages from pg_class c '
+        #                         f'where c.relname = \'{index.index_idx()}\'')
+        #  size = size[0]
+        #  index.estimated_size = size * 8 * 1024
+
 
     #  def copy_data(self, table, text, delimiter='|'):
     #      if self.db_system != 'postgres':
@@ -184,17 +207,6 @@ class HanaDatabaseConnector(DatabaseConnector):
     #      result = self.exec_fetch(statement)
     #      return result
 
-    #  def create_index(self, index):
-    #      if self.db_system != 'postgres':
-    #          raise NotImplementedError('only postgres')
-    #      table_name = index.columns[0].table
-    #      statement = (f'create index {index.index_idx()} '
-    #                   f'on {table_name} ({index.joined_column_names()})')
-    #      self.exec_only(statement)
-    #      size = self.exec_fetch(f'select relpages from pg_class c '
-    #                             f'where c.relname = \'{index.index_idx()}\'')
-    #      size = size[0]
-    #      index.estimated_size = size * 8 * 1024
 
     #  def drop_index(self, index):
     #      if self.db_system != 'postgres':
