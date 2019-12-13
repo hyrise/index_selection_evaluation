@@ -1,3 +1,6 @@
 [submodule "tpcds-kit"]
 	path = tpcds-kit
 	url = git@github.com:gregrahn/tpcds-kit.git
+[submodule "tpch-kit"]
+	path = tpch-kit
+	url = git@github.com:marcelja/tpch-kit.git
