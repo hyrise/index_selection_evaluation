@@ -31,6 +31,7 @@ class QueryGenerator:
             query_id_and_text = query.split(')\n', 1)
             if len(query_id_and_text) == 2:
                 query_id, text = query_id_and_text
+                text = text.replace('\t', '')
                 text = self._add_alias_subquery(text)
                 query_id = int(query_id)
                 self.queries.append(Query(query_id, text,
@@ -79,7 +80,7 @@ class QueryGenerator:
                     counter -= 1
                 pos += 1
             next_word = query_text[pos:].lstrip().split(' ')[0].split('\n')[0]
-            if next_word[0] in [')', ','] or next_word in ['limit',
+            if next_word[0] in [')', ','] or next_word in ['limit', 'group',
                                                            'order', 'where']:
                 positions.append(pos)
         for pos in sorted(positions, reverse=True):
