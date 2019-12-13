@@ -82,11 +82,17 @@ class HanaDatabaseConnector(DatabaseConnector):
         text = self._replace_interval_by_function(text, 'day')
         text = self._replace_interval_by_function(text, 'month')
         text = self._replace_interval_by_function(text, 'year')
+        text = self._change_substring_syntax(text)
         return text
 
     def _replace_interval_by_function(self, text, token):
         text = re.sub(rf"date '(.+)' (.) interval '(.*)' {token}",
                       rf"add_{token}s(to_date('\1','YYYY-MM-DD'),\2\3)", text)
+        return text
+
+    def _change_substring_syntax(self, text):
+        text = re.sub(r"substring\((.+) from (.+) for (.+)\)",
+                      r"substring(\1, \2, \3)", text)
         return text
 
     def create_database(self, database_name):
