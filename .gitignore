@@ -10,3 +10,4 @@ htmlcov/
 
 database_connection.json
 benchmark_results/plans
+benchmark_results/*.csv
