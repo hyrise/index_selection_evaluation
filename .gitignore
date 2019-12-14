@@ -9,3 +9,4 @@ htmlcov/
 **.tbl
 
 database_connection.json
+benchmark_results/plans
