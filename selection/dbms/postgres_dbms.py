@@ -104,12 +104,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         size = size[0]
         index.estimated_size = size * 8 * 1024
 
-    def drop_index(self, index):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
-        statement = f'drop index {index.index_idx()}'
-        self.exec_only(statement)
-
     def drop_indexes(self):
         if self.db_system != 'postgres':
             raise NotImplementedError('only postgres')

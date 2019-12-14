@@ -41,6 +41,10 @@ class DatabaseConnector:
     def rollback(self):
         self._connection.rollback()
 
+    def drop_index(self, index):
+        statement = f'drop index {index.index_idx()}'
+        self.exec_only(statement)
+
     def _prepare_query(self, query):
         for query_statement in query.text.split(';'):
             if 'create view' in query_statement:
