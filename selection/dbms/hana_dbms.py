@@ -1,4 +1,5 @@
 import pyhdb
+import time
 import re
 import subprocess
 import json
@@ -150,9 +151,19 @@ class HanaDatabaseConnector(DatabaseConnector):
     def get_cost(self, query):
         # TODO how to get cost when simulating indexes
         query_plan = self.get_plan(query)
-        print(query_plan)
+        #  print(query_plan)
         total_cost = query_plan[0][3]
+        print(total_cost)
         return total_cost
+
+    def exec_query(self, query, timeout=None):
+        query_text = self._prepare_query(query)
+        start_time = time.time()
+        self._cursor.execute(query_text)
+        execution_time = time.time() - start_time
+        self._cleanup_query(query)
+        print(execution_time)
+        return execution_time, {}
 
     def drop_indexes(self):
         logging.info('Dropping indexes')
@@ -167,6 +178,10 @@ class HanaDatabaseConnector(DatabaseConnector):
 
     def create_statistics(self):
         logging.info('HANA')
+
+    def indexes_size(self):
+        # TODO implement
+        return 0
 
     def create_index(self, index):
         table_name = index.columns[0].table

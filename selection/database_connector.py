@@ -44,7 +44,10 @@ class DatabaseConnector:
     def _prepare_query(self, query):
         for query_statement in query.text.split(';'):
             if 'create view' in query_statement:
-                self.exec_only(query_statement)
+                try:
+                    self.exec_only(query_statement)
+                except Exception as e:
+                    logging.error(e)
             elif 'select' in query_statement:
                 return query_statement
 
