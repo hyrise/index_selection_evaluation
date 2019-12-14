@@ -109,7 +109,7 @@ class Diagram {
       let item = line[i + this.queryIndex - 1]
       let runtimes = JSON.parse(item)["Runtimes"]
       let cost = JSON.parse(item)["Cost"]
-      if (item.includes('null') && this.costOrRuntime == 'runtimes') {
+      if (runtimes.includes('null') && this.costOrRuntime == 'runtimes') {
         // TODO replace csv by json files?
         this.data[i].push(NaN)
         this.data[i].push('timeout')
