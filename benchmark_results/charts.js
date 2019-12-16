@@ -38,7 +38,7 @@ class Diagram {
   }
 
   addUrl = () => {
-    const url = 'https://github.com/marcelja/index_selection/commit/' + this.commitHash
+    const url = 'https://github.com/hyrise/index_selection_evaluation/commit/' + this.commitHash
     let urlElement = document.createElement('a')
     let textNode = document.createTextNode(url)
     urlElement.appendChild(textNode)
@@ -50,7 +50,7 @@ class Diagram {
   addTitle = () => {
     let headingElem = document.createElement('h2')
     let text = `Benchmarks with ${this.benchmark} and scale factor ${this.scaleFactor} `
-    text += `(${this.timestamp})`
+    text += `(${this.dbSystem}, ${this.timestamp})`
     let titleElem = document.createTextNode(text)
     headingElem.appendChild(titleElem)
     this.elem.appendChild(headingElem);
