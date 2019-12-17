@@ -38,35 +38,38 @@ class QueryGenerator:
                                           self.db_connector))
         logging.info('Queries generated')
 
-    #  def _generate_tpcds(self):
-    #      logging.info('Generating TPC-DS Queries')
-    #      self._run_make()
-    #      command = ['cp -n ../query_templates/*.tpl ../../tpcds-templates']
-    #      self._run_command(command, shell=True)
-    #      # How to use different parameters
-        # dialects: ansi, db2, netezza, oracle, sqlserver
-    #      command = ['./dsqgen', '-DIRECTORY', '../../tpcds-templates',
-    #                 '-INPUT', '../query_templates/templates.lst',
-    #                 '-DIALECT', 'netezza', '-QUALIFY', 'Y',
-    #                 '-OUTPUT_DIR', '../..']
-    #      self._run_command(command)
-    #      with open('query_0.sql', 'r') as file:
-    #          queries_string = file.read()
-    #      for query_string in queries_string.split('-- start query'):
-    #          id_and_text = query_string.split('.tpl\n', 1)
-    #          if len(id_and_text) != 2:
-    #              continue
-    #          query_id = int(id_and_text[0].split('using template query')[-1])
-    #          query_text = id_and_text[1]
-    #          query_text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
-    #                              query_text)
-    #          query_text = self._add_alias_subquery(query_text)
-    #          query = Query(query_id, query_text,
-    #                        self.db_connector)
-    #          self.queries.append(query)
+    def _generate_tpcds(self):
+        logging.info('Generating TPC-DS Queries')
+        self._run_make()
+        #  command = ['cp -n ../query_templates/*.tpl ../../tpcds-templates']
+        #  self._run_command(command, shell=True)
+        # How to use different parameters
+        #  dialects: ansi, db2, netezza, oracle, sqlserver
+        command = ['./dsqgen', '-DIRECTORY', '../query_templates',
+                   '-INPUT', '../query_templates/templates.lst',
+                   '-DIALECT', 'netezza', '-QUALIFY', 'Y',
+                   '-OUTPUT_DIR', '../..']
+        self._run_command(command)
+        with open('query_0.sql', 'r') as file:
+            queries_string = file.read()
+        for query_string in queries_string.split('-- start query'):
+            id_and_text = query_string.split('.tpl\n', 1)
+            if len(id_and_text) != 2:
+                continue
+            query_id = int(id_and_text[0].split('using template query')[-1])
+            query_text = id_and_text[1]
+            # TODO move to postgres
+            #  query_text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
+                                #  query_text)
+            # TODO move to postgres
+            query_text = self._add_alias_subquery(query_text)
+            query = Query(query_id, query_text,
+                          self.db_connector)
+            self.queries.append(query)
 
     # PostgreSQL requires an alias for subqueries
     def _add_alias_subquery(self, query_text):
+        # TODO move to postgres update_query_text
         text = query_text.lower()
         positions = []
         for match in re.finditer(r'((from)|,)[  \n]*\(', text):
