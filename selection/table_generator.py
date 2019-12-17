@@ -84,7 +84,8 @@ class TableGenerator:
             table = filename.replace('.tbl', '').replace('.dat', '')
             path = self.directory + '/' + filename
             size = os.path.getsize(path)
-            logging.debug('    Import data of size {} b'.format(size))
+            size_string = '{:,} MB'.format(size / 1000000)
+            logging.debug(f'    Import data of size {size_string}')
             database_connector.import_data(table, path)
         database_connector.commit()
 
