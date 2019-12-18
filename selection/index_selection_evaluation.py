@@ -67,9 +67,8 @@ class IndexSelection:
                                 table_generator.columns)
         query_generator = QueryGenerator(config['benchmark_name'],
                                          config['scale_factor'],
-                                         self.db_connector)
-        if 'queries' in config:
-            query_generator.filter_queries(config['queries'])
+                                         self.db_connector,
+                                         config['queries'])
         queries = query_generator.queries
         self.workload = Workload(queries, database_name)
 

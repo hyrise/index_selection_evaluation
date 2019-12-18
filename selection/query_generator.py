@@ -8,11 +8,13 @@ from .workload import Query
 
 
 class QueryGenerator:
-    def __init__(self, benchmark_name, scale_factor, db_connector):
+    def __init__(self, benchmark_name, scale_factor, db_connector,
+                 query_ids):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = db_connector
         self.queries = []
+        self.query_ids = query_ids
 
         self.generate()
 
@@ -31,9 +33,11 @@ class QueryGenerator:
             query_id_and_text = query.split(')\n', 1)
             if len(query_id_and_text) == 2:
                 query_id, text = query_id_and_text
+                query_id = int(query_id)
+                if query_id not in self.query_ids:
+                    continue
                 text = text.replace('\t', '')
                 text = self._add_alias_subquery(text)
-                query_id = int(query_id)
                 self.queries.append(Query(query_id, text,
                                           self.db_connector))
         logging.info('Queries generated')
@@ -57,6 +61,8 @@ class QueryGenerator:
             if len(id_and_text) != 2:
                 continue
             query_id = int(id_and_text[0].split('using template query')[-1])
+            if query_id not in self.query_ids:
+                continue
             query_text = id_and_text[1]
             # TODO move to postgres
             #  query_text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
