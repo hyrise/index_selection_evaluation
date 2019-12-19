@@ -8,6 +8,8 @@ elif [[ $string == *"Darwin"* ]]; then
 fi
 }
 
+git submodule update --init --recursive
+
 if [[ $(reados) == 'debian' ]]; then
     sudo apt install python3 python3-pip
 
@@ -19,5 +21,11 @@ if [[ $(reados) == 'debian' ]]; then
     sudo -u postgres createuser -s $(whoami);
     eval "sudo -u postgres psql -c 'alter user \"$(whoami)\" with superuser;'"
 fi
-git submodule update --init --recursive
+
+cd hypopg
+make
+sudo make install
+rm *.bc import/*.bc
+cd ..
+
 pip3 install -r requirements.txt
