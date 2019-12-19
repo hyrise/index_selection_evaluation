@@ -24,6 +24,7 @@ elif [[ $(reados) == 'darwin' ]]; then
     brew install python3
 
     brew install postgresql@12
+    brew services start postgresql
 fi
 
 cd hypopg
