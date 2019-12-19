@@ -1,11 +1,11 @@
 function reados()
 {
-string=$(uname -rv)
-if [[ $string == *"Ubuntu"* || $string == *"Debian"* ]]; then
-    echo 'debian'
-elif [[ $string == *"Darwin"* ]]; then
-    echo 'darwin'
-fi
+    string=$(uname -rv)
+    if [[ $string == *"Ubuntu"* || $string == *"Debian"* ]]; then
+        echo 'debian'
+    elif [[ $string == *"Darwin"* ]]; then
+        echo 'darwin'
+    fi
 }
 
 git submodule update --init --recursive
@@ -20,6 +20,10 @@ if [[ $(reados) == 'debian' ]]; then
 
     sudo -u postgres createuser -s $(whoami);
     eval "sudo -u postgres psql -c 'alter user \"$(whoami)\" with superuser;'"
+elif [[ $(reados) == 'darwin' ]]; then
+    brew install python3
+
+    brew install postgresql@12
 fi
 
 cd hypopg
