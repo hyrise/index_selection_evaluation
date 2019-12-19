@@ -4,3 +4,6 @@
 [submodule "tpch-kit"]
 	path = tpch-kit
 	url = git@github.com:marcelja/tpch-kit.git
+[submodule "dexter"]
+	path = dexter
+	url = git@github.com:ankane/dexter.git
