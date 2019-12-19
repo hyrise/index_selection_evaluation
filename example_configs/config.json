@@ -10,6 +10,17 @@
             "timeout": 30
         },
         {
+            "name": "microsoft",
+            "parameters": {
+                "max_indexes": 10,
+                "max_indexes_naive": 2,
+                "max_index_columns": 3,
+                "cost_estimation": "whatif"
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
             "name": "no_index",
             "parameters": null,
             "number_of_runs": 5,

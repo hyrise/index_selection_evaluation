@@ -2,11 +2,11 @@ class Index:
     def __init__(self, columns):
         if len(columns) == 0:
             raise ValueError('Index needs at least 1 column')
-        #  elif len(columns) == 1:
-        #      self.multicolumn = False
-        #  else:
-        #      self.multicolumn = True
-        #  self.singlecolumn = not self.multicolumn
+        elif len(columns) == 1:
+            self.multicolumn = False
+        else:
+            self.multicolumn = True
+        self.singlecolumn = not self.multicolumn
         self.columns = columns
         # Store hypopg estimated size when `store_size=True` (whatif)
         self.estimated_size = None

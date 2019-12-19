@@ -1,11 +1,10 @@
 from .workload import Workload
 from .benchmark import Benchmark
-#  from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
-#  from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
-#  from .algorithms.epic_algorithm import EPICAlgorithm
-#  from .algorithms.dexter_algorithm import DexterAlgorithm
-#  from .algorithms.ibm_algorithm import IBMAlgorithm
-#  from .database_connector import DatabaseConnector
+from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
+from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
+from .algorithms.epic_algorithm import EPICAlgorithm
+from .algorithms.dexter_algorithm import DexterAlgorithm
+from .algorithms.ibm_algorithm import IBMAlgorithm
 from .dbms.postgres_dbms import PostgresDatabaseConnector
 from .dbms.hana_dbms import HanaDatabaseConnector
 #  from .index import Index
@@ -20,16 +19,13 @@ import time
 import copy
 
 
-#  ALGORITHMS = {'microsoft': MicrosoftAlgorithm,
-#                'drop_heuristic': DropHeuristicAlgorithm,
-#                'no_index': NoIndexAlgorithm,
-#                'all_indexes': AllIndexesAlgorithm,
-#                'ibm': IBMAlgorithm,
-#                'epic': EPICAlgorithm,
-#                'dexter': DexterAlgorithm}
-
-ALGORITHMS = {'no_index': NoIndexAlgorithm,
-              'all_indexes': AllIndexesAlgorithm}
+ALGORITHMS = {'microsoft': MicrosoftAlgorithm,
+              'drop_heuristic': DropHeuristicAlgorithm,
+              'no_index': NoIndexAlgorithm,
+              'all_indexes': AllIndexesAlgorithm,
+              'ibm': IBMAlgorithm,
+              'epic': EPICAlgorithm,
+              'dexter': DexterAlgorithm}
 
 DBMSYSTEMS = {'postgres': PostgresDatabaseConnector,
               'hana': HanaDatabaseConnector}
