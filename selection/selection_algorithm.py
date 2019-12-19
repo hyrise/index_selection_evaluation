@@ -1,4 +1,4 @@
-#  from .cost_evaluation import CostEvaluation
+from .cost_evaluation import CostEvaluation
 import logging
 
 
@@ -13,8 +13,8 @@ class SelectionAlgorithm:
             if key not in self.parameters:
                 self.parameters[key] = value
         self.database_connector = database_connector
-        # self.database_connector.drop_indexes()
-        #  self.cost_evaluation = CostEvaluation(database_connector)
+        self.database_connector.drop_indexes()
+        self.cost_evaluation = CostEvaluation(database_connector)
 
     def calculate_best_indexes(self, workload):
         raise NotImplementedError('Calulate best indexes for' + str(self))
