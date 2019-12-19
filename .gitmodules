@@ -7,3 +7,7 @@
 [submodule "dexter"]
 	path = dexter
 	url = git@github.com:ankane/dexter.git
+[submodule "hypopg"]
+	path = hypopg
+	url = git@github.com:HypoPG/hypopg.git
+	branch = REL1_STABLE
