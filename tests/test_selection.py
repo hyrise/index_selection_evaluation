@@ -19,7 +19,7 @@ class TestIndexSelection(unittest.TestCase):
 
         # Filter worklaod
         query_gen = QueryGenerator('tpch', 0.001,
-                                 self.index_selection.db_connector, [3, 14])
+                                   self.index_selection.db_connector, [3, 14])
         self.small_tpch = Workload(query_gen.queries, 'tpch')
 
     def test_constructor(self):
