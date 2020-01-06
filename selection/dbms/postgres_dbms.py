@@ -144,10 +144,8 @@ class PostgresDatabaseConnector(DatabaseConnector):
     def _cleanup_query(self, query):
         for query_statement in query.text.split(';'):
             if 'drop view' in query_statement:
-                # self.exec_only(query_statement)
-                # Rollback to not have too many transaction locks
-                # drop view and commit would be an alternative
-                self.rollback()
+                self.exec_only(query_statement)
+                self.commit()
 
     def get_cost(self, query):
         if self.db_system != 'postgres':
