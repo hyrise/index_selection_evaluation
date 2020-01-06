@@ -61,6 +61,8 @@ class IndexSelection:
         self.setup_db_connector(database_name,
                                 config['database_system'],
                                 table_generator.columns)
+        if 'queries' not in config:
+            config['queries'] = None
         query_generator = QueryGenerator(config['benchmark_name'],
                                          config['scale_factor'],
                                          self.db_connector,
