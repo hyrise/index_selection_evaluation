@@ -59,19 +59,19 @@ class TestIndexSelection(unittest.TestCase):
         recommended = algo.recommended_indexes(self.small_tpch.queries[0])
         self.assertTrue(len(possible) >= len(recommended))
 
-    #  def test_run_cli_config(self):
-    #      sys.argv = [sys.argv[0]]
-    #      sys.argv.append('tests/config_tests.json')
-    #      sys.argv.append('ERROR_LOG')
-    #      sys.argv.append('DISABLE_CSV')
-    #      self.index_selection.run()
+    def test_run_cli_config(self):
+        sys.argv = [sys.argv[0]]
+        sys.argv.append('tests/config_tests.json')
+        sys.argv.append('ERROR_LOG')
+        sys.argv.append('DISABLE_CSV')
+        self.index_selection.run()
 
-    #  def test_run_cli_config_timeout(self):
-    #      sys.argv = [sys.argv[0]]
-    #      sys.argv.append('tests/config_test_timeout.json')
-    #      sys.argv.append('CRITICAL_LOG')
-    #      sys.argv.append('DISABLE_CSV')
-    #      self.index_selection.run()
+    def test_run_cli_config_timeout(self):
+        sys.argv = [sys.argv[0]]
+        sys.argv.append('tests/config_test_timeout.json')
+        sys.argv.append('CRITICAL_LOG')
+        sys.argv.append('DISABLE_CSV')
+        self.index_selection.run()
 
 
 if __name__ == '__main__':
