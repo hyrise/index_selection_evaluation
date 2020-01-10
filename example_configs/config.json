@@ -21,6 +21,14 @@
             "timeout": 30
         },
         {
+            "name": "dexter",
+            "parameters": {
+                "min_saving_percentage": 50
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
             "name": "no_index",
             "parameters": null,
             "number_of_runs": 5,
