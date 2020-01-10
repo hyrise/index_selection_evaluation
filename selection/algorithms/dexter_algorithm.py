@@ -22,7 +22,7 @@ class DexterAlgorithm(SelectionAlgorithm):
         indexes_found = []
 
         for query in workload.queries:
-            command = (f'ruby dexter/lib/dexter.rb {database_name}'
+            command = (f'dexter {database_name}'
                        f' --min-cost-savings-pct {min_percentage} -s " ')
             command += query.text
             command += '"'
