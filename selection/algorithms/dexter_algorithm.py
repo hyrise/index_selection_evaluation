@@ -16,8 +16,6 @@ class DexterAlgorithm(SelectionAlgorithm):
 
     def calculate_best_indexes(self, workload):
         min_percentage = self.parameters['min_saving_percentage']
-        if 'budget' in self.parameters:
-            min_percentage = 0
         database_name = self.database_connector.db_name
 
         potential_indexes = self.potential_indexes(workload)
@@ -38,7 +36,6 @@ class DexterAlgorithm(SelectionAlgorithm):
             p.wait()
 
             log_output = output_string.replace('\n', '')
-            # log_output = output_string
             logging.debug(f'{query}: {log_output}')
 
             if 'public.' in output_string:
@@ -52,40 +49,4 @@ class DexterAlgorithm(SelectionAlgorithm):
             column = index.columns[0]
             if f'{column.table.name};{column.name}' in indexes_found:
                 indexes.append(index)
-
-        if 'budget' in self.parameters:
-            # find indexes in budget
-            new = []
-            # what_if = self.cost_evaluation.what_if
-            budget = self.parameters['budget'] * 1000000
-            current_size = 0
-
-            while True:
-                initial = self.cost_evaluation.calculate_cost(workload,
-                                                              new)
-                best_ratio = [None, 0, 0]
-                for i in indexes:
-                    cost = self.cost_evaluation.calculate_cost(workload,
-                                                               new + [i],
-                                                               store_size=True)
-                    benefit = initial - cost
-                    size = i.estimated_size
-                    ratio = benefit / size
-                    # print(i)
-                    # print(cost)
-                    # print(ratio)
-                    if best_ratio[1] < ratio and current_size + size < budget:
-                        best_ratio = [i, ratio, cost]
-
-                        # print('replace')
-                        # print(i)
-                if best_ratio[1] == 0:
-                    return new
-                else:
-                    print('\nadd index')
-                    print(best_ratio)
-                    indexes.remove(best_ratio[0])
-                    current_size += best_ratio[0].estimated_size
-                    new.append(best_ratio[0])
-            return new
         return indexes
