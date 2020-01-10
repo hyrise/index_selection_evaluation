@@ -89,9 +89,6 @@ class TableGenerator:
             database_connector.import_data(table, path)
         database_connector.commit()
 
-    def drop_database(self):
-        self.db_connector.drop_database(self.database_name())
-
     def _run_make(self):
         if 'dbgen' not in self._files() and 'dsdgen' not in self._files():
             logging.info('Running make in {}'.format(self.directory))

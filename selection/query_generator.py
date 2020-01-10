@@ -34,7 +34,7 @@ class QueryGenerator:
             if len(query_id_and_text) == 2:
                 query_id, text = query_id_and_text
                 query_id = int(query_id)
-                if query_id not in self.query_ids:
+                if self.query_ids and query_id not in self.query_ids:
                     continue
                 text = text.replace('\t', '')
                 text = self._add_alias_subquery(text)
