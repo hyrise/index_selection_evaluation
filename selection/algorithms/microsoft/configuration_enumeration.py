@@ -8,16 +8,12 @@ class ConfigurationEnumeration():
         parameters = microsoft_algorithm.parameters
         self.max_indexes_naive = parameters['max_indexes_naive']
         self.max_indexes = parameters['max_indexes']
-        self.budget = None
-        if 'budget' in parameters:
-            self.budget = parameters['budget'] * 1000000
         self.candidate_indexes = candidate_indexes
         self.workload = workload
         self.cost_evaluation = cost_evaluation
 
         self.candidate_selection = candidate_selection
 
-        # TODO Rename or create index class
         self.indexes = None
         self.lowest_cost = None
 
@@ -56,7 +52,7 @@ class ConfigurationEnumeration():
     def enumerate_greedy(self, number_indexes, level):
         if len(self.indexes) >= number_indexes:
             return
-
+        # (index, cost)
         best_index = (None, None)
         index_set = [item for item in self.candidate_indexes
                      if item not in self.indexes]
@@ -64,14 +60,8 @@ class ConfigurationEnumeration():
 
         for index in index_set:
             cost = self._simulate_and_evaluate_cost(self.indexes + [index])
-            if not self.candidate_selection and self.budget:
-                size = sum(x.estimated_size for x in self.indexes + [index])
-                if size > self.budget:
-                    continue
             if not best_index[0] or cost < best_index[1]:
                 best_index = (index, cost)
-        if not self.candidate_selection:
-            print('lowest', self.lowest_cost)
         if best_index[0] and best_index[1] < self.lowest_cost:
             self.indexes.append(best_index[0])
             self.lowest_cost = best_index[1]
@@ -86,13 +76,7 @@ class ConfigurationEnumeration():
             index_combis = itertools.combinations(self.candidate_indexes,
                                                   number_indexes)
             for index_combi in index_combis:
-                # if not self.candidate_selection:
-                # print(index_combi)
                 cost = self._simulate_and_evaluate_cost(index_combi)
-                if not self.candidate_selection and self.budget:
-                    size = sum(x.estimated_size for x in index_combi)
-                    if size > self.budget:
-                        continue
                 if not self.lowest_cost or cost < self.lowest_cost:
                     self.lowest_cost = cost
                     lowest_cost_indexes = index_combi
