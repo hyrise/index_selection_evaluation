@@ -1,7 +1,6 @@
 from ..selection_algorithm import SelectionAlgorithm
 import logging
 import itertools
-import time
 
 
 DEFAULT_PARAMETERS = {'max_indexes': 15, 'pruning': True,
@@ -47,18 +46,9 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
     def calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes (drop heuristic)')
         logging.info('Parameters: ' + str(self.parameters))
-        self.budget = None
-        if 'budget' in self.parameters:
-            logging.info('using budgets')
-            self.budget = self.parameters['budget'] * 1000000
         if self.parameters['pruning']:
             self.cost_evaluation.reset_pruning()
             logging.info('Use pruning')
-
-        budgets_output = []
-        start_time = time.time()
-        # comment
-        # budgets_output = [800, 400, 200, 50]
 
         all_indexes = self.potential_indexes(workload)
         # index_dropping = IndexDropping(all_indexes, workload,
@@ -100,23 +90,11 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
                 indexes.append(index)
                 if self.cost_evaluation.cost_estimation == 'whatif':
                     what_if.simulate_index(index)
-            # logging.debug(f'remove {best[0]}')
             all_indexes.remove(best[0])
             if self.cost_evaluation.cost_estimation == 'whatif':
                 what_if.drop_simulated_index(best[0])
-            size = sum(x.estimated_size for x in all_indexes)
-            logging.debug(size)
-            # if if because elif not working with and
 
-            if len(budgets_output) > 0:
-                if size <= budgets_output[0] * 1000000:
-                    print(all_indexes)
-                    print(time.time() - start_time)
-                    del budgets_output[0]
-            if self.budget is not None:
-                if size <= self.budget:
-                    break
-            elif len(all_indexes) <= self.parameters['max_indexes']:
+            if len(all_indexes) <= self.parameters['max_indexes']:
                 break
         if self.cost_evaluation.cost_estimation == 'actual_runtimes':
             self.cost_evaluation.db_connector.drop_indexes()
