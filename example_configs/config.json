@@ -4,18 +4,11 @@
     "scale_factor": 0.1,
     "algorithms": [
         {
-            "name": "all_indexes",
-            "parameters": null,
-            "number_of_runs": 5,
-            "timeout": 30
-        },
-        {
             "name": "microsoft",
             "parameters": {
                 "max_indexes": 10,
                 "max_indexes_naive": 2,
-                "max_index_columns": 3,
-                "cost_estimation": "whatif"
+                "max_index_columns": 3
             },
             "number_of_runs": 5,
             "timeout": 30
@@ -29,8 +22,10 @@
             "timeout": 30
         },
         {
-            "name": "no_index",
-            "parameters": null,
+            "name": "epic",
+            "parameters": {
+                "budget": 1
+            },
             "number_of_runs": 5,
             "timeout": 30
         }
