@@ -11,7 +11,7 @@
                 "max_index_columns": 3
             },
             "number_of_runs": 5,
-            "timeout": 30
+            "timeout": 300
         },
         {
             "name": "dexter",
@@ -19,7 +19,7 @@
                 "min_saving_percentage": [0, 50, 80]
             },
             "number_of_runs": 5,
-            "timeout": 30
+            "timeout": 300
         },
         {
             "name": "epic",
@@ -27,7 +27,7 @@
                 "budget": [100, 2000, 5000]
             },
             "number_of_runs": 5,
-            "timeout": 30
+            "timeout": 300
         },
         {
             "name": "ibm",
@@ -37,7 +37,7 @@
                 "try_variation_seconds_limit": 1
             },
             "number_of_runs": 5,
-            "timeout": 30
+            "timeout": 300
         },
         {
             "name": "drop_heuristic",
@@ -45,7 +45,7 @@
                 "max_indexes": [10, 40, 100]
             },
             "number_of_runs": 5,
-            "timeout": 30
+            "timeout": 300
         }
     ]
 }
