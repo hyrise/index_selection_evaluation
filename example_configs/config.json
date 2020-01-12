@@ -28,6 +28,24 @@
             },
             "number_of_runs": 5,
             "timeout": 30
+        },
+        {
+            "name": "ibm",
+            "parameters": {
+                "max_index_columns": 3,
+                "budget": 1,
+                "try_variation_seconds_limit": 1
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
+            "name": "drop_heuristic",
+            "parameters": {
+                "max_indexes": 10
+            },
+            "number_of_runs": 5,
+            "timeout": 30
         }
     ],
     "queries": [

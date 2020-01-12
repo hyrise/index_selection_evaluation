@@ -195,7 +195,7 @@ class IBMAlgorithm(SelectionAlgorithm):
         # This implementation is "BFI"
         # TODO another way is to stop "after a certain maximum
         # number of indexes is reached"
-        columns = query.indexable_columns()
+        columns = query.columns
         logging.debug(f'\n{query}')
         logging.debug(f'indexable columns: {len(columns)}')
         max_columns = self.parameters['max_index_columns']
