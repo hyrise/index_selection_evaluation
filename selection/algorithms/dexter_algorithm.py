@@ -13,7 +13,7 @@ class DexterAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
 
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         min_percentage = self.parameters['min_saving_percentage']
         database_name = self.database_connector.db_name
 

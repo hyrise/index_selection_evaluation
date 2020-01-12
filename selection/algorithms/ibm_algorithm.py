@@ -17,7 +17,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                                     DEFAULT_PARAMETERS)
         self.what_if = WhatIfIndexCreation(database_connector)
 
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes IBM')
 
         index_results = {}

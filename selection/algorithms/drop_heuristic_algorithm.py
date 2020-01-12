@@ -43,12 +43,9 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
 
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes (drop heuristic)')
         logging.info('Parameters: ' + str(self.parameters))
-        if self.parameters['pruning']:
-            self.cost_evaluation.reset_pruning()
-            logging.info('Use pruning')
 
         all_indexes = self.potential_indexes(workload)
         # index_dropping = IndexDropping(all_indexes, workload,
@@ -73,9 +70,6 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
         # print('ini', initial_cost)
         while True:
             logging.debug(f'len indexes {len(all_indexes)}')
-            if self.parameters['pruning']:
-                hits = self.cost_evaluation.pruning_hits
-                logging.debug(f'pruning hits {hits[0]}, calls {hits[1]}')
             indexes = all_indexes.copy()
             best = None
             for index in all_indexes:

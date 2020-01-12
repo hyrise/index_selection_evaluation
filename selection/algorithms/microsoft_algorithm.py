@@ -21,12 +21,9 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         if max_indexes < max_indexes_naive:
             self.parameters['max_indexes_naive'] = max_indexes
 
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes (microsoft)')
         logging.info('Parameters: ' + str(self.parameters))
-        if self.parameters['pruning']:
-            logging.info('Use pruning')
-            self.cost_evaluation.reset_pruning()
 
         if self.parameters['max_indexes'] == 0:
             return []

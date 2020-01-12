@@ -17,7 +17,11 @@ class SelectionAlgorithm:
         self.cost_evaluation = CostEvaluation(database_connector)
 
     def calculate_best_indexes(self, workload):
-        raise NotImplementedError('Calulate best indexes for' + str(self))
+        self.cost_evaluation.reset_pruning()
+        indexes = self._calculate_best_indexes(workload)
+        hits = self.cost_evaluation.pruning_hits
+        logging.debug(f'pruning hits {hits[0]}, calls {hits[1]}')
+        return indexes
 
     def indexable_columns(self, workload):
         return workload.indexable_columns()

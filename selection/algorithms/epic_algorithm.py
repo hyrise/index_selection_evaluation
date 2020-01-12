@@ -19,12 +19,9 @@ class EPICAlgorithm(SelectionAlgorithm):
         # MB to Bytes
         self.budget = self.parameters['budget'] * 1000000
 
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes EPIC')
         logging.info(f'Cost estimation {self.cost_estimation}')
-        if self.parameters['pruning']:
-            logging.info('Use pruning')
-            self.cost_evaluation.reset_pruning()
 
         index_combination = []
         initial_cost = self._retrieve_cost(workload, index_combination)
@@ -75,9 +72,6 @@ class EPICAlgorithm(SelectionAlgorithm):
                         new_combination[i] = new_index
                         self._evaluate_combination(new_combination, best,
                                                    workload)
-            if self.parameters['pruning']:
-                hits = self.cost_evaluation.pruning_hits
-                logging.debug(f'pruning hits {hits[0]}, calls {hits[1]}')
             if best[1] == 0:
                 break
             index_combination = best[0]
