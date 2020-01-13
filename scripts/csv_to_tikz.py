@@ -28,21 +28,21 @@ TOP = r"""\documentclass[tikz]{standalone}
 \pgfkeys{/pgf/number format/.cd,1000 sep={}}
 \begin{tikzpicture}
 \begin{axis}[height=9cm, width=\textwidth, legend
-    style={at={(1,1)},anchor=north east}, xlabel={Storage Consumption in MB},
+    style={at={(1,1)},anchor=north east}, xlabel={Storage Consumption [MB]},
     ylabel={Query Workload Costs},
     scaled y ticks=false, ymode=log,
     every axis plot/.append style={thick},
     cycle list name=set1
     ]
 """
-MID = r"""
-\end{axis}
-\begin{axis}[height=10cm, width=14cm, ylabel near ticks,
-    yticklabel pos=right, legend
-    style={at={(1,1)},anchor=south east}, xtick=\empty, ylabel={Size in
-    Gigabytes},enlargelimits=0.05,
-    scaled y ticks=false]
-"""
+#  MID = r"""
+#  \end{axis}
+#  \begin{axis}[height=10cm, width=14cm, ylabel near ticks,
+#      yticklabel pos=right, legend
+#      style={at={(1,1)},anchor=south east}, xtick=\empty, ylabel={Size in
+#      Gigabytes},enlargelimits=0.05,
+#      scaled y ticks=false]
+#  """
 BOT = r"""
 \end{axis}
 \end{tikzpicture}
@@ -147,15 +147,15 @@ class TikzPlot:
             parameters = json.loads(line[3].replace('True',
                                                     'true').replace('False',
                                                                     'false'))
-            #  value = json.loads(line[10]) / 1000000
-            value = json.loads(line[8])
+            value = json.loads(line[10]) / 1000000
+            #  value = json.loads(line[8])
             if self.attribute_name in parameters:
                 value = parameters[self.attribute_name]
             attributes[-1].append(line, value)
 
         for attribute in attributes:
-            if attribute.switchaxis:
-                self.output_string += MID
+            #  if attribute.switchaxis:
+            #      self.output_string += MID
             self.output_string += attribute.string()
         self.output_string += BOT
 
