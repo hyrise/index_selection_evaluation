@@ -22,12 +22,19 @@ if [[ $(reados) == 'debian' ]]; then
 
     sudo -u postgres createuser -s $(whoami);
     eval "sudo -u postgres psql -c 'alter user \"$(whoami)\" with superuser;'"
+
+    # https://github.com/ankane/dexter/blob/master/guides/Linux.md
+    wget -qO- https://dl.packager.io/srv/pghero/dexter/key | sudo apt-key add -
+    sudo wget -O /etc/apt/sources.list.d/dexter.list \
+      https://dl.packager.io/srv/pghero/dexter/master/installer/ubuntu/18.04.repo
+    sudo apt-get update
+    sudo apt-get -y install dexter
 elif [[ $(reados) == 'darwin' ]]; then
     brew install python3
-    brew install ankane/brew/dexter
 
     brew install postgresql@12
     brew services start postgresql
+    brew install ankane/brew/dexter
 fi
 
 cd hypopg
