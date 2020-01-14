@@ -47,51 +47,10 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
         logging.info('Calculating best indexes (drop heuristic)')
         logging.info('Parameters: ' + str(self.parameters))
 
-        all_indexes = self.potential_indexes(workload)
-        # index_dropping = IndexDropping(all_indexes, workload,
-        #                                self.cost_evaluation, self.parameters)
-        # return index_dropping.indexes
-
         evaluation_method = self.parameters['cost_estimation']
         self.cost_evaluation.cost_estimation = evaluation_method
 
-        simulate = False
-        what_if = self.cost_evaluation.what_if
-        if self.cost_evaluation.cost_estimation == 'actual_runtimes':
-            self.cost_evaluation.create_all_indexes(all_indexes)
-            simulate = True
-        elif self.cost_evaluation.cost_estimation == 'whatif':
-            for index in all_indexes:
-                what_if.simulate_index(index, store_size=True)
-        else:
-            raise Exception('only whatif or actual_runtimes')
-        # initial_cost = self.cost_evaluation.calculate_cost(workload,
-        #                                                    all_indexes)
-        # print('ini', initial_cost)
-        while True:
-            logging.debug(f'len indexes {len(all_indexes)}')
-            indexes = all_indexes.copy()
-            best = None
-            for index in all_indexes:
-                indexes.remove(index)
-                if self.cost_evaluation.cost_estimation == 'whatif':
-                    what_if.drop_simulated_index(index)
-                cost = self.cost_evaluation.calculate_cost(workload, indexes,
-                                                           store_size=True,
-                                                           simulate=simulate)
-                if not best or cost < best[1]:
-                    best = [index, cost]
-                indexes.append(index)
-                if self.cost_evaluation.cost_estimation == 'whatif':
-                    what_if.simulate_index(index)
-            all_indexes.remove(best[0])
-            if self.cost_evaluation.cost_estimation == 'whatif':
-                what_if.drop_simulated_index(best[0])
-
-            if len(all_indexes) <= self.parameters['max_indexes']:
-                break
-        if self.cost_evaluation.cost_estimation == 'actual_runtimes':
-            self.cost_evaluation.db_connector.drop_indexes()
-        elif self.cost_evaluation.cost_estimation == 'whatif':
-            what_if.drop_all_simulated_indexes()
-        return all_indexes
+        all_indexes = self.potential_indexes(workload)
+        index_dropping = IndexDropping(all_indexes, workload,
+                                      self.cost_evaluation, self.parameters)
+        return index_dropping.indexes
