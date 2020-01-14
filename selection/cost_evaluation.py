@@ -2,6 +2,44 @@ from .what_if_index_creation import WhatIfIndexCreation
 import logging
 
 
+class CostsCache():
+    def __init__(self):
+        logging.debug('Init costs cache')
+        self.reset()
+
+    def reset(self):
+        # [cache hits, database cost requests]
+        self.pruning_hits = [0, 0]
+        self.cache = {}
+
+    def request_cache(self, query, indexes, db_connector):
+        cost = None
+        relevant_indexes = self._relevant_indexes(query, indexes)
+
+        # Check if query and corresponding relevant indexes in cache
+        if query in self.cache:
+            result = next((x for x in self.cache[query]
+                           if x[1] == relevant_indexes), False)
+            if result:
+                self.pruning_hits[0] += 1
+                cost = result[0]
+        # If no cache hit request cost from database system
+        if not cost:
+            cost = db_connector.get_cost(query)
+            self.pruning_hits[1] += 1
+            if query not in self.cache:
+                self.cache[query] = []
+            self.cache[query].append((cost, relevant_indexes))
+        return cost
+
+    def _relevant_indexes(self, query, indexes):
+        relevant_indexes = [x for x in indexes
+                            if any(c in query.columns
+                                   for c in x.columns)]
+        relevant_indexes = sorted(relevant_indexes)
+        return relevant_indexes
+
+
 class CostEvaluation():
     def __init__(self, db_connector, cost_estimation='whatif'):
         logging.debug('Init cost evaluation')
@@ -9,56 +47,22 @@ class CostEvaluation():
         self.cost_estimation = cost_estimation
         logging.info('Cost estimation with ' + self.cost_estimation)
         self.what_if = WhatIfIndexCreation(db_connector)
-        self.pruning = False
-        self.pruning_hits = [0, 0]
-        self.costs = {}
+        self.costs_cache = CostsCache()
+        self.reset()
 
-    def reset_pruning(self):
-        self.pruning = True
-        self.pruning_hits = [0, 0]
-        self.costs = {}
+    def reset(self):
+        self.costs_cache.reset()
+        self.current_indexes = []
 
-    def calculate_cost(self, workload, indexes, store_size=False,
-                       simulate=True):
-        if simulate:
-            self._prepare_cost_calculation(indexes, store_size=store_size)
+    def calculate_cost(self, workload, indexes, store_size=False):
+        self._prepare_cost_calculation(indexes, store_size=store_size)
         total_cost = 0
 
         # TODO: Make query cost higher for queries which are running often
-
-        # TODO refactor costs cache
         for query in workload.queries:
-            cost = None
-            if self.pruning:
-                relevant_indexes = [x for x in indexes
-                                    if any(c in query.columns
-                                           for c in x.columns)]
-                result = False
-                relevant_indexes = sorted(relevant_indexes)
-                if query in self.costs:
-                    list = self.costs[query]
-                    result = next((x for x in list
-                                   if x[1] == relevant_indexes), False)
-                    if result:
-                        self.pruning_hits[0] += 1
-                        cost = result[0]
-            if not cost:
-                cost = self._request_total_cost(query)
-
-                if self.pruning:
-                    self.pruning_hits[1] += 1
-                    if query not in self.costs:
-                        self.costs[query] = []
-                    if not result:
-                        self.costs[query].append((cost, relevant_indexes))
-
-            total_cost += cost
-        if simulate:
-            self._complete_cost_estimation()
-        return total_cost
-
-    def _request_total_cost(self, query):
-        total_cost = self.db_connector.get_cost(query)
+            total_cost += self.costs_cache.request_cache(query, indexes,
+                                                         self.db_connector)
+        self._complete_cost_estimation()
         return total_cost
 
     def _prepare_cost_calculation(self, indexes, store_size=False):
