@@ -27,6 +27,10 @@ class SelectionAlgorithm:
         logging.debug(f'pruning hits {hits[0]}, calls {hits[1]}')
         return indexes
 
+    def _calculate_best_indexes(self, workload):
+        raise NotImplementedError('_calculate_best_indexes(self, '
+                                  'workload) missing')
+
     def indexable_columns(self, workload):
         return workload.indexable_columns()
 
