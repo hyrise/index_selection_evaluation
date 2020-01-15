@@ -95,6 +95,8 @@ class IndexSelection:
                                       config, parameter_list_used, what_if)
                 benchmark.benchmark()
 
+    # Parameter list example: {"max_indexes": [5, 10, 20]}
+    # Creates config for each value
     def _find_parameter_list(self, algorithm_config):
         parameters = algorithm_config['parameters']
         configs = []
