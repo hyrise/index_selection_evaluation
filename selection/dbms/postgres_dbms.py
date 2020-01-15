@@ -38,8 +38,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return text
 
     def create_database(self, database_name):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         self.exec_only('create database {}'.format(database_name))
         logging.info('Database {} created'.format(database_name))
 
@@ -48,29 +46,18 @@ class PostgresDatabaseConnector(DatabaseConnector):
             self._cursor.copy_from(file, table, sep=delimiter, null='')
 
     def indexes_size(self):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
-
         # Returns size in bytes
-        #  statement = ("select sum(pg_indexes_size(table_name)) from "
-        #               "(select table_name from information_schema.tables "
-        #               "where table_schema='public') as all_tables")
-        #  result = self.exec_fetch(statement)
-        #  return result[0]
-        # TODO pg_indexes_size needs oid,
-        # example: select pg_indexes_size(16415);
-
-        return 0
+        statement = ("select sum(pg_indexes_size(table_name::text)) from "
+                     "(select table_name from information_schema.tables "
+                     "where table_schema='public') as all_tables")
+        result = self.exec_fetch(statement)
+        return result[0]
 
     def drop_database(self, database_name):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         self.exec_only('drop database {}'.format(database_name))
         logging.info('Database {} dropped'.format(database_name))
 
     def create_statistics(self):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         logging.info('Postgres: Run `vacuum analyze`')
         self.commit()
         self._connection.autocommit = True
@@ -83,8 +70,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return False
 
     def simulate_index(self, index):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         table_name = index.columns[0].table
         statement = ("select * from hypopg_create_index( "
                      f"'create index on {table_name} "
@@ -93,8 +78,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return result
 
     def create_index(self, index):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         table_name = index.columns[0].table
         statement = (f'create index {index.index_idx()} '
                      f'on {table_name} ({index.joined_column_names()})')
@@ -105,8 +88,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         index.estimated_size = size * 8 * 1024
 
     def drop_indexes(self):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         logging.info('Dropping indexes')
         stmt = "select indexname from pg_indexes where schemaname='public'"
         indexes = self.exec_fetch(stmt, one=False)
@@ -119,14 +100,12 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 self.exec_only(drop_stmt)
 
     def exec_query(self, query, timeout=None, cost_evaluation=False):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres supports timeout yet')
         # Committing to not lose indexes after timeout
         if not cost_evaluation:
             self._connection.commit()
         query_text = self._prepare_query(query)
         if timeout:
-            set_timeout = "set statement_timeout={}".format(timeout * 1000)
+            set_timeout = 'set statement_timeout={}'.format(timeout * 1000)
             self.exec_only(set_timeout)
         statement = f'explain (analyze, buffers, format json) {query_text}'
         try:
@@ -148,8 +127,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 self.commit()
 
     def get_cost(self, query):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres supports cost estimation')
         query_plan = self.get_plan(query)
         total_cost = query_plan['Total Cost']
         return total_cost
@@ -170,8 +147,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return query_plan
 
     def number_of_indexes(self):
-        if self.db_system != 'postgres':
-            raise NotImplementedError('only postgres')
         statement = """select count(*) from pg_indexes
                        where schemaname = 'public'"""
         result = self.exec_fetch(statement)
