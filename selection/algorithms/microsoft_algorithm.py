@@ -27,8 +27,6 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
 
         if self.parameters['max_indexes'] == 0:
             return []
-        evaluation_method = self.parameters['cost_estimation']
-        self.cost_evaluation.cost_estimation = evaluation_method
 
         potential_indexes = self.potential_indexes(workload)
         candidate_selection = CandidateIndexSelection(self.cost_evaluation,
@@ -38,10 +36,8 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         multicolumn_indexes = MultiColumnIndexGeneration(potential_indexes)
 
         for i in range(self.parameters['max_index_columns']):
-            self.cost_evaluation.cost_estimation = 'whatif'
             candidates = candidate_selection.select(workload,
                                                     potential_indexes)
-            self.cost_evaluation.cost_estimation = evaluation_method
             enumeration.candidate_indexes = candidates
             enumeration.lowest_cost = None
             indexes = enumeration.enumerate()

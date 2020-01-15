@@ -26,9 +26,6 @@ class ConfigurationEnumeration():
         log_out += str(self.max_indexes)
         logging.log(level, log_out)
 
-        if self.cost_evaluation.cost_estimation == 'actual_runtimes':
-            self.cost_evaluation.create_all_indexes(self.candidate_indexes)
-
         # Make sure to not evaluate indexes multiple times
         number_indexes_naive = min(self.max_indexes_naive,
                                    len(self.candidate_indexes))
@@ -45,8 +42,6 @@ class ConfigurationEnumeration():
         log_out += '(greedy): number indexes {}\n'.format(len(self.indexes))
         logging.log(level, log_out)
 
-        if self.cost_evaluation.cost_estimation == 'actual_runtimes':
-            self.cost_evaluation.db_connector.drop_indexes()
         return self.indexes
 
     def enumerate_greedy(self, number_indexes, level):

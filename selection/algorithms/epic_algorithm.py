@@ -13,7 +13,6 @@ class EPICAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
-        self.cost_estimation = self.parameters['cost_estimation']
         self.cost_evaluation = CostEvaluation(database_connector,
                                               self.cost_estimation)
         # MB to Bytes

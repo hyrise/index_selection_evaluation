@@ -21,7 +21,6 @@ class IndexDropping:
 
     def _drop_indexes(self, number_dropped_indexes=1):
         logging.debug('Dopping, indexes size: {}'.format(len(self.indexes)))
-        # cost_before_dropping = self._cost(self.indexes)
         index_combinations = itertools.combinations(self.indexes,
                                                     number_dropped_indexes)
         lowest_cost = None
@@ -47,10 +46,7 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
         logging.info('Calculating best indexes (drop heuristic)')
         logging.info('Parameters: ' + str(self.parameters))
 
-        evaluation_method = self.parameters['cost_estimation']
-        self.cost_evaluation.cost_estimation = evaluation_method
-
         all_indexes = self.potential_indexes(workload)
         index_dropping = IndexDropping(all_indexes, workload,
-                                      self.cost_evaluation, self.parameters)
+                                       self.cost_evaluation, self.parameters)
         return index_dropping.indexes

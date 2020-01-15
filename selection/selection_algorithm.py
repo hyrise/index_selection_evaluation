@@ -12,9 +12,13 @@ class SelectionAlgorithm:
         for key, value in default_parameters.items():
             if key not in self.parameters:
                 self.parameters[key] = value
+
         self.database_connector = database_connector
         self.database_connector.drop_indexes()
         self.cost_evaluation = CostEvaluation(database_connector)
+        if 'cost_estimation' in self.parameters:
+            estimation = self.parameters['cost_estimation']
+            self.cost_evaluation.cost_estimation = estimation
 
     def calculate_best_indexes(self, workload):
         self.cost_evaluation.reset()
