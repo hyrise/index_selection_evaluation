@@ -12,7 +12,7 @@ class CostEvaluation():
         self.reset()
 
     def reset(self):
-        self.current_indexes = []
+        self.current_indexes = set()
         # [cache hits, database cost requests]
         self.pruning_hits = [0, 0]
         self.cache = {}
@@ -23,20 +23,50 @@ class CostEvaluation():
 
         # TODO: Make query cost higher for queries which are running often
         for query in workload.queries:
-            total_cost += self.request_cache(query, indexes,
-                                             self.db_connector)
-        self._complete_cost_estimation()
+            total_cost += self._request_cache(query, indexes)
         return total_cost
 
+    # Creates the current index combination by simulating/creating
+    # missing indexes and unsimulating/dropping indexes
+    # that exist but are not in the combination.
     def _prepare_cost_calculation(self, indexes, store_size=False):
+        drop_indexes = self.current_indexes.copy()
+
+        for index in indexes:
+            if index not in self.current_indexes:
+                self._simulate_or_create_index(index, store_size)
+            else:
+                drop_indexes.remove(index)
+        for drop_index in drop_indexes:
+            self._unsimulate_or_drop_index(drop_index)
+
+        self.current_indexes = set(indexes)
+
+    def _simulate_or_create_index(self, index, store_size):
         if self.cost_estimation == 'whatif':
-            for index in indexes:
-                self.what_if.simulate_index(index, store_size=store_size)
+            self.what_if.simulate_index(index, store_size=store_size)
+        elif self.cost_estimation == 'actual_runtimes':
+            # TODO
+            pass
+
+    def _unsimulate_or_drop_index(self, index):
+        if self.cost_estimation == 'whatif':
+            self.what_if.drop_simulated_index(index)
+        elif self.cost_estimation == 'actual_runtimes':
+            # TODO
+            pass
+
+    def _get_cost(self, query):
+        if self.cost_estimation == 'whatif':
+            return self.db_connector.get_cost(query)
+        elif self.cost_estimation == 'actual_runtimes':
+            # TODO
+            return 0
 
     def _complete_cost_estimation(self):
         self.what_if.drop_all_simulated_indexes()
 
-    def request_cache(self, query, indexes, db_connector):
+    def _request_cache(self, query, indexes):
         cost = None
         relevant_indexes = self._relevant_indexes(query, indexes)
 
@@ -49,7 +79,7 @@ class CostEvaluation():
                 cost = result[0]
         # If no cache hit request cost from database system
         if not cost:
-            cost = db_connector.get_cost(query)
+            cost = self._get_cost(query)
             self.pruning_hits[1] += 1
             if query not in self.cache:
                 self.cache[query] = []
