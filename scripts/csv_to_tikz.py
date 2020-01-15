@@ -4,8 +4,9 @@ import json
 
 
 # Example how to run:
-# python3 csv_to_tikz.py ../benchmark_results/range_results_14_queries.csv
-# plot1.tex
+# python3 csv_to_tikz.py list_results_14_queries.csv plot1.tex runtime
+# Options: runtime, cost, algorithmtime
+
 TOP = r"""\documentclass[tikz]{standalone}
 \usepackage{tikz}
 \usepackage{pgfplots}
@@ -28,8 +29,8 @@ TOP = r"""\documentclass[tikz]{standalone}
 \pgfkeys{/pgf/number format/.cd,1000 sep={}}
 \begin{tikzpicture}
 \begin{axis}[height=9cm, width=\textwidth, legend
-    style={at={(1,1)},anchor=north east}, xlabel={Storage Consumption [MB]},
-    ylabel={Query Workload Costs},
+    style={at={(1,1)},anchor=north east}, xlabel={Storage Consumption [GB]},
+    ylabel={<YAXIS>},
     scaled y ticks=false, ymode=log,
     every axis plot/.append style={thick},
     cycle list name=set1
@@ -51,7 +52,7 @@ BOT = r"""
 
 
 class Attribute:
-    def __init__(self, index, name, header=None, switchaxis=False,
+    def __init__(self, index, name, yaxis, header=None, switchaxis=False,
                  options=None):
         self.index = index
         self.name = name
@@ -60,6 +61,7 @@ class Attribute:
         self.indexes = []
         self.switchaxis = switchaxis
         self.options = options
+        self.yaxis = yaxis
 
         if header:
             for i in range(len(header)):
@@ -72,29 +74,23 @@ class Attribute:
         self.values.append(value)
 
     def append_workload_runtime(self, line):
-        runtime = 0
+        value = 0
         # ALGOTIME:
-        # runtime = json.loads(line[7])
+        if self.yaxis == 'algorithmtime':
+            value = json.loads(line[7])
         for i in self.indexes:
             # COST:
-            # runtime += json.loads(line[i])['Cost']
-            # # query id 4 == 15
-            # if i in [36, 68, 46, 15, 17, 85, 22, 21, 25, 58, 92]:
-            #     continue
-            try:
-                runtimes = json.loads(line[i])['Runtimes']
-                #  div = len(runtimes) * 1000
-                # continue
-                # RUNTIMES:
-                # try:
-                # runtime += sum(runtimes) / div
-                tt = statistics.median(runtimes) / 1000
-                # if tt > 10:
-                #     print(i, tt)
-                runtime += tt
-            except Exception:
-                print(i)
-        return runtime
+            if self.yaxis == 'cost':
+                value += json.loads(line[i])['Cost']
+                continue
+            # RUNTIME:
+            if self.yaxis == 'runtime':
+                try:
+                    runtimes = json.loads(line[i])['Runtimes']
+                    value += statistics.median(runtimes) / 1000
+                except Exception:
+                    print(i)
+        return value
 
     def string(self):
         string = '\\addplot'
@@ -111,12 +107,13 @@ class Attribute:
 
 
 class TikzPlot:
-    def __init__(self, csv_file, plot_name, attribute_name=None):
+    def __init__(self, csv_file, plot_name, yaxis, attribute_name=None):
         self.csv_file = csv_file
         self.plot_name = plot_name
         self.attribute_name = attribute_name
         self.prev_value = None
         self.output_string = TOP
+        self.yaxis = yaxis
 
         self.read_file()
 
@@ -140,15 +137,15 @@ class TikzPlot:
             line[2] = line[2].replace('_', '')
 
             if not prev_name or prev_name != line[2]:
-                attributes.append(Attribute(-1, line[2], header))
+                attributes.append(Attribute(-1, line[2], self.yaxis, header))
             prev_name = line[2]
             print(line[2])
 
             parameters = json.loads(line[3].replace('True',
                                                     'true').replace('False',
                                                                     'false'))
-            value = json.loads(line[10]) / 1000000
-            #  value = json.loads(line[8])
+            # Index size: Bytes to GB
+            value = json.loads(line[10]) / 1000000000
             if self.attribute_name in parameters:
                 value = parameters[self.attribute_name]
             attributes[-1].append(line, value)
@@ -166,7 +163,11 @@ class TikzPlot:
 
 
 def main():
-    plot = TikzPlot(sys.argv[1], sys.argv[2])
+    if len(sys.argv) != 4:
+        print('Example Usage:')
+        print('python3 csv_to_tikz.py results.csv plot1.tex cost')
+        return
+    plot = TikzPlot(sys.argv[1], sys.argv[2], sys.argv[3])
     plot.store_tex()
 
 
