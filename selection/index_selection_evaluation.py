@@ -79,10 +79,10 @@ class IndexSelection:
         self.db_connector.commit()
 
         for algorithm_config in config['algorithms']:
-            # There are multiple configs if there is a parameter range
+            # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
-            configs = self._find_parameter_range(algorithm_config)
-            parameter_range = len(configs) > 1
+            configs = self._find_parameter_list(algorithm_config)
+            parameter_list_used = len(configs) > 1
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
@@ -92,11 +92,10 @@ class IndexSelection:
                                       self.db_connector,
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
-                                      config, parameter_range, what_if)
+                                      config, parameter_list_used, what_if)
                 benchmark.benchmark()
 
-    # TODO remove range and rename to parameter_list
-    def _find_parameter_range(self, algorithm_config):
+    def _find_parameter_list(self, algorithm_config):
         parameters = algorithm_config['parameters']
         configs = []
         if parameters:
@@ -104,10 +103,7 @@ class IndexSelection:
             self.__check_parameters(parameters)
             for key, value in parameters.items():
                 if isinstance(value, list):
-                    range_or_list = range(value[0], value[1] + 1)
-                    if len(value) > 2:
-                        range_or_list = value
-                    for i in range_or_list:
+                    for i in value:
                         new_config = copy.deepcopy(algorithm_config)
                         new_config['parameters'][key] = i
                         configs.append(new_config)
