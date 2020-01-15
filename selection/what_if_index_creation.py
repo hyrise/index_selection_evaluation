@@ -13,7 +13,7 @@ class WhatIfIndexCreation():
         result = self.db_connector.simulate_index(potential_index)
         index_oid = result[0]
         index_name = result[1]
-        self.simulated_indexes[result[0]] = index_name
+        self.simulated_indexes[index_oid] = index_name
         potential_index.hypopg_name = index_name
         potential_index.hypopg_oid = index_oid
 

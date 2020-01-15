@@ -39,7 +39,7 @@ class Benchmark:
         else:
             self.index_create_time = 0
             for index in self.indexes:
-                self.what_if.simulate_index(index)
+                self.what_if.simulate_index(index, store_size=True)
         self.db_connector.create_statistics()
         self._benchmark()
         if self.number_of_runs > 0:
@@ -69,6 +69,9 @@ class Benchmark:
             self._write_query_plans(date, plans)
         commit_hash = self._git_hash()
         indexes_size = self.db_connector.indexes_size()
+        if self.number_of_runs == 0:
+            indexes_size = sum([index.estimated_size
+                                for index in self.indexes])
         csv_entry = [date, commit_hash, config['name'], config['parameters'],
                      self.scale_factor, self.benchmark_name, self.db_system,
                      self.calculation_time, len(self.indexes),
