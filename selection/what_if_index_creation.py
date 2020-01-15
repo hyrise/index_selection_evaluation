@@ -47,9 +47,7 @@ class WhatIfIndexCreation():
         return table_name + '_' + joined_columns
 
     def drop_all_simulated_indexes(self):
-        # `hypopg_reset()` does the same
         for key in self.simulated_indexes:
             statement = 'select * from hypopg_drop_index({})'.format(key)
             self.db_connector.exec_only(statement)
         self.simulated_indexes = {}
-        # logging.debug('All simulated indexes dropped.')
