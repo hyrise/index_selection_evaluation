@@ -37,8 +37,10 @@ class CostEvaluation():
                 self._simulate_or_create_index(index, store_size)
             else:
                 drop_indexes.remove(index)
+        # TODO commit()
         for drop_index in drop_indexes:
             self._unsimulate_or_drop_index(drop_index)
+        # TODO rollback()
 
         self.current_indexes = set(indexes)
 
