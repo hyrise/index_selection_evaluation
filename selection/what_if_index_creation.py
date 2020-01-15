@@ -18,7 +18,7 @@ class WhatIfIndexCreation():
         potential_index.hypopg_oid = index_oid
 
         if store_size:
-            self.estimated_size(potential_index, index_oid)
+            self.store_estimated_size(potential_index, index_oid)
 
     def drop_simulated_index(self, index):
         oid = index.hypopg_oid
@@ -26,7 +26,7 @@ class WhatIfIndexCreation():
         statement = f'select * from hypopg_drop_index({oid})'
         self.db_connector.exec_only(statement)
 
-    def estimated_size(self, index, index_oid):
+    def store_estimated_size(self, index, index_oid):
         statement = f'select hypopg_relation_size({index_oid})'
         result = self.db_connector.exec_fetch(statement)
         index.estimated_size = result[0]
