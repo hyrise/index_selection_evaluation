@@ -2,15 +2,39 @@ from .what_if_index_creation import WhatIfIndexCreation
 import logging
 
 
-class CostsCache():
-    def __init__(self):
-        logging.debug('Init costs cache')
+class CostEvaluation():
+    def __init__(self, db_connector, cost_estimation='whatif'):
+        logging.debug('Init cost evaluation')
+        self.db_connector = db_connector
+        self.cost_estimation = cost_estimation
+        logging.info('Cost estimation with ' + self.cost_estimation)
+        self.what_if = WhatIfIndexCreation(db_connector)
         self.reset()
 
     def reset(self):
+        self.current_indexes = []
         # [cache hits, database cost requests]
         self.pruning_hits = [0, 0]
         self.cache = {}
+
+    def calculate_cost(self, workload, indexes, store_size=False):
+        self._prepare_cost_calculation(indexes, store_size=store_size)
+        total_cost = 0
+
+        # TODO: Make query cost higher for queries which are running often
+        for query in workload.queries:
+            total_cost += self.request_cache(query, indexes,
+                                             self.db_connector)
+        self._complete_cost_estimation()
+        return total_cost
+
+    def _prepare_cost_calculation(self, indexes, store_size=False):
+        if self.cost_estimation == 'whatif':
+            for index in indexes:
+                self.what_if.simulate_index(index, store_size=store_size)
+
+    def _complete_cost_estimation(self):
+        self.what_if.drop_all_simulated_indexes()
 
     def request_cache(self, query, indexes, db_connector):
         cost = None
@@ -38,37 +62,3 @@ class CostsCache():
                                    for c in x.columns)]
         relevant_indexes = sorted(relevant_indexes)
         return relevant_indexes
-
-
-class CostEvaluation():
-    def __init__(self, db_connector, cost_estimation='whatif'):
-        logging.debug('Init cost evaluation')
-        self.db_connector = db_connector
-        self.cost_estimation = cost_estimation
-        logging.info('Cost estimation with ' + self.cost_estimation)
-        self.what_if = WhatIfIndexCreation(db_connector)
-        self.costs_cache = CostsCache()
-        self.reset()
-
-    def reset(self):
-        self.costs_cache.reset()
-        self.current_indexes = []
-
-    def calculate_cost(self, workload, indexes, store_size=False):
-        self._prepare_cost_calculation(indexes, store_size=store_size)
-        total_cost = 0
-
-        # TODO: Make query cost higher for queries which are running often
-        for query in workload.queries:
-            total_cost += self.costs_cache.request_cache(query, indexes,
-                                                         self.db_connector)
-        self._complete_cost_estimation()
-        return total_cost
-
-    def _prepare_cost_calculation(self, indexes, store_size=False):
-        if self.cost_estimation == 'whatif':
-            for index in indexes:
-                self.what_if.simulate_index(index, store_size=store_size)
-
-    def _complete_cost_estimation(self):
-        self.what_if.drop_all_simulated_indexes()
