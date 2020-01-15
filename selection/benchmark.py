@@ -10,10 +10,9 @@ import os.path
 class Benchmark:
     def __init__(self, workload, indexes, db_connector, config,
                  calculation_time, disable_csv, global_config,
-                 parameter_range=False, prune=None, what_if=None):
+                 parameter_range=False, what_if=None):
         self.workload = workload
         self.db_connector = db_connector
-        # TODO: create index class or rename this variable
         self.indexes = indexes
         self.timeout = config['timeout']
         self.number_of_runs = config['number_of_runs']
@@ -22,7 +21,6 @@ class Benchmark:
         self.disable_csv = disable_csv
         self.parameter_range = parameter_range
         self._set_csv_filename(disable_csv)
-        self.prune = prune
         self.what_if = what_if
 
         self.scale_factor = global_config['scale_factor']
@@ -53,7 +51,7 @@ class Benchmark:
         header = ['date', 'commit', 'algorithm name', 'parameters',
                   'scale factor', 'benchmark name', 'db system',
                   'algorithm runtime', '#indexes', 'index create time',
-                  'memory consumption', 'prune']
+                  'memory consumption']
         for query in self.workload.queries:
             header.append('q' + str(query.nr))
         header.append('indexed columns')
@@ -74,7 +72,7 @@ class Benchmark:
         csv_entry = [date, commit_hash, config['name'], config['parameters'],
                      self.scale_factor, self.benchmark_name, self.db_system,
                      self.calculation_time, len(self.indexes),
-                     self.index_create_time, indexes_size, self.prune]
+                     self.index_create_time, indexes_size]
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))
         self._append_to_csv(';'.join([str(x) for x in csv_entry]))

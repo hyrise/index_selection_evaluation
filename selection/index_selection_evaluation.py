@@ -86,15 +86,16 @@ class IndexSelection:
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
-                indexes = self._run_algorithm(cfg)
+                indexes, what_if = self._run_algorithm(cfg)
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(self.workload, indexes,
                                       self.db_connector,
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
-                                      config, parameter_range)
+                                      config, parameter_range, what_if)
                 benchmark.benchmark()
 
+    # TODO remove range and rename to parameter_list
     def _find_parameter_range(self, algorithm_config):
         parameters = algorithm_config['parameters']
         configs = []
@@ -132,10 +133,8 @@ class IndexSelection:
         logging.info(f'Running algorithm {config}')
         indexes = algorithm.calculate_best_indexes(self.workload)
         logging.info('Indexes found: {}'.format(indexes))
-        #  pruning_hits = algorithm.cost_evaluation.pruning_hits
-        #  what_if = algorithm.cost_evaluation.what_if
-        #  return indexes, pruning_hits, what_if
-        return indexes
+        what_if = algorithm.cost_evaluation.what_if
+        return indexes, what_if
 
     def create_algorithm_object(self, algorithm_name, parameters):
         algorithm = ALGORITHMS[algorithm_name](self.db_connector, parameters)

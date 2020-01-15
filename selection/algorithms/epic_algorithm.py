@@ -1,7 +1,5 @@
 from ..selection_algorithm import SelectionAlgorithm
-from ..cost_evaluation import CostEvaluation
 from ..index import Index
-# from ..index import Index
 import logging
 
 
@@ -13,14 +11,11 @@ class EPICAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
-        self.cost_evaluation = CostEvaluation(database_connector,
-                                              self.cost_estimation)
         # MB to Bytes
         self.budget = self.parameters['budget'] * 1000000
 
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes EPIC')
-        logging.info(f'Cost estimation {self.cost_estimation}')
 
         index_combination = []
         initial_cost = self._retrieve_cost(workload, index_combination)
