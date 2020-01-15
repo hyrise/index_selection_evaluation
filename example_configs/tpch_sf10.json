@@ -3,10 +3,10 @@
     "benchmark_name": "tpch",
     "scale_factor": 10,
     "algorithms": [
-        {
+      {
             "name": "microsoft",
             "parameters": {
-                "max_indexes": [10, 40, 100],
+                "max_indexes": [0, 1, 2, 4, 8, 16],
                 "max_indexes_naive": 2,
                 "max_index_columns": 3
             },
@@ -16,7 +16,7 @@
         {
             "name": "dexter",
             "parameters": {
-                "min_saving_percentage": [0, 50, 80]
+                "min_saving_percentage": [0, 10, 25, 50, 90, 100]
             },
             "number_of_runs": 5,
             "timeout": 300
@@ -24,7 +24,7 @@
         {
             "name": "epic",
             "parameters": {
-                "budget": [100, 2000, 5000]
+                "budget": [400, 800, 1600, 3200, 6400, 12800]
             },
             "number_of_runs": 5,
             "timeout": 300
@@ -33,7 +33,7 @@
             "name": "ibm",
             "parameters": {
                 "max_index_columns": 3,
-                "budget": [100, 2000, 5000],
+                "budget": [400, 800, 1600, 3200, 6400, 12800],
                 "try_variation_seconds_limit": 1
             },
             "number_of_runs": 5,
@@ -42,7 +42,7 @@
         {
             "name": "drop_heuristic",
             "parameters": {
-                "max_indexes": [10, 40, 100]
+                "max_indexes": [1, 2, 4, 8, 16]
             },
             "number_of_runs": 5,
             "timeout": 300
