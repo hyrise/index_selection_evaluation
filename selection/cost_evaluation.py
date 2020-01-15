@@ -63,8 +63,9 @@ class CostEvaluation():
             # TODO
             return 0
 
-    def _complete_cost_estimation(self):
-        self.what_if.drop_all_simulated_indexes()
+    def complete_cost_estimation(self):
+        for index in self.current_indexes:
+            self._unsimulate_or_drop_index(index)
 
     def _request_cache(self, query, indexes):
         cost = None

@@ -25,6 +25,7 @@ class SelectionAlgorithm:
         indexes = self._calculate_best_indexes(workload)
         hits = self.cost_evaluation.pruning_hits
         logging.debug(f'pruning hits {hits[0]}, calls {hits[1]}')
+        self.cost_evaluation.complete_cost_estimation()
         return indexes
 
     def _calculate_best_indexes(self, workload):
