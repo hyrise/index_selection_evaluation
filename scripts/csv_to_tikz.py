@@ -89,7 +89,8 @@ class Attribute:
                     runtimes = json.loads(line[i])['Runtimes']
                     value += statistics.median(runtimes) / 1000
                 except Exception:
-                    print(i)
+                    print('Query timeout:' + str(i))
+                    print(runtimes)
         return value
 
     def string(self):
@@ -116,6 +117,17 @@ class TikzPlot:
         self.yaxis = yaxis
 
         self.read_file()
+        self.output_string = self.update_tex()
+
+    def update_tex(self):
+        tex_string = self.output_string
+        if self.yaxis in ['runtime', 'algorithmtime']:
+            tex_string = tex_string.replace('ymode=log,', '')
+        yaxis_text = {'runtime': 'Query Workload Runtime [s]',
+                      'cost': 'Query Workload Cost',
+                      'algorithmtime': 'Algorithm Runtime [s]'}
+        return tex_string.replace('<YAXIS>',
+                                  yaxis_text[self.yaxis])
 
     def read_file(self):
         with open(self.csv_file, 'r') as file:
