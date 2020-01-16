@@ -1,1 +1,1 @@
-sed -i.bak "s/|\s*$//" *.dat && rm *.bak
+perl -i -pe 's/\|\n/\n/g' *.dat
