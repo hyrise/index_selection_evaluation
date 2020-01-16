@@ -57,6 +57,8 @@ class TableGenerator:
         logging.info('scale factor: {}'.format(self.scale_factor))
         self._run_make()
         self._run_command(self.cmd)
+        if self.benchmark_name == 'tpcds':
+            self._run_command(["bash", "../../scripts/replace_in_dat.sh"])
         logging.info('[Generate command] ' + ' '.join(self.cmd))
         self._table_files()
         logging.info('Files generated: {}'.format(self.table_files))
