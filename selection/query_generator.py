@@ -2,7 +2,6 @@ import logging
 import platform
 import os
 import subprocess
-import re
 
 from .workload import Query
 
@@ -37,7 +36,6 @@ class QueryGenerator:
                 if self.query_ids and query_id not in self.query_ids:
                     continue
                 text = text.replace('\t', '')
-                text = self._add_alias_subquery(text)
                 self.queries.append(Query(query_id, text,
                                           self.db_connector))
         logging.info('Queries generated')
@@ -45,10 +43,7 @@ class QueryGenerator:
     def _generate_tpcds(self):
         logging.info('Generating TPC-DS Queries')
         self._run_make()
-        #  command = ['cp -n ../query_templates/*.tpl ../../tpcds-templates']
-        #  self._run_command(command, shell=True)
-        # How to use different parameters
-        #  dialects: ansi, db2, netezza, oracle, sqlserver
+        # dialects: ansi, db2, netezza, oracle, sqlserver
         command = ['./dsqgen', '-DIRECTORY', '../query_templates',
                    '-INPUT', '../query_templates/templates.lst',
                    '-DIALECT', 'netezza', '-QUALIFY', 'Y',
@@ -61,40 +56,12 @@ class QueryGenerator:
             if len(id_and_text) != 2:
                 continue
             query_id = int(id_and_text[0].split('using template query')[-1])
-            if query_id not in self.query_ids:
+            if self.query_ids and query_id not in self.query_ids:
                 continue
             query_text = id_and_text[1]
-            # TODO move to postgres
-            #  query_text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
-                                #  query_text)
-            # TODO move to postgres
-            query_text = self._add_alias_subquery(query_text)
             query = Query(query_id, query_text,
                           self.db_connector)
             self.queries.append(query)
-
-    # PostgreSQL requires an alias for subqueries
-    def _add_alias_subquery(self, query_text):
-        # TODO move to postgres update_query_text
-        text = query_text.lower()
-        positions = []
-        for match in re.finditer(r'((from)|,)[  \n]*\(', text):
-            counter = 1
-            pos = match.span()[1]
-            while counter > 0:
-                char = text[pos]
-                if char == '(':
-                    counter += 1
-                elif char == ')':
-                    counter -= 1
-                pos += 1
-            next_word = query_text[pos:].lstrip().split(' ')[0].split('\n')[0]
-            if next_word[0] in [')', ','] or next_word in ['limit', 'group',
-                                                           'order', 'where']:
-                positions.append(pos)
-        for pos in sorted(positions, reverse=True):
-            query_text = query_text[:pos] + ' as alias123 ' + query_text[pos:]
-        return query_text
 
     def _run_make(self):
         if 'qgen' not in self._files() and 'dsqgen' not in self._files():

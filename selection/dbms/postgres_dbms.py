@@ -1,4 +1,5 @@
 import psycopg2
+import re
 import logging
 
 
@@ -35,7 +36,32 @@ class PostgresDatabaseConnector(DatabaseConnector):
 
     def update_query_text(self, text):
         text = text.replace(';\nlimit ', ' limit ').replace('limit -1', '')
+        text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
+                      text)
+        text = self._add_alias_subquery(text)
         return text
+
+    # PostgreSQL requires an alias for subqueries
+    def _add_alias_subquery(self, query_text):
+        text = query_text.lower()
+        positions = []
+        for match in re.finditer(r'((from)|,)[  \n]*\(', text):
+            counter = 1
+            pos = match.span()[1]
+            while counter > 0:
+                char = text[pos]
+                if char == '(':
+                    counter += 1
+                elif char == ')':
+                    counter -= 1
+                pos += 1
+            next_word = query_text[pos:].lstrip().split(' ')[0].split('\n')[0]
+            if next_word[0] in [')', ','] or next_word in ['limit', 'group',
+                                                           'order', 'where']:
+                positions.append(pos)
+        for pos in sorted(positions, reverse=True):
+            query_text = query_text[:pos] + ' as alias123 ' + query_text[pos:]
+        return query_text
 
     def create_database(self, database_name):
         self.exec_only('create database {}'.format(database_name))
