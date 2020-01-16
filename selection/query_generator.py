@@ -1,4 +1,5 @@
 import logging
+import re
 import platform
 import os
 import subprocess
@@ -59,9 +60,24 @@ class QueryGenerator:
             if self.query_ids and query_id not in self.query_ids:
                 continue
             query_text = id_and_text[1]
+            query_text = self._update_tpcds_query_text(query_text)
             query = Query(query_id, query_text,
                           self.db_connector)
             self.queries.append(query)
+
+    def _update_tpcds_query_text(self, query_text):
+        query_text = query_text.replace(') returns', ') as returns')
+        replaced_string = 'case when lochierarchy = 0'
+        if replaced_string in query_text:
+            new_string = re.search(r'grouping\(.*\)\+'
+                                   r'grouping\(.*\) '
+                                   r'as lochierarchy',
+                                   query_text).group(0)
+            new_string = new_string.replace(' as lochierarchy', '')
+            new_string = 'case when ' + new_string + ' = 0'
+            query_text = query_text.replace(replaced_string,
+                                            new_string)
+        return query_text
 
     def _run_make(self):
         if 'qgen' not in self._files() and 'dsqgen' not in self._files():
