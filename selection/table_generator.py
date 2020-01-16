@@ -89,6 +89,7 @@ class TableGenerator:
             size_string = '{:,} MB'.format(size / 1000000)
             logging.debug(f'    Import data of size {size_string}')
             database_connector.import_data(table, path)
+            os.remove(os.path.join(self.directory, filename))
         database_connector.commit()
 
     def _run_make(self):
