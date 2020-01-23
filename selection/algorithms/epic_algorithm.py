@@ -1,10 +1,8 @@
 from ..selection_algorithm import SelectionAlgorithm
-from ..index import Index
 import logging
 
 
-DEFAULT_PARAMETERS = {'cost_estimation': 'whatif', 'budget': 10,
-                      'pruning': True}
+DEFAULT_PARAMETERS = {'cost_estimation': 'whatif', 'budget': 10}
 
 
 class EPICAlgorithm(SelectionAlgorithm):
@@ -23,11 +21,12 @@ class EPICAlgorithm(SelectionAlgorithm):
         index_combination_size = 0
         # Best index combination during evaluation step
         best = {'combination': [],
-                'cost': self._retrieve_cost(workload, index_combination),
                 'benefit_to_size_ratio': 0}
 
-        # Budget is used here. or breaking when no cost improvement
+        # Breaking when no cost improvement
         while True:
+            initial_cost = self._retrieve_cost(workload, index_combination)
+
             for candidate in single_attribute_index_candidates:
                 # Candidate not used anymore if too large for budget
                 if (candidate.estimated_size and index_combination_size
@@ -37,20 +36,14 @@ class EPICAlgorithm(SelectionAlgorithm):
 
                 if candidate not in index_combination:
                     self._evaluate_combination(index_combination + [candidate],
-                                               best, workload)
+                                               best, workload, initial_cost)
 
                 for i, index in enumerate(index_combination):
                     if index.appendable_by(candidate):
-                        columns = index.columns.copy()
-                        columns.append(candidate.columns[0])
-                        new_index = Index(columns)
-                        if new_index.columns in [x.columns for x
-                                                 in index_combination]:
-                            continue
                         new_combination = index_combination.copy()
-                        new_combination[i] = new_index
+                        new_combination[i] = index + candidate
                         self._evaluate_combination(new_combination, best,
-                                                   workload)
+                                                   workload, initial_cost)
             if best['benefit_to_size_ratio'] == 0:
                 break
             index_combination = best['combination']
@@ -59,16 +52,17 @@ class EPICAlgorithm(SelectionAlgorithm):
                                          for x in index_combination)
         return index_combination
 
-    def _evaluate_combination(self, index_combination, best, workload):
+    def _evaluate_combination(self, index_combination, best, workload,
+                              initial_cost):
         cost = self._retrieve_cost(workload, index_combination)
-        benefit = best['cost'] - cost
+        benefit = initial_cost - cost
         size = sum(x.estimated_size for x in index_combination)
         ratio = benefit / size
 
         if ratio > best['benefit_to_size_ratio'] and size <= self.budget:
-            logging.debug(f'new best cost and size: {cost}\t{size}')
+            logging.debug(f'new best cost and size: {cost}\t'
+                          f'{round(size/1000000, 2)}MB')
             best['combination'] = index_combination
-            best['cost'] = cost
             best['benefit_to_size_ratio'] = ratio
 
     def _retrieve_cost(self, workload, indexes):

@@ -12,8 +12,12 @@ class Index:
         self.estimated_size = None
         self.hypopg_name = None
 
+    # Used to sort indexes
     def __lt__(self, other):
         return str(self.columns) < str(other.columns)
+
+    def __add__(self, other):
+        return Index(self.columns + other.columns)
 
     def __str__(self):
         columns_string = ','.join(map(str, self.columns))
