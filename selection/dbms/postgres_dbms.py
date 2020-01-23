@@ -67,9 +67,15 @@ class PostgresDatabaseConnector(DatabaseConnector):
         self.exec_only('create database {}'.format(database_name))
         logging.info('Database {} created'.format(database_name))
 
-    def import_data(self, table, path, delimiter='|'):
-        with open(path, 'r') as file:
-            self._cursor.copy_from(file, table, sep=delimiter, null='')
+    def import_data(self, table, path, delimiter='|', encoding=None):
+        if encoding:
+            with open(path, 'r', encoding=encoding) as file:
+                self._cursor.copy_expert(f"COPY {table} FROM STDIN WITH DELIMITER AS '{delimiter}' NULL AS 'NULL' CSV QUOTE AS '\"' ENCODING '{encoding}'", file)
+        else:
+            with open(path, 'r') as file:
+                self._cursor.copy_from(file, table, sep=delimiter, null='')
+
+
 
     def indexes_size(self):
         # Returns size in bytes

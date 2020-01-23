@@ -23,8 +23,8 @@ class Benchmark:
         self._set_csv_filename(disable_csv)
         self.what_if = what_if
 
-        self.scale_factor = global_config['scale_factor']
-        self.benchmark_name = global_config['benchmark_name']
+        self.scale_factor = global_config['benchmark']['scale_factor']
+        self.benchmark_name = global_config['benchmark']['name']
         self.db_system = global_config['database_system']
         self.seed = None
         if 'seed' in global_config:

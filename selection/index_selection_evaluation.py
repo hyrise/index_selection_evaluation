@@ -9,7 +9,7 @@ from .dbms.postgres_dbms import PostgresDatabaseConnector
 from .dbms.hana_dbms import HanaDatabaseConnector
 #  from .index import Index
 from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
-from .table_generator import TableGenerator
+from .table_generator import TableGenerator, TableLoader
 from .query_generator import QueryGenerator
 
 import logging
@@ -54,17 +54,29 @@ class IndexSelection:
     def _setup_config(self, config):
         dbms_class = DBMSYSTEMS[config['database_system']]
         generating_connector = dbms_class(None, autocommit=True)
-        table_generator = TableGenerator(config['benchmark_name'],
-                                         config['scale_factor'],
-                                         generating_connector)
+
+        table_generator = None
+        if config['benchmark']['type'] == 'custom':
+            table_generator = TableLoader(generating_connector,
+                                         config['benchmark']['name'],
+                                         config['benchmark']['create_table_file'],
+                                         config['benchmark']['data_directory'])
+            config['benchmark']['scale_factor'] = 1
+        elif config['benchmark']['type'] == 'standard':
+            table_generator = TableGenerator(generating_connector,
+                                        config['benchmark']['name'],
+                                        config['benchmark']['scale_factor'])
+        else:
+            raise NotImplementedError("Only custom/standard implemented as benchmark type.")
+
         database_name = table_generator.database_name()
         self.setup_db_connector(database_name,
                                 config['database_system'],
                                 table_generator.columns)
         if 'queries' not in config:
             config['queries'] = None
-        query_generator = QueryGenerator(config['benchmark_name'],
-                                         config['scale_factor'],
+        query_generator = QueryGenerator(config['benchmark']['name'],
+                                         config['benchmark']['scale_factor'],
                                          self.db_connector,
                                          config['queries'])
         queries = query_generator.queries

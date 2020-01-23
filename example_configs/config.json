@@ -1,7 +1,11 @@
 {
     "database_system": "postgres",
-    "benchmark_name": "tpch",
-    "scale_factor": 0.1,
+    "benchmark":
+        {
+            "type": "standard",
+            "name": "tpch",
+            "scale_factor": 0.1
+        },
     "algorithms": [
         {
             "name": "microsoft",
