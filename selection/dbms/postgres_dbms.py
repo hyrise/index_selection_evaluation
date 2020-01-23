@@ -157,14 +157,6 @@ class PostgresDatabaseConnector(DatabaseConnector):
         total_cost = query_plan['Total Cost']
         return total_cost
 
-    def indexable_columns(self, query):
-        indexable_columns = []
-        plan = self.get_plan(query)
-        for column in self.columns:
-            if column.name in str(plan):
-                indexable_columns.append(column)
-        return indexable_columns
-
     def get_plan(self, query):
         query_text = self._prepare_query(query)
         statement = 'explain (format json) {}'.format(query_text)

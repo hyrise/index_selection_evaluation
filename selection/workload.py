@@ -4,7 +4,6 @@ import logging
 
 class Workload:
     def __init__(self, queries, database_name):
-        # TODO add indexable_column function
         self.database_name = database_name
         self.queries = queries
 
@@ -50,22 +49,25 @@ class Query:
         self.columns = []
 
         self.text = self.db_connector.update_query_text(self.text)
+        self._validate_query()
         self._retrieve_columns()
 
-    def _retrieve_columns(self):
-        #  print(self.text)
+    def _validate_query(self):
         if not self.db_connector:
             logging.info('{}:'.format(self))
-            logging.info('No database connector to get indexable columns')
-            return
+            logging.error('No database connector to get indexable columns')
+            raise Exception('database connector missing')
         try:
-            self.columns = self.db_connector.indexable_columns(self)
-            self.columns = sorted(self.columns)
-            logging.debug("#columns ({}): {}".format(self,
-                                                     len(self.columns)))
+            self.db_connector.get_plan(self)
         except Exception as e:
             self.db_connector.rollback()
             logging.error('{}: {}'.format(self, e))
+
+    def _retrieve_columns(self):
+        self.columns = self.db_connector.indexable_columns(self)
+        self.columns = sorted(self.columns)
+        logging.debug("#columns ({}): {}".format(self,
+                                                 len(self.columns)))
 
     def __str__(self):
         return 'Q{}'.format(self.nr)
