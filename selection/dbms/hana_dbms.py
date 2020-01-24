@@ -142,9 +142,7 @@ class HanaDatabaseConnector(DatabaseConnector):
     def get_cost(self, query):
         # TODO how to get cost when simulating indexes
         query_plan = self.get_plan(query)
-        #  print(query_plan)
         total_cost = query_plan[0][3]
-        print(total_cost)
         return total_cost
 
     def exec_query(self, query, timeout=None):
@@ -153,7 +151,6 @@ class HanaDatabaseConnector(DatabaseConnector):
         self._cursor.execute(query_text)
         execution_time = time.time() - start_time
         self._cleanup_query(query)
-        print(execution_time)
         return execution_time, {}
 
     def drop_indexes(self):

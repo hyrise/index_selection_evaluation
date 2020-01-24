@@ -55,8 +55,8 @@ class TestIndexSelection(unittest.TestCase):
         parameters = {}
         algo = self.index_selection.create_algorithm_object('ibm',
                                                             parameters)
-        possible = algo.possible_indexes(self.small_tpch.queries[0])
-        recommended = algo.recommended_indexes(self.small_tpch.queries[0])
+        possible = algo._possible_indexes(self.small_tpch.queries[0])
+        recommended = algo._recommended_indexes(self.small_tpch.queries[0])
         self.assertTrue(len(possible) >= len(recommended))
 
     def test_run_cli_config(self):
