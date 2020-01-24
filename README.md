@@ -3,13 +3,6 @@
 Install script:
 * `./scripts/install.sh`
 
-<!-- Install Ruby (with RVM). -->
-
-<!-- Update submodules -->
-<!-- * `git submodule update --init --recursive` -->
-<!-- * `cd dexter` -->
-<!-- * `gem install rake` -->
-
 Run python scripts:
 * `python3 -m selection`
 (Using the parameters in `example_configs/config.json`)
