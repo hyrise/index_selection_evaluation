@@ -24,12 +24,13 @@ class IndexDropping:
         index_combinations = itertools.combinations(self.indexes,
                                                     number_dropped_indexes)
         lowest_cost = None
+        lowest_cost_indexes = None
         for index_combination in index_combinations:
             indexes = self._remove_from_index_set(index_combination)
             cost = self._cost(indexes)
-            if not lowest_cost or cost < lowest_cost[0]:
-                lowest_cost = (cost, indexes)
-        self.indexes = lowest_cost[1]
+            if not lowest_cost or cost < lowest_cost:
+                lowest_cost, lowest_cost_indexes = cost, indexes
+        self.indexes = lowest_cost_indexes
         if len(self.indexes) > self.parameters['max_indexes']:
             self._drop_indexes()
 
