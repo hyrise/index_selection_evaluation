@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function reados()
 {
     string=$(uname -rv)
