@@ -119,11 +119,9 @@ class PostgresDatabaseConnector(DatabaseConnector):
         indexes = self.exec_fetch(stmt, one=False)
         for index in indexes:
             index_name = index[0]
-            # TODO drop primary key indexes
-            if not index_name.endswith('_pkey'):
-                drop_stmt = 'drop index {}'.format(index_name)
-                logging.debug('Dropping index {}'.format(index_name))
-                self.exec_only(drop_stmt)
+            drop_stmt = 'drop index {}'.format(index_name)
+            logging.debug('Dropping index {}'.format(index_name))
+            self.exec_only(drop_stmt)
 
     def exec_query(self, query, timeout=None, cost_evaluation=False):
         # Committing to not lose indexes after timeout
