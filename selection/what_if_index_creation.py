@@ -40,12 +40,6 @@ class WhatIfIndexCreation():
         indexes = self.all_simulated_indexes()
         return [x[1] for x in indexes]
 
-    def index_to_index_name(self, index):
-        table_name = index.columns[0].table.name
-        column_names = [c.name for c in index.columns]
-        joined_columns = '_'.join(column_names)
-        return table_name + '_' + joined_columns
-
     def drop_all_simulated_indexes(self):
         for key in self.simulated_indexes:
             statement = 'select * from hypopg_drop_index({})'.format(key)
