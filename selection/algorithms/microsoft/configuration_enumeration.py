@@ -18,6 +18,9 @@ class ConfigurationEnumeration():
         self.lowest_cost = None
 
     def enumerate(self):
+        # Set a lower logging level to reduce debug output during
+        # candidate selection.
+        # Numeric value of DEBUG level is 10
         level = 5 if self.candidate_selection else 10
 
         log_out = 'Start Enumeration\n\tNumber of candidate indexes: '
