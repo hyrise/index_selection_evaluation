@@ -69,6 +69,9 @@ class Benchmark:
             self._write_query_plans(date, plans)
         commit_hash = self._git_hash()
         indexes_size = self.db_connector.indexes_size()
+        # Number of runs can be set to 0 to get estimated workload
+        # costs. Estimated sizes are returned instead of actual index sizes
+        # to avoid creating the indexes.
         if self.number_of_runs == 0:
             indexes_size = sum([index.estimated_size
                                 for index in self.indexes])
