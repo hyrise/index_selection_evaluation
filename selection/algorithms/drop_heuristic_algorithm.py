@@ -3,8 +3,8 @@ import logging
 import itertools
 
 
-DEFAULT_PARAMETERS = {'max_indexes': 15, 'pruning': True,
-                      'cost_estimation': 'whatif'}
+# Algorithm stops when maximum number of indexes is reached
+DEFAULT_PARAMETERS = {'max_indexes': 15, 'cost_estimation': 'whatif'}
 
 
 class IndexDropping:

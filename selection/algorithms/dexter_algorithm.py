@@ -5,6 +5,9 @@ import logging
 import os
 
 
+# Parameter is passed to dexter command line tool.
+# The mimimum percentage that an index reduces the
+# cost of a query to be selected
 DEFAULT_PARAMETERS = {'min_saving_percentage': 50}
 
 
@@ -22,16 +25,20 @@ class DexterAlgorithm(SelectionAlgorithm):
         for query in workload.queries:
             command = (f'dexter {database_name}'
                        f' --min-cost-savings-pct {min_percentage} -s " ')
-            command += query.text
+            # Prepare and cleaup query to create and drop view
+            # (e.g. TPC-H query 15)
+            # Commit because dexter tool creates another database connection
+            command += self.database_connector._prepare_query(query)
             command += '"'
-            # TODO prepare statement if create and drop view in statement
-            # and update query text
+            self.database_connector.commit()
             p = subprocess.Popen(command, cwd=os.getcwd(),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT, shell=True)
             with p.stdout:
                 output_string = p.stdout.read().decode('utf-8')
             p.wait()
+            self.database_connector._cleanup_query(query)
+            self.database_connector.commit()
 
             log_output = output_string.replace('\n', '')
             logging.debug(f'{query}: {log_output}')
