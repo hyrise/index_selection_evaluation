@@ -23,14 +23,23 @@ class SelectionAlgorithm:
     def calculate_best_indexes(self, workload):
         self.cost_evaluation.reset()
         indexes = self._calculate_best_indexes(workload)
-        hits = self.cost_evaluation.pruning_hits
-        logging.debug(f'pruning hits {hits[0]}, calls {hits[1]}')
+        self._log_cache_hits()
         self.cost_evaluation.complete_cost_estimation()
         return indexes
 
     def _calculate_best_indexes(self, workload):
         raise NotImplementedError('_calculate_best_indexes(self, '
                                   'workload) missing')
+
+    def _log_cache_hits(self):
+        hits = self.cost_evaluation.cache_hits
+        requests = self.cost_evaluation.cost_requests
+        logging.debug(f'Total cost cache hits:\t{hits}')
+        logging.debug(f'Total cost requests:\t\t{requests}')
+        if requests == 0:
+            return
+        ratio = round(hits * 100 / requests, 2)
+        logging.debug(f'Cost cache hit ratio:\t{ratio}%')
 
     def indexable_columns(self, workload):
         return workload.indexable_columns()

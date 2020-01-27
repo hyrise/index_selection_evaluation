@@ -71,7 +71,6 @@ class CostEvaluation():
             self._unsimulate_or_drop_index(index)
 
     def _request_cache(self, query, indexes):
-        cost = None
         self.cost_requests += 1
         relevant_indexes = self._relevant_indexes(query, indexes)
 
