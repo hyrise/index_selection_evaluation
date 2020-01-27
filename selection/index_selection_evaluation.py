@@ -10,7 +10,7 @@ from .dbms.hana_dbms import HanaDatabaseConnector
 #  from .index import Index
 from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
 from .table_generator import TableGenerator, TableLoader
-from .query_generator import QueryGenerator
+from .query_generator import TPCHQueryCreator, TPCDSQueryCreator, QueryLoader
 
 import logging
 import json
@@ -67,7 +67,8 @@ class IndexSelection:
                                         config['benchmark']['name'],
                                         config['benchmark']['scale_factor'])
         else:
-            raise NotImplementedError("Only custom/standard implemented as benchmark type.")
+            raise NotImplementedError("Only custom/standard implemented as\
+                benchmark type.")
 
         database_name = table_generator.database_name()
         self.setup_db_connector(database_name,
@@ -75,10 +76,29 @@ class IndexSelection:
                                 table_generator.columns)
         if 'queries' not in config:
             config['queries'] = None
-        query_generator = QueryGenerator(config['benchmark']['name'],
+
+        query_generator = None
+        if config['benchmark']['type'] == 'custom':
+            query_generator = QueryLoader(config['benchmark']['name'],
+                                         config['benchmark']['scale_factor'],
+                                         self.db_connector,
+                                         config['queries'],
+                                         config['benchmark']['query_directory'])
+        else:
+            if config['benchmark']['name'] == 'tpch':
+                query_generator = TPCHQueryCreator(config['benchmark']['name'],
                                          config['benchmark']['scale_factor'],
                                          self.db_connector,
                                          config['queries'])
+            elif config['benchmark']['name'] == 'tpcds':
+                query_generator = TPCDSQueryCreator(config['benchmark']['name'],
+                                         config['benchmark']['scale_factor'],
+                                         self.db_connector,
+                                         config['queries'])
+            else:
+                raise NotImplementedError("Only query generation for TPCH and\
+                    TPCDS standard benchmarks implemented.")
+
         queries = query_generator.queries
         self.workload = Workload(queries, database_name)
 
