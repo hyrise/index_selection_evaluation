@@ -1,4 +1,5 @@
 from ..selection_algorithm import SelectionAlgorithm
+from ..index import Index
 import logging
 
 
@@ -43,7 +44,8 @@ class EPICAlgorithm(SelectionAlgorithm):
                 for i, index in enumerate(index_combination):
                     if index.appendable_by(candidate):
                         new_combination = index_combination.copy()
-                        new_combination[i] = index + candidate
+                        new_combination[i] = Index(index.columns +
+                                                   candidate.columns)
                         self._evaluate_combination(new_combination, best,
                                                    workload, initial_cost)
             if best['benefit_to_size_ratio'] == 0:

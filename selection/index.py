@@ -11,9 +11,6 @@ class Index:
     def __lt__(self, other):
         return str(self.columns) < str(other.columns)
 
-    def __add__(self, other):
-        return Index(self.columns + other.columns)
-
     def __repr__(self):
         columns_string = ','.join(map(str, self.columns))
         return f'I({columns_string})'
