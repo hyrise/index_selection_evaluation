@@ -2,11 +2,6 @@ class Index:
     def __init__(self, columns):
         if len(columns) == 0:
             raise ValueError('Index needs at least 1 column')
-        elif len(columns) == 1:
-            self.multicolumn = False
-        else:
-            self.multicolumn = True
-        self.singlecolumn = not self.multicolumn
         self.columns = columns
         # Store hypopg estimated size when `store_size=True` (whatif)
         self.estimated_size = None
@@ -19,16 +14,15 @@ class Index:
     def __add__(self, other):
         return Index(self.columns + other.columns)
 
-    def __str__(self):
-        columns_string = ','.join(map(str, self.columns))
-        return f'I({columns_string})'
-
     def __repr__(self):
         columns_string = ','.join(map(str, self.columns))
         return f'I({columns_string})'
 
     def _column_names(self):
         return [x.name for x in self.columns]
+
+    def singlecolumn(self):
+        return True if len(self.columns) == 1 else False
 
     def index_idx(self):
         table = self.columns[0].table

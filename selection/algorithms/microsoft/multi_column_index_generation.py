@@ -7,7 +7,7 @@ class MultiColumnIndexGeneration:
         logging.debug('Init MultiColumnIndexGeneration')
         self.potential_indexes = potential_indexes
         self.singlecolumn_indexes = [c for c in potential_indexes if
-                                     c.singlecolumn]
+                                     c.singlecolumn()]
 
     def create(self, indexes):
         multicolumn_candidates = []
