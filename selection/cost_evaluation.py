@@ -13,8 +13,9 @@ class CostEvaluation():
 
     def reset(self):
         self.current_indexes = set()
-        # [cache hits, database cost requests]
-        self.pruning_hits = [0, 0]
+        self.cost_requests, self.cache_hits = 0, 0
+        # Cache structure:
+        # {(query_object, relevant_indexes): cost}
         self.cache = {}
 
     def calculate_cost(self, workload, indexes, store_size=False):
@@ -71,27 +72,22 @@ class CostEvaluation():
 
     def _request_cache(self, query, indexes):
         cost = None
+        self.cost_requests += 1
         relevant_indexes = self._relevant_indexes(query, indexes)
 
         # Check if query and corresponding relevant indexes in cache
-        if query in self.cache:
-            result = next((x for x in self.cache[query]
-                           if x[1] == relevant_indexes), False)
-            if result:
-                self.pruning_hits[0] += 1
-                cost = result[0]
+        if (query, relevant_indexes) in self.cache:
+            self.cache_hits += 1
+            return self.cache[(query, relevant_indexes)]
         # If no cache hit request cost from database system
-        if not cost:
+        else:
             cost = self._get_cost(query)
-            self.pruning_hits[1] += 1
-            if query not in self.cache:
-                self.cache[query] = []
-            self.cache[query].append((cost, relevant_indexes))
-        return cost
+            self.cache[(query, relevant_indexes)] = cost
+            return cost
 
     def _relevant_indexes(self, query, indexes):
         relevant_indexes = [x for x in indexes
                             if any(c in query.columns
                                    for c in x.columns)]
-        relevant_indexes = sorted(relevant_indexes)
+        relevant_indexes = tuple(sorted(relevant_indexes))
         return relevant_indexes
