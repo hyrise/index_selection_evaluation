@@ -11,7 +11,7 @@ import random
 # maximum index candidates removed while try_variations
 DEFAULT_PARAMETERS = {'max_index_columns': 3, 'budget': 500,
                       'try_variation_seconds_limit': 10,
-                      'maximum_remove': 4}
+                      'try_variation_maximum_remove': 4}
 
 
 class IBMAlgorithm(SelectionAlgorithm):
@@ -22,7 +22,7 @@ class IBMAlgorithm(SelectionAlgorithm):
         # convert MB to bytes
         self.disk_constraint = self.parameters['budget'] * 1000000
         self.seconds_limit = self.parameters['try_variation_seconds_limit']
-        self.maximum_remove = self.parameters['maximum_remove']
+        self.maximum_remove = self.parameters['try_variation_maximum_remove']
 
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes IBM')
