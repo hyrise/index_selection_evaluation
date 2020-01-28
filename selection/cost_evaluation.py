@@ -31,15 +31,15 @@ class CostEvaluation():
     # missing indexes and unsimulating/dropping indexes
     # that exist but are not in the combination.
     def _prepare_cost_calculation(self, indexes, store_size=False):
-        drop_indexes = self.current_indexes.copy()
+        indexes_to_drop = self.current_indexes.copy()
 
         for index in indexes:
             if index not in self.current_indexes:
                 self._simulate_or_create_index(index, store_size)
             else:
-                drop_indexes.remove(index)
+                indexes_to_drop.remove(index)
         # TODO commit()
-        for drop_index in drop_indexes:
+        for drop_index in indexes_to_drop:
             self._unsimulate_or_drop_index(drop_index)
         # TODO rollback()
 
@@ -88,5 +88,4 @@ class CostEvaluation():
         relevant_indexes = [x for x in indexes
                             if any(c in query.columns
                                    for c in x.columns)]
-        relevant_indexes = tuple(sorted(relevant_indexes))
-        return relevant_indexes
+        return frozenset(relevant_indexes)

@@ -17,7 +17,6 @@ class MultiColumnIndexGeneration:
                 if candidate_column in index.columns:
                     continue
                 if candidate_column.table == index.table():
-                    columns = index.columns.copy()
-                    columns.append(candidate_column)
-                    multicolumn_candidates.append(Index(columns))
+                    new_index = Index(index.columns + (candidate_column,))
+                    multicolumn_candidates.append(new_index)
         return multicolumn_candidates

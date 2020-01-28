@@ -2,7 +2,7 @@ class Index:
     def __init__(self, columns):
         if len(columns) == 0:
             raise ValueError('Index needs at least 1 column')
-        self.columns = columns
+        self.columns = tuple(columns)
         # Store hypopg estimated size when `store_size=True` (whatif)
         self.estimated_size = None
         self.hypopg_name = None
@@ -14,6 +14,12 @@ class Index:
     def __repr__(self):
         columns_string = ','.join(map(str, self.columns))
         return f'I({columns_string})'
+
+    def __eq__(self, other):
+        return self.columns == other.columns
+
+    def __hash__(self):
+        return hash(self.columns)
 
     def _column_names(self):
         return [x.name for x in self.columns]
