@@ -59,14 +59,14 @@ class IndexSelection:
                                          generating_connector)
         database_name = table_generator.database_name()
         self.setup_db_connector(database_name,
-                                config['database_system'],
-                                table_generator.columns)
+                                config['database_system'])
         if 'queries' not in config:
             config['queries'] = None
         query_generator = QueryGenerator(config['benchmark_name'],
                                          config['scale_factor'],
                                          self.db_connector,
-                                         config['queries'])
+                                         config['queries'],
+                                         table_generator.columns)
         queries = query_generator.queries
         self.workload = Workload(queries, database_name)
 
@@ -152,9 +152,8 @@ class IndexSelection:
             if '.json' in argument:
                 return argument
 
-    def setup_db_connector(self, database_name, database_system, columns):
+    def setup_db_connector(self, database_name, database_system):
         if self.db_connector:
             logging.info('Create new database connector (closing old)')
             self.db_connector.close()
-        self.db_connector = DBMSYSTEMS[database_system](database_name,
-                                                        columns=columns)
+        self.db_connector = DBMSYSTEMS[database_system](database_name)

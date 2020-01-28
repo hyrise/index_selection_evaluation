@@ -15,11 +15,12 @@ class TestIndexSelection(unittest.TestCase):
         self.index_selection.db_connector = db
         table_gen = TableGenerator('tpch', 0.001, db)
         self.index_selection.setup_db_connector(table_gen.database_name(),
-                                                'postgres', table_gen.columns)
+                                                'postgres')
 
         # Filter worklaod
         query_gen = QueryGenerator('tpch', 0.001,
-                                   self.index_selection.db_connector, [3, 14])
+                                   self.index_selection.db_connector, [3, 14],
+                                   table_gen.columns)
         self.small_tpch = Workload(query_gen.queries, 'tpch')
 
     def test_constructor(self):

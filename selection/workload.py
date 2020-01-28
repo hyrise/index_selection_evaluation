@@ -1,5 +1,4 @@
 from .index import Index
-import logging
 
 
 class Workload:
@@ -20,16 +19,11 @@ class Column:
         self.table = table
         self.single_column_index = Index([self])
 
-        self._id = identifier
-
     def __lt__(self, other):
         return self.name < other.name
 
-    def __str__(self):
-        return 'C{} {}'.format(self._id, self.name)
-
     def __repr__(self):
-        return str(self)
+        return f'C {self.table}.{self.name}'
 
 
 class Table:
@@ -37,37 +31,16 @@ class Table:
         self.name = name.lower()
         self.columns = []
 
-    def __str__(self):
+    def __repr__(self):
         return self.name
 
 
 class Query:
-    def __init__(self, query_id, query_text, database_connector):
+    def __init__(self, query_id, query_text):
         self.nr = query_id
         self.text = query_text.lower()
-        self.db_connector = database_connector
+        # Indexable columns
         self.columns = []
 
-        self.text = self.db_connector.update_query_text(self.text)
-        self._validate_query()
-        self._retrieve_columns()
-
-    def _validate_query(self):
-        if not self.db_connector:
-            logging.info('{}:'.format(self))
-            logging.error('No database connector to get indexable columns')
-            raise Exception('database connector missing')
-        try:
-            self.db_connector.get_plan(self)
-        except Exception as e:
-            self.db_connector.rollback()
-            logging.error('{}: {}'.format(self, e))
-
-    def _retrieve_columns(self):
-        self.columns = self.db_connector.indexable_columns(self)
-        self.columns = sorted(self.columns)
-        logging.debug("#columns ({}): {}".format(self,
-                                                 len(self.columns)))
-
-    def __str__(self):
-        return 'Q{}'.format(self.nr)
+    def __repr__(self):
+        return f'Q{self.nr}'

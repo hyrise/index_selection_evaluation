@@ -33,7 +33,7 @@ class Index:
 
     def appendable_by(self, other):
         if (self.table() == other.table() and
-                len(other.columns) == 1 and
+                other.singlecolumn() and
                 other.columns[0] not in self.columns):
             return True
         return False

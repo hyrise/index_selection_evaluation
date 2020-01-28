@@ -10,9 +10,8 @@ from ..database_connector import DatabaseConnector
 
 
 class HanaDatabaseConnector(DatabaseConnector):
-    def __init__(self, db_name, autocommit=False, columns=[]):
-        DatabaseConnector.__init__(self, db_name, autocommit=autocommit,
-                                   columns=columns)
+    def __init__(self, db_name, autocommit=False):
+        DatabaseConnector.__init__(self, db_name, autocommit=autocommit)
         self.db_system = 'hana'
         self._connection = None
 

@@ -2,10 +2,9 @@ import logging
 
 
 class DatabaseConnector:
-    def __init__(self, db_name, autocommit=False, columns=[]):
+    def __init__(self, db_name, autocommit=False):
         self.db_name = db_name
         self.autocommit = autocommit
-        self.columns = columns
 
         self.create_statements = None
         logging.debug('Database connector created: {}'.format(db_name))
@@ -54,10 +53,3 @@ class DatabaseConnector:
                     logging.error(e)
             elif 'select' in query_statement:
                 return query_statement
-
-    def indexable_columns(self, query):
-        indexable_columns = []
-        for column in self.columns:
-            if column.name in query.text:
-                indexable_columns.append(column)
-        return indexable_columns

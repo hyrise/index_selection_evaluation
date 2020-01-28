@@ -9,18 +9,43 @@ from .workload import Query
 
 class QueryGenerator:
     def __init__(self, benchmark_name, scale_factor, db_connector,
-                 query_ids):
+                 query_ids, columns):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = db_connector
         self.queries = []
         self.query_ids = query_ids
+        # All columns in current database/schema
+        self.columns = columns
 
         self.generate()
 
     def filter_queries(self, query_ids):
         self.queries = [query for query in self.queries
                         if query.nr in query_ids]
+
+    def add_new_query(self, query_id, query_text):
+        if not self.db_connector:
+            logging.info('{}:'.format(self))
+            logging.error('No database connector to validate queries')
+            raise Exception('database connector missing')
+        query_text = self.db_connector.update_query_text(query_text)
+        query = Query(query_id, query_text)
+        self._validate_query(query)
+        self._store_indexable_columns(query)
+        self.queries.append(query)
+
+    def _validate_query(self, query):
+        try:
+            self.db_connector.get_plan(query)
+        except Exception as e:
+            self.db_connector.rollback()
+            logging.error('{}: {}'.format(self, e))
+
+    def _store_indexable_columns(self, query):
+        for column in self.columns:
+            if column.name in query.text:
+                query.columns.append(column)
 
     def _generate_tpch(self):
         logging.info('Generating TPC-H Queries')
@@ -37,8 +62,7 @@ class QueryGenerator:
                 if self.query_ids and query_id not in self.query_ids:
                     continue
                 text = text.replace('\t', '')
-                self.queries.append(Query(query_id, text,
-                                          self.db_connector))
+                self.add_new_query(query_id, text)
         logging.info('Queries generated')
 
     def _generate_tpcds(self):
@@ -61,10 +85,9 @@ class QueryGenerator:
                 continue
             query_text = id_and_text[1]
             query_text = self._update_tpcds_query_text(query_text)
-            query = Query(query_id, query_text,
-                          self.db_connector)
-            self.queries.append(query)
+            self.add_new_query(query_id, query_text)
 
+    # This manipulates TPC-DS specific queries to work in more DBMSs
     def _update_tpcds_query_text(self, query_text):
         query_text = query_text.replace(') returns', ') as returns')
         replaced_string = 'case when lochierarchy = 0'

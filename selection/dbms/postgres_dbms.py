@@ -7,9 +7,8 @@ from ..database_connector import DatabaseConnector
 
 
 class PostgresDatabaseConnector(DatabaseConnector):
-    def __init__(self, db_name, autocommit=False, columns=[]):
-        DatabaseConnector.__init__(self, db_name, autocommit=autocommit,
-                                   columns=columns)
+    def __init__(self, db_name, autocommit=False):
+        DatabaseConnector.__init__(self, db_name, autocommit=autocommit)
         self.db_system = 'postgres'
         self._connection = None
 
@@ -34,6 +33,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         result = self.exec_fetch('select datname from pg_database', False)
         return [x[0] for x in result]
 
+    # Updates query syntax to work in PostgreSQL
     def update_query_text(self, text):
         text = text.replace(';\nlimit ', ' limit ').replace('limit -1', '')
         text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
