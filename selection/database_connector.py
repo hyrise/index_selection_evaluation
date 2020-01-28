@@ -5,8 +5,6 @@ class DatabaseConnector:
     def __init__(self, db_name, autocommit=False):
         self.db_name = db_name
         self.autocommit = autocommit
-
-        self.create_statements = None
         logging.debug('Database connector created: {}'.format(db_name))
 
     def exec_only(self, statement):
@@ -20,14 +18,6 @@ class DatabaseConnector:
 
     def enable_simulation(self):
         pass
-
-    def create_tables(self, create_statements=None):
-        logging.info('Creating tables')
-        if not self.create_statements and create_statements:
-            self.create_statements = create_statements
-        for create_statement in self.create_statements.split(';')[:-1]:
-            self.exec_only(create_statement)
-        self.commit()
 
     def commit(self):
         self._connection.commit()

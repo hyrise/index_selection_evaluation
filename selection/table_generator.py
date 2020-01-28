@@ -31,7 +31,6 @@ class TableGenerator:
         return name
 
     def _read_column_names(self):
-        # TODO is this needed?
         # Read table and column names from 'create table' statements
         id = 0
         filename = self.directory + '/' + self.create_table_statements_file
@@ -73,10 +72,16 @@ class TableGenerator:
                                    create_statements)
         self.db_connector.db_name = self.database_name()
         self.db_connector.create_connection()
-        self.db_connector.create_tables(create_statements=create_statements)
+        self.create_tables(create_statements)
         self._load_table_data(self.db_connector)
         self.db_connector.enable_simulation()
         self.db_connector.close()
+
+    def create_tables(self, create_statements):
+        logging.info('Creating tables')
+        for create_statement in create_statements.split(';')[:-1]:
+            self.db_connector.exec_only(create_statement)
+        self.db_connector.commit()
 
     def _load_table_data(self, database_connector):
         logging.info('Loading data into the tables')

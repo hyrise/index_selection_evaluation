@@ -67,8 +67,7 @@ class IndexSelection:
                                          self.db_connector,
                                          config['queries'],
                                          table_generator.columns)
-        queries = query_generator.queries
-        self.workload = Workload(queries, database_name)
+        self.workload = Workload(query_generator.queries, database_name)
 
     def _run_algorithms(self, config_file):
         with open(config_file) as f:
