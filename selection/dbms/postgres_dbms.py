@@ -96,7 +96,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return False
 
     def simulate_index(self, index):
-        table_name = index.columns[0].table
+        table_name = index.table()
         statement = ("select * from hypopg_create_index( "
                      f"'create index on {table_name} "
                      f"({index.joined_column_names()})')")
@@ -104,7 +104,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return result
 
     def create_index(self, index):
-        table_name = index.columns[0].table
+        table_name = index.table()
         statement = (f'create index {index.index_idx()} '
                      f'on {table_name} ({index.joined_column_names()})')
         self.exec_only(statement)

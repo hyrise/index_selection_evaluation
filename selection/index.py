@@ -21,17 +21,19 @@ class Index:
     def singlecolumn(self):
         return True if len(self.columns) == 1 else False
 
+    def table(self):
+        return self.columns[0].table
+
     def index_idx(self):
-        table = self.columns[0].table
         columns = '_'.join(self._column_names())
-        return f'{table}_{columns}_idx'
+        return f'{self.table()}_{columns}_idx'
 
     def joined_column_names(self):
         return ','.join(self._column_names())
 
     def appendable_by(self, other):
-        if self.columns[0].table == other.columns[0].table and \
-           other.columns[0] not in self.columns and \
-           len(other.columns) == 1:
+        if (self.table() == other.table() and
+                len(other.columns) == 1 and
+                other.columns[0] not in self.columns):
             return True
         return False
