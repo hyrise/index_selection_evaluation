@@ -1,0 +1,67 @@
+{
+    "database_system": "postgres",
+    "benchmark_name": "tpch",
+    "scale_factor": 0.1,
+    "algorithms": [
+        {
+            "name": "microsoft",
+            "parameters": {
+                "max_indexes": 10,
+                "max_indexes_naive": 2,
+                "max_index_columns": 3
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
+            "name": "dexter",
+            "parameters": {
+                "min_saving_percentage": 50
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
+            "name": "epic",
+            "parameters": {
+                "budget": 1
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
+            "name": "ibm",
+            "parameters": {
+                "max_index_columns": 3,
+                "budget": 1,
+                "try_variation_seconds_limit": 1
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        },
+        {
+            "name": "drop_heuristic",
+            "parameters": {
+                "max_indexes": 10
+            },
+            "number_of_runs": 5,
+            "timeout": 30
+        }
+    ],
+    "queries": [
+        2,
+        3,
+        4,
+        5,
+        8,
+        10,
+        11,
+        12,
+        14,
+        17,
+        19,
+        20,
+        21,
+        22
+    ]
+}
