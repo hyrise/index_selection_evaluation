@@ -39,10 +39,11 @@ class CostEvaluation():
                 self._simulate_or_create_index(index, store_size)
             else:
                 indexes_to_drop.remove(index)
-        # TODO commit()
+        # TODO Possible Optimization by `commit()`
+        # See: https://github.com/hyrise/index_selection_evaluation/pull/1#discussion_r371538510
         for drop_index in indexes_to_drop:
             self._unsimulate_or_drop_index(drop_index)
-        # TODO rollback()
+        # TODO `rollback()`. See above
 
         self.current_indexes = set(indexes)
 

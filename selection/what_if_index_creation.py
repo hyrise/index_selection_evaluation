@@ -39,8 +39,11 @@ class WhatIfIndexCreation():
         indexes = self.db_connector.exec_fetch(statement, one=False)
         return indexes
 
+    # This is never used, we keep it for debugging reasons.
     def index_names(self):
         indexes = self.all_simulated_indexes()
+
+        # Apparently, x[1] is the index' name
         return [x[1] for x in indexes]
 
     def drop_all_simulated_indexes(self):
