@@ -24,6 +24,7 @@ class CostEvaluation():
 
         # TODO: Make query cost higher for queries which are running often
         for query in workload.queries:
+            self.cost_requests += 1
             total_cost += self._request_cache(query, indexes)
         return total_cost
 
@@ -71,7 +72,6 @@ class CostEvaluation():
             self._unsimulate_or_drop_index(index)
 
     def _request_cache(self, query, indexes):
-        self.cost_requests += 1
         relevant_indexes = self._relevant_indexes(query, indexes)
 
         # Check if query and corresponding relevant indexes in cache
