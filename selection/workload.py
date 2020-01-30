@@ -17,13 +17,18 @@ class Column:
     def __init__(self, identifier, name, table):
         self.name = name.lower()
         self.table = table
-        self.single_column_index = Index([self])
 
     def __lt__(self, other):
         return self.name < other.name
 
     def __repr__(self):
         return f'C {self.table}.{self.name}'
+
+    def __eq__(self, other):
+        return self.table == other.table and self.name == other.name
+
+    def __hash__(self):
+        return hash((self.name, self.table.name))
 
 
 class Table:
@@ -33,6 +38,12 @@ class Table:
 
     def __repr__(self):
         return self.name
+
+    def __eq__(self, other):
+        return self.name == other.name and tuple(self.columns) == tuple(other.columns)
+
+    def __hash__(self):
+        return hash((self.name, tuple(self.columns)))
 
 
 class Query:

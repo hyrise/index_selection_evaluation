@@ -2,20 +2,24 @@ from .what_if_index_creation import WhatIfIndexCreation
 import logging
 
 
-class CostEvaluation():
+class CostEvaluation:
     def __init__(self, db_connector, cost_estimation='whatif'):
         logging.debug('Init cost evaluation')
         self.db_connector = db_connector
         self.cost_estimation = cost_estimation
         logging.info('Cost estimation with ' + self.cost_estimation)
         self.what_if = WhatIfIndexCreation(db_connector)
-        self.reset()
+        self.current_indexes = set()
+        self.cost_requests = 0
+        self.cache_hits = 0
+        # Cache structure:
+        # {(query_object, relevant_indexes): cost}
+        self.cache = {}
 
     def reset(self):
         self.current_indexes = set()
-        self.cost_requests, self.cache_hits = 0, 0
-        # Cache structure:
-        # {(query_object, relevant_indexes): cost}
+        self.cost_requests = 0
+        self.cache_hits = 0
         self.cache = {}
 
     def calculate_cost(self, workload, indexes, store_size=False):
@@ -31,16 +35,11 @@ class CostEvaluation():
     # missing indexes and unsimulating/dropping indexes
     # that exist but are not in the combination.
     def _prepare_cost_calculation(self, indexes, store_size=False):
-        indexes_to_drop = self.current_indexes.copy()
-
-        for index in indexes:
-            if index not in self.current_indexes:
-                self._simulate_or_create_index(index, store_size)
-            else:
-                indexes_to_drop.remove(index)
+        for index in set(indexes) - self.current_indexes:
+            self._simulate_or_create_index(index, store_size)
         # TODO commit()
-        for drop_index in indexes_to_drop:
-            self._unsimulate_or_drop_index(drop_index)
+        for index in self.current_indexes - set(indexes):
+            self._unsimulate_or_drop_index(index)
         # TODO rollback()
 
         self.current_indexes = set(indexes)
