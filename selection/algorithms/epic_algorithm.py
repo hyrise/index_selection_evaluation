@@ -5,7 +5,10 @@ import logging
 
 # cost_estimation: 'whatif' or 'acutal_runtimes'
 # Index combination budget in MB
-DEFAULT_PARAMETERS = {'cost_estimation': 'whatif', 'budget': 10}
+DEFAULT_PARAMETERS = {
+    'cost_estimation': 'whatif',
+    'budget': 10
+}
 
 
 class EPICAlgorithm(SelectionAlgorithm):

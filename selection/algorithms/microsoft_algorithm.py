@@ -7,8 +7,12 @@ import logging
 
 # multi column index methods: 'no', 'lead', 'all'
 # cost_estimation: 'whatif' or 'acutal_runtimes'
-DEFAULT_PARAMETERS = {'max_indexes': 15, 'max_indexes_naive': 3,
-                      'max_index_columns': 2, 'cost_estimation': 'whatif'}
+DEFAULT_PARAMETERS = {
+    'max_indexes': 15,
+    'max_indexes_naive': 3,
+    'max_index_columns': 2,
+    'cost_estimation': 'whatif'
+}
 
 
 class MicrosoftAlgorithm(SelectionAlgorithm):

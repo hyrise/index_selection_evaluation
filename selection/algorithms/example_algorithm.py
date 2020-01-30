@@ -3,7 +3,9 @@ from ..index import Index
 import logging
 
 
-DEFAULT_PARAMETERS = {'example_parameter': 3}
+DEFAULT_PARAMETERS = {
+    'example_parameter': 3
+}
 
 
 class IBMAlgorithm(SelectionAlgorithm):

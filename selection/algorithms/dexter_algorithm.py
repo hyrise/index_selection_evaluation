@@ -8,7 +8,9 @@ import os
 # Parameter is passed to dexter command line tool.
 # The mimimum percentage that an index reduces the
 # cost of a query to be selected
-DEFAULT_PARAMETERS = {'min_saving_percentage': 50}
+DEFAULT_PARAMETERS = {
+    'min_saving_percentage': 5
+}
 
 
 class DexterAlgorithm(SelectionAlgorithm):
