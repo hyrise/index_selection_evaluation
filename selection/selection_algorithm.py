@@ -1,4 +1,5 @@
 from .cost_evaluation import CostEvaluation
+from .index import Index
 import logging
 
 
@@ -45,7 +46,7 @@ class SelectionAlgorithm:
         return workload.indexable_columns()
 
     def potential_indexes(self, workload):
-        return [c.single_column_index for c
+        return [Index([c]) for c
                 in self.indexable_columns(workload)]
 
 
