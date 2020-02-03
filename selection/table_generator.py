@@ -77,7 +77,6 @@ class TableGenerator:
         self.create_tables(create_statements)
         self._load_table_data(self.db_connector)
         self.db_connector.enable_simulation()
-        # self.db_connector.close()
 
     def create_tables(self, create_statements):
         logging.info('Creating tables')
@@ -140,6 +139,8 @@ class TableGenerator:
             self.directory = './tpcds-kit/tools'
             self.create_table_statements_file = 'tpcds.sql'
             self.cmd = ['./dsdgen', '-SCALE', str(self.scale_factor), '-FORCE']
+
+            # 0.001 is allowed for testing
             if int(self.scale_factor) - self.scale_factor != 0 and self.scale_factor != 0.001:
                 raise Exception('Wrong TPCDS scale factor')
         else:
