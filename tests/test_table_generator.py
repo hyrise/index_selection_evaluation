@@ -55,7 +55,7 @@ class TestTableGenerator(unittest.TestCase):
                 break
         self.assertTrue(item_table is not None)
 
-        # Check that l_receiptdate column exists in TableGenerator and table
+        # Check that i_item_sk column exists in TableGenerator and table
         i_item_sk = Column('i_item_sk', item_table)
         self.assertTrue(i_item_sk in table_generator.columns)
         self.assertTrue(i_item_sk in table.columns)
