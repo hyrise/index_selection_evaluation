@@ -31,12 +31,12 @@ class TestTableGenerator(unittest.TestCase):
             if table.name == 'lineitem':
                 lineitem_table = table
                 break
-        self.assertTrue(lineitem_table is not None)
+        self.assertIsNotNone(lineitem_table)
 
         # Check that l_receiptdate column exists in TableGenerator and table
         l_receiptdate = Column('l_receiptdate', lineitem_table)
-        self.assertTrue(l_receiptdate in table_generator.columns)
-        self.assertTrue(l_receiptdate in table.columns)
+        self.assertIn(l_receiptdate, table_generator.columns)
+        self.assertIn(l_receiptdate, table.columns)
 
         database_connect = PostgresDatabaseConnector(table_generator.database_name(), autocommit=True)
 
@@ -53,12 +53,12 @@ class TestTableGenerator(unittest.TestCase):
             if table.name == 'item':
                 item_table = table
                 break
-        self.assertTrue(item_table is not None)
+        self.assertIsNotNone(item_table)
 
         # Check that i_item_sk column exists in TableGenerator and table
         i_item_sk = Column('i_item_sk', item_table)
-        self.assertTrue(i_item_sk in table_generator.columns)
-        self.assertTrue(i_item_sk in table.columns)
+        self.assertIn(i_item_sk, table_generator.columns)
+        self.assertIn(i_item_sk, table.columns)
 
         database_connect = PostgresDatabaseConnector(table_generator.database_name(), autocommit=True)
 
