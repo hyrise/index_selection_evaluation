@@ -8,10 +8,11 @@ import re
 
 
 class TableGenerator:
-    def __init__(self, benchmark_name, scale_factor, database_connector):
+    def __init__(self, benchmark_name, scale_factor, database_connector, explicit_database_name=None):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = database_connector
+        self.explicit_database_name = explicit_database_name
 
         self.database_names = self.db_connector.database_names()
         self.tables = []
@@ -26,6 +27,9 @@ class TableGenerator:
         self._read_column_names()
 
     def database_name(self):
+        if self.explicit_database_name:
+            return self.explicit_database_name
+
         name = 'indexselection_' + self.benchmark_name + '___'
         name += str(self.scale_factor).replace('.', '_')
         return name
