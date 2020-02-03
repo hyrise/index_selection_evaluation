@@ -14,7 +14,9 @@ class Workload:
 
 
 class Column:
-    def __init__(self, identifier, name, table):
+    def __init__(self, name, table):
+        assert isinstance(table, Table)
+
         self.name = name.lower()
         self.table = table
 

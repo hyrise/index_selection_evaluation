@@ -43,3 +43,6 @@ class DatabaseConnector:
                     logging.error(e)
             elif 'select' in query_statement:
                 return query_statement
+
+    def table_exists(self, table_name):
+        raise NotImplementedError

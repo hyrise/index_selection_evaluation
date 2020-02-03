@@ -36,7 +36,6 @@ class TableGenerator:
 
     def _read_column_names(self):
         # Read table and column names from 'create table' statements
-        id = 0
         filename = self.directory + '/' + self.create_table_statements_file
         with open(filename, 'r') as file:
             data = file.read().lower()
@@ -50,10 +49,9 @@ class TableGenerator:
                 name = column.lstrip().split(' ', 1)[0]
                 if name == 'primary':
                     continue
-                column_object = Column(id, name, table)
+                column_object = Column(name, table)
                 table.columns.append(column_object)
                 self.columns.append(column_object)
-                id += 1
 
     def _generate(self):
         logging.info('Generating {} data'.format(self.benchmark_name))
@@ -142,7 +140,7 @@ class TableGenerator:
             self.directory = './tpcds-kit/tools'
             self.create_table_statements_file = 'tpcds.sql'
             self.cmd = ['./dsdgen', '-SCALE', str(self.scale_factor), '-FORCE']
-            if int(self.scale_factor) - self.scale_factor != 0:
+            if int(self.scale_factor) - self.scale_factor != 0 and self.scale_factor != 0.001:
                 raise Exception('Wrong TPCDS scale factor')
         else:
             raise NotImplementedError('only tpch/ds implemented.')
