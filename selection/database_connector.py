@@ -46,3 +46,9 @@ class DatabaseConnector:
 
     def table_exists(self, table_name):
         raise NotImplementedError
+
+    def database_exists(self, database_name):
+        raise NotImplementedError
+
+    def drop_database(self, database_name):
+        raise NotImplementedError

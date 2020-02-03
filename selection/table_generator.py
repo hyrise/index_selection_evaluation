@@ -77,7 +77,7 @@ class TableGenerator:
         self.create_tables(create_statements)
         self._load_table_data(self.db_connector)
         self.db_connector.enable_simulation()
-        self.db_connector.close()
+        # self.db_connector.close()
 
     def create_tables(self, create_statements):
         logging.info('Creating tables')

@@ -175,3 +175,15 @@ class PostgresDatabaseConnector(DatabaseConnector):
             WHERE tablename = '{table_name}');"""
         result = self.exec_fetch(statement)
         return result[0]
+
+    def database_exists(self, database_name):
+        statement = f"""SELECT EXISTS (
+            SELECT 1
+            FROM pg_database
+            WHERE datname = '{database_name}');"""
+        result = self.exec_fetch(statement)
+        return result[0]
+
+    def drop_database(self, database_name):
+        statement = f"""DROP DATABASE {database_name};"""
+        self.exec_only(statement)

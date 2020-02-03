@@ -9,18 +9,30 @@ class TestTableGenerator(unittest.TestCase):
         self.generating_connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
 
+    def tearDown(self):
+        self.generating_connector = PostgresDatabaseConnector(None,
+                                                      autocommit=True)
+
+        dbs = ['indexselection_tpch___0_001', 'indexselection_tpcds___0_001', 'test_db']
+        for db in dbs:
+            if self.generating_connector.database_exists(db):
+                self.generating_connector.drop_database(db)
+
     def test_database_name(self):
         table_generator = TableGenerator('tpch', 0.001, self.generating_connector)
         self.assertEqual(table_generator.database_name(),
             'indexselection_tpch___0_001')
+        self.assertTrue(self.generating_connector.database_exists('indexselection_tpch___0_001'))
 
         table_generator = TableGenerator('tpcds', 0.001, self.generating_connector)
         self.assertEqual(table_generator.database_name(),
             'indexselection_tpcds___0_001')
+        self.assertTrue(self.generating_connector.database_exists('indexselection_tpcds___0_001'))
 
         table_generator = TableGenerator('tpch', 0.001, self.generating_connector, explicit_database_name="test_db")
         self.assertEqual(table_generator.database_name(),
             'test_db')
+        self.assertTrue(self.generating_connector.database_exists('test_db'))
 
     def test_generate_tpch(self):
         table_generator = TableGenerator('tpch', 0.001, self.generating_connector)
@@ -33,7 +45,7 @@ class TestTableGenerator(unittest.TestCase):
                 break
         self.assertIsNotNone(lineitem_table)
 
-        # Check that l_receiptdate column exists in TableGenerator and table
+        # Check that l_receiptdate column exists in TableGenerator and Table object
         l_receiptdate = Column('l_receiptdate', lineitem_table)
         self.assertIn(l_receiptdate, table_generator.columns)
         self.assertIn(l_receiptdate, table.columns)
@@ -55,7 +67,7 @@ class TestTableGenerator(unittest.TestCase):
                 break
         self.assertIsNotNone(item_table)
 
-        # Check that i_item_sk column exists in TableGenerator and table
+        # Check that i_item_sk column exists in TableGenerator and Table object
         i_item_sk = Column('i_item_sk', item_table)
         self.assertIn(i_item_sk, table_generator.columns)
         self.assertIn(i_item_sk, table.columns)
