@@ -14,7 +14,7 @@ class TestIndexSelection(unittest.TestCase):
         self.db_name = 'tpch_test_db_index_selection'
         self.index_selection = IndexSelection()
         db = PostgresDatabaseConnector(None, autocommit=True)
-        table_gen = TableGenerator('tpch', 0.001, db, explicit_database_name='tpch_test_db')
+        table_gen = TableGenerator('tpch', 0.001, db, explicit_database_name=self.db_name)
         db.close()
 
         self.index_selection.setup_db_connector(self.db_name,
