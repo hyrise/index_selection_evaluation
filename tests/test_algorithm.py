@@ -7,13 +7,24 @@ import unittest
 
 
 class TestAlgorithm(unittest.TestCase):
-    def setUp(self):
-        self.db_connector = PostgresDatabaseConnector(None,
+    @classmethod
+    def setUpClass(cls):
+        cls.db_name = 'tpch_test_db_algorithm'
+
+        cls.db_connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
-        tab_gen = TableGenerator('tpch', 0.001, self.db_connector)
-        self.db_name = tab_gen.database_name()
-        self.selection_algorithm = SelectionAlgorithm(self.db_connector,
+        tab_gen = TableGenerator('tpch', 0.001, cls.db_connector, explicit_database_name=cls.db_name)
+        cls.selection_algorithm = SelectionAlgorithm(cls.db_connector,
                                                       {'test': 24})
+
+        cls.db_connector.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        connector = PostgresDatabaseConnector(None,
+                                                      autocommit=True)
+        if connector.database_exists(cls.db_name):
+            connector.drop_database(cls.db_name)
 
     def test_parameters(self):
         params = self.selection_algorithm.parameters
@@ -28,7 +39,7 @@ class TestAlgorithm(unittest.TestCase):
         db_conn = self.selection_algorithm.cost_evaluation.db_connector
         self.assertEqual(db_conn, self.db_connector)
 
-    def test_cost_eval_cost(self):
+    def test_cost_eval_cost_empty_workload(self):
         workload = Workload([], self.db_name)
         cost_eval = self.selection_algorithm.cost_evaluation
         cost = cost_eval.calculate_cost(workload, [])

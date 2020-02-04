@@ -8,10 +8,11 @@ import re
 
 
 class TableGenerator:
-    def __init__(self, benchmark_name, scale_factor, database_connector):
+    def __init__(self, benchmark_name, scale_factor, database_connector, explicit_database_name=None):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = database_connector
+        self.explicit_database_name = explicit_database_name
 
         self.database_names = self.db_connector.database_names()
         self.tables = []
@@ -26,13 +27,15 @@ class TableGenerator:
         self._read_column_names()
 
     def database_name(self):
+        if self.explicit_database_name:
+            return self.explicit_database_name
+
         name = 'indexselection_' + self.benchmark_name + '___'
         name += str(self.scale_factor).replace('.', '_')
         return name
 
     def _read_column_names(self):
         # Read table and column names from 'create table' statements
-        id = 0
         filename = self.directory + '/' + self.create_table_statements_file
         with open(filename, 'r') as file:
             data = file.read().lower()
@@ -46,10 +49,9 @@ class TableGenerator:
                 name = column.lstrip().split(' ', 1)[0]
                 if name == 'primary':
                     continue
-                column_object = Column(id, name, table)
+                column_object = Column(name, table)
                 table.columns.append(column_object)
                 self.columns.append(column_object)
-                id += 1
 
     def _generate(self):
         logging.info('Generating {} data'.format(self.benchmark_name))
@@ -75,7 +77,6 @@ class TableGenerator:
         self.create_tables(create_statements)
         self._load_table_data(self.db_connector)
         self.db_connector.enable_simulation()
-        self.db_connector.close()
 
     def create_tables(self, create_statements):
         logging.info('Creating tables')
@@ -138,7 +139,9 @@ class TableGenerator:
             self.directory = './tpcds-kit/tools'
             self.create_table_statements_file = 'tpcds.sql'
             self.cmd = ['./dsdgen', '-SCALE', str(self.scale_factor), '-FORCE']
-            if int(self.scale_factor) - self.scale_factor != 0:
+
+            # 0.001 is allowed for testing
+            if int(self.scale_factor) - self.scale_factor != 0 and self.scale_factor != 0.001:
                 raise Exception('Wrong TPCDS scale factor')
         else:
             raise NotImplementedError('only tpch/ds implemented.')

@@ -25,7 +25,6 @@ class DatabaseConnector:
     def close(self):
         self._connection.close()
         logging.debug('Database connector closed: {}'.format(self.db_name))
-        del self
 
     def rollback(self):
         self._connection.rollback()
@@ -43,3 +42,12 @@ class DatabaseConnector:
                     logging.error(e)
             elif 'select' in query_statement:
                 return query_statement
+
+    def table_exists(self, table_name):
+        raise NotImplementedError
+
+    def database_exists(self, database_name):
+        raise NotImplementedError
+
+    def drop_database(self, database_name):
+        raise NotImplementedError

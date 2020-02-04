@@ -9,9 +9,12 @@ import random
 # Maxiumum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations
-DEFAULT_PARAMETERS = {'max_index_columns': 3, 'budget': 500,
-                      'try_variation_seconds_limit': 10,
-                      'try_variation_maximum_remove': 4}
+DEFAULT_PARAMETERS = {
+    'max_index_columns': 3,
+    'budget': 500,
+    'try_variation_seconds_limit': 10,
+    'try_variation_maximum_remove': 4
+}
 
 
 class IBMAlgorithm(SelectionAlgorithm):
