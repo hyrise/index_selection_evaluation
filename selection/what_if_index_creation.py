@@ -39,6 +39,7 @@ class WhatIfIndexCreation():
         indexes = self.db_connector.exec_fetch(statement, one=False)
         return indexes
 
+    # TODO: refactoring
     # This is never used, we keep it for debugging reasons.
     def index_names(self):
         indexes = self.all_simulated_indexes()

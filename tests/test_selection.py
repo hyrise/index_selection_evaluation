@@ -10,31 +10,31 @@ import sys
 
 class TestIndexSelection(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
-        self.db_name = 'tpch_test_db_index_selection'
-        self.index_selection = IndexSelection()
+    def setUpClass(cls):
+        cls.db_name = 'tpch_test_db_index_selection'
+        cls.index_selection = IndexSelection()
         db = PostgresDatabaseConnector(None, autocommit=True)
-        table_gen = TableGenerator('tpch', 0.001, db, explicit_database_name=self.db_name)
+        table_gen = TableGenerator('tpch', 0.001, db, explicit_database_name=cls.db_name)
         db.close()
 
-        self.index_selection.setup_db_connector(self.db_name,
+        cls.index_selection.setup_db_connector(cls.db_name,
                                                 'postgres')
 
         # Filter worklaod
         query_gen = QueryGenerator('tpch', 0.001,
-                                   self.index_selection.db_connector, [3, 14],
+                                   cls.index_selection.db_connector, [3, 14],
                                    table_gen.columns)
-        self.small_tpch = Workload(query_gen.queries, 'tpch')
+        cls.small_tpch = Workload(query_gen.queries, 'tpch')
 
     @classmethod
-    def tearDownClass(self):
-        self.index_selection.db_connector.close()
+    def tearDownClass(cls):
+        cls.index_selection.db_connector.close()
 
         connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
         
-        if connector.database_exists(self.db_name):
-            connector.drop_database(self.db_name)
+        if connector.database_exists(cls.db_name):
+            connector.drop_database(cls.db_name)
 
     def test_constructor(self):
         ind_sel = IndexSelection()

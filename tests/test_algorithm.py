@@ -8,23 +8,23 @@ import unittest
 
 class TestAlgorithm(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
-        self.db_name = 'tpch_test_db_algorithm'
+    def setUpClass(cls):
+        cls.db_name = 'tpch_test_db_algorithm'
 
-        self.db_connector = PostgresDatabaseConnector(None,
+        cls.db_connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
-        tab_gen = TableGenerator('tpch', 0.001, self.db_connector, explicit_database_name=self.db_name)
-        self.selection_algorithm = SelectionAlgorithm(self.db_connector,
+        tab_gen = TableGenerator('tpch', 0.001, cls.db_connector, explicit_database_name=cls.db_name)
+        cls.selection_algorithm = SelectionAlgorithm(cls.db_connector,
                                                       {'test': 24})
 
-        self.db_connector.close()
+        cls.db_connector.close()
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
-        if connector.database_exists(self.db_name):
-            connector.drop_database(self.db_name)
+        if connector.database_exists(cls.db_name):
+            connector.drop_database(cls.db_name)
 
     def test_parameters(self):
         params = self.selection_algorithm.parameters

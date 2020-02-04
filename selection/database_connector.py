@@ -25,7 +25,6 @@ class DatabaseConnector:
     def close(self):
         self._connection.close()
         logging.debug('Database connector closed: {}'.format(self.db_name))
-        del self
 
     def rollback(self):
         self._connection.rollback()
