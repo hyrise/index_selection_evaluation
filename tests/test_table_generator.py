@@ -10,13 +10,13 @@ class TestTableGenerator(unittest.TestCase):
                                                       autocommit=True)
 
     def tearDown(self):
-        self.generating_connector = PostgresDatabaseConnector(None,
+        connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
 
         dbs = ['indexselection_tpch___0_001', 'indexselection_tpcds___0_001', 'test_db']
         for db in dbs:
-            if self.generating_connector.database_exists(db):
-                self.generating_connector.drop_database(db)
+            if connector.database_exists(db):
+                connector.drop_database(db)
 
     def test_database_name(self):
         table_generator = TableGenerator('tpch', 0.001, self.generating_connector)
@@ -33,6 +33,8 @@ class TestTableGenerator(unittest.TestCase):
         self.assertEqual(table_generator.database_name(),
             'test_db')
         self.assertTrue(self.generating_connector.database_exists('test_db'))
+
+        self.generating_connector.close()
 
     def test_generate_tpch(self):
         table_generator = TableGenerator('tpch', 0.001, self.generating_connector)
@@ -55,6 +57,9 @@ class TestTableGenerator(unittest.TestCase):
         tpch_tables = ['customer', 'lineitem', 'nation', 'orders', 'part', 'partsupp', 'region', 'supplier']
         for tpch_table in tpch_tables:
             self.assertTrue(database_connect.table_exists(tpch_table))
+
+        self.generating_connector.close()
+        database_connect.close()
 
     def test_generate_tpds(self):
         table_generator = TableGenerator('tpcds', 0.001, self.generating_connector)
@@ -80,6 +85,9 @@ class TestTableGenerator(unittest.TestCase):
             "time_dim", "warehouse", "web_page", "web_returns", "web_sales", "web_site"]
         for tpcds_table in tpcds_tables:
             self.assertTrue(database_connect.table_exists(tpcds_table))
+
+        self.generating_connector.close()
+        database_connect.close()
 
     def test_not_implemented(self):
         with self.assertRaises(NotImplementedError):
