@@ -10,10 +10,18 @@ class TestAlgorithm(unittest.TestCase):
     def setUp(self):
         self.db_connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
-        tab_gen = TableGenerator('tpch', 0.001, self.db_connector)
+        tab_gen = TableGenerator('tpch', 0.001, self.db_connector, explicit_database_name="test_db")
         self.db_name = tab_gen.database_name()
         self.selection_algorithm = SelectionAlgorithm(self.db_connector,
                                                       {'test': 24})
+
+        self.db_connector.close()
+
+    def tearDown(self):
+        connector = PostgresDatabaseConnector(None,
+                                                      autocommit=True)
+        if connector.database_exists("test_db"):
+            connector.drop_database("test_db")
 
     def test_parameters(self):
         params = self.selection_algorithm.parameters
@@ -28,7 +36,7 @@ class TestAlgorithm(unittest.TestCase):
         db_conn = self.selection_algorithm.cost_evaluation.db_connector
         self.assertEqual(db_conn, self.db_connector)
 
-    def test_cost_eval_cost(self):
+    def test_cost_eval_cost_empty_workload(self):
         workload = Workload([], self.db_name)
         cost_eval = self.selection_algorithm.cost_evaluation
         cost = cost_eval.calculate_cost(workload, [])
