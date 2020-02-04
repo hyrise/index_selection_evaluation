@@ -4,10 +4,15 @@ import unittest
 
 
 class TestDatabase(unittest.TestCase):
-    def setUp(self):
-        self.db_name = 'test_db_name'
+    @classmethod
+    def setUpClass(self):
+        self.db_name = 'tpch_test_db_database'
+        db = PostgresDatabaseConnector(None, autocommit=True)
+        table_generator = TableGenerator('tpch', 0.001, db, explicit_database_name=self.db_name)
+        db.close()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(self):
         connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
         if connector.database_exists(self.db_name):
@@ -15,20 +20,12 @@ class TestDatabase(unittest.TestCase):
 
 
     def test_postgres_index_simulation(self):
-        db = PostgresDatabaseConnector(None, autocommit=True)
-        table_generator = TableGenerator('tpch', 0.001, db, explicit_database_name=self.db_name)
-        db.close()
-
-        db = PostgresDatabaseConnector(table_generator.database_name(), 'postgres')
+        db = PostgresDatabaseConnector(self.db_name, 'postgres')
         self.assertTrue(db.supports_index_simulation())
         db.close()
 
     def test_simple_statement(self):
-        db = PostgresDatabaseConnector(None, autocommit=True)
-        table_generator = TableGenerator('tpch', 0.001, db, explicit_database_name=self.db_name)
-        db.close()
-
-        db = PostgresDatabaseConnector(table_generator.database_name())
+        db = PostgresDatabaseConnector(self.db_name, 'postgres')
 
         statement = 'select count(*) from nation'
         result = db.exec_fetch(statement)

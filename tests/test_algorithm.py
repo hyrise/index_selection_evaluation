@@ -7,7 +7,8 @@ import unittest
 
 
 class TestAlgorithm(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.db_connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
         tab_gen = TableGenerator('tpch', 0.001, self.db_connector, explicit_database_name="test_db")
@@ -17,7 +18,8 @@ class TestAlgorithm(unittest.TestCase):
 
         self.db_connector.close()
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(self):
         connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
         if connector.database_exists("test_db"):
