@@ -1,31 +1,53 @@
 from selection.query_generator import QueryGenerator
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
+from selection.table_generator import TableGenerator
 import unittest
 
 
 class TestQueryGenerator(unittest.TestCase):
     def setUp(self):
-        db_name = 'indexselection_tpch___0_001'
-        self.db_connector = PostgresDatabaseConnector(db_name,
+        self.db_name = None
+        self.generating_connector = PostgresDatabaseConnector(None,
                                                       autocommit=True)
 
+    def tearDown(self):
+        self.generating_connector.close()
+        connector = PostgresDatabaseConnector(None,
+                                                      autocommit=True)
+        
+        if self.db_name is not None and connector.database_exists(self.db_name):
+            connector.drop_database(self.db_name)
+
+
     def test_generate_tpch(self):
+        self.db_name = 'tpch_test_db'
+
+        table_generator = TableGenerator('tpch', 0.001, self.generating_connector, explicit_database_name=self.db_name)
+
+        db_connector = PostgresDatabaseConnector(self.db_name,
+                                                      autocommit=True)
         query_generator = QueryGenerator('tpch', 0.001,
-                                         self.db_connector, None, [])
+                                         db_connector, None, [])
         queries = query_generator.queries
         self.assertEqual(len(queries), 22)
+        db_connector.close()
 
     def test_generate_tpcds(self):
-        db_name = 'indexselection_tpcds___1'
-        db_conn = PostgresDatabaseConnector(db_name, autocommit=True)
+        self.db_name = 'tpcds_test_db'
+
+        table_generator = TableGenerator('tpcds', 0.001, self.generating_connector, explicit_database_name=self.db_name)
+
+        db_connector = PostgresDatabaseConnector(self.db_name,
+                                                      autocommit=True)
         query_generator = QueryGenerator('tpcds', 1,
-                                         db_conn, None, [])
+                                         db_connector, None, [])
         queries = query_generator.queries
         self.assertEqual(len(queries), 99)
+        db_connector.close()
 
     def test_wrong_benchmark(self):
         with self.assertRaises(NotImplementedError):
-            QueryGenerator('tpc-hallo', 1, self.db_connector, None, [])
+            QueryGenerator('tpc-hallo', 1, self.generating_connector, None, [])
 
 
 if __name__ == '__main__':
