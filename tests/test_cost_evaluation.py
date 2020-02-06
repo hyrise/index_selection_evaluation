@@ -75,6 +75,10 @@ class TestCostEvaluation(unittest.TestCase):
         expected_cache_hits = expected_cost_requests - len(self.workload.queries)
         self.assertEqual(self.cost_evaluation.cache_hits, expected_cache_hits)
 
+        # Therefore, actual calls to the database connector's get_cost method should be limited by the number
+        # of queries as it is not called for cached costs.
+        self.assertEqual(self.connector.get_cost.call_count, len(self.workload.queries))
+
     def test_cache_hit(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
@@ -84,10 +88,12 @@ class TestCostEvaluation(unittest.TestCase):
         self.cost_evaluation.calculate_cost(workload, self.no_indexes)
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
 
         self.cost_evaluation.calculate_cost(workload, self.no_indexes)
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
 
     def test_no_cache_hit_unseen(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
@@ -99,10 +105,12 @@ class TestCostEvaluation(unittest.TestCase):
         self.cost_evaluation.calculate_cost(workload, self.no_indexes)
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
 
         self.cost_evaluation.calculate_cost(workload, set([index_A]))
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
+        self.assertEqual(self.connector.get_cost.call_count, 2)
         self.connector.simulate_index.assert_called_with(index_A)
 
 
@@ -116,10 +124,12 @@ class TestCostEvaluation(unittest.TestCase):
         self.cost_evaluation.calculate_cost(workload, self.no_indexes)
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
 
         self.cost_evaluation.calculate_cost(workload, set([index_B]))
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
         self.connector.simulate_index.assert_called_with(index_B)
 
 
