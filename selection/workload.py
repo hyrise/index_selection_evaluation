@@ -53,6 +53,12 @@ class Table:
 
         return column
 
+    def add_columns(self, columns):
+        for column in columns:
+            _ = self.add_column(column)
+
+        return columns
+
     def __repr__(self):
         return self.name
 

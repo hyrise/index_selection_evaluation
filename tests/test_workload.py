@@ -17,13 +17,22 @@ class TestTable(unittest.TestCase):
 
     def test_table_add_column(self):
         table = Table('TableA')
-        column = Column('ColA')
-        add_column_return = table.add_column(column)
+        column_1 = Column('ColA')
+        add_column_return = table.add_column(column_1)
 
-        self.assertEqual(table.columns, [column])
-        self.assertEqual(column.table, table)
-        self.assertEqual(add_column_return, column)
-        
+        self.assertEqual(table.columns, [column_1])
+        self.assertEqual(column_1.table, table)
+        self.assertEqual(add_column_return, column_1)
+
+        column_2 = Column('ColB')
+        column_3 = Column('ColC')
+        add_columns_return = table.add_columns([column_2, column_3])
+
+        self.assertEqual(table.columns, [column_1, column_2, column_3])
+        self.assertEqual(column_2.table, table)
+        self.assertEqual(column_3.table, table)
+        self.assertEqual(add_columns_return, [column_2, column_3])
+
     def test_table_repr(self):
         table = Table('TableA')
         self.assertEqual(repr(table), 'tablea')
@@ -40,7 +49,7 @@ class TestTable(unittest.TestCase):
         table_1.add_column(Column('ColA'))
         table_2 = Table('TableA')
         self.assertFalse(table_1 == table_2)
-        
+
         table_2.add_column(Column('ColA'))
         self.assertTrue(table_1 == table_2)
 
@@ -139,7 +148,7 @@ class TestWorkload(unittest.TestCase):
         workload = Workload([query_1, query_2], database_name)
         self.assertEqual(workload.queries, [query_1, query_2])
         self.assertEqual(workload.database_name, database_name)
-    
+
     def test_workload_indexable_columns(self):
         table = Table('TableA')
         column_1 = Column(name='ColA')

@@ -16,12 +16,13 @@ class TestCostEvaluation(unittest.TestCase):
 
         cls.table = Table("TestTableA")
         cls.columns = [
-            Column("ColA", cls.table),
-            Column("ColB", cls.table),
-            Column("ColC", cls.table),
-            Column("ColD", cls.table),
-            Column("ColE", cls.table)
+            Column("ColA"),
+            Column("ColB"),
+            Column("ColC"),
+            Column("ColD"),
+            Column("ColE")
         ]
+        cls.table.add_columns(cls.columns)
 
         cls.queries = [
             Query(0, "SELECT * FROM TestTableA WHERE ColA = 4", [cls.columns[0]]),

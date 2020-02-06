@@ -49,8 +49,8 @@ class TableGenerator:
                 name = column.lstrip().split(' ', 1)[0]
                 if name == 'primary':
                     continue
-                column_object = Column(name, table)
-                table.columns.append(column_object)
+                column_object = Column(name)
+                table.add_column(column_object)
                 self.columns.append(column_object)
 
     def _generate(self):
