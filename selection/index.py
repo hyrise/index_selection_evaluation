@@ -12,9 +12,6 @@ class Index:
 
     # Used to sort indexes
     def __lt__(self, other):
-        # print(str(self.columns))
-        # print(str(other.columns))
-        # return str(self.columns) < str(other.columns)
         if len(self.columns) != len(other.columns):
             return len(self.columns) < len(other.columns)
 
