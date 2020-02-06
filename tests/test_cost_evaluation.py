@@ -11,32 +11,32 @@ class MockConnector:
 
 class TestCostEvaluation(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
-        self.db_name = "TestDB"
+    def setUpClass(cls):
+        cls.db_name = "TestDB"
 
-        self.table = Table("TestTableA")
-        self.columns = [
-            Column("ColA", self.table),
-            Column("ColB", self.table),
-            Column("ColC", self.table),
-            Column("ColD", self.table),
-            Column("ColE", self.table)
+        cls.table = Table("TestTableA")
+        cls.columns = [
+            Column("ColA", cls.table),
+            Column("ColB", cls.table),
+            Column("ColC", cls.table),
+            Column("ColD", cls.table),
+            Column("ColE", cls.table)
         ]
 
-        self.queries = [
-            Query(1, "SELECT * FROM TestTableA WHERE ColA = 4", [self.columns[0]]),
-            Query(2, "SELECT * FROM TestTableA WHERE ColB = 3", [self.columns[1]]),
-            Query(3, "SELECT * FROM TestTableA WHERE Col A = 14 AND ColB = 13", [self.columns[0], self.columns[1]]),
+        cls.queries = [
+            Query(0, "SELECT * FROM TestTableA WHERE ColA = 4", [cls.columns[0]]),
+            Query(1, "SELECT * FROM TestTableA WHERE ColB = 3", [cls.columns[1]]),
+            Query(2, "SELECT * FROM TestTableA WHERE Col A = 14 AND ColB = 13", [cls.columns[0], cls.columns[1]]),
         ]
 
-        self.workload = Workload(self.queries, self.db_name)
-
-        self.no_indexes = set()
+        cls.workload = Workload(cls.queries, cls.db_name)
 
     def setUp(self):
+        # We mock the connector because it is needed by the cost evaluation.
+        # By also mocking some of its methods, we can test how often these are called.
         self.connector = MockConnector()
         self.connector.get_cost = MagicMock(return_value=3)
-        self.connector.simulate_index = MagicMock(return_value=[0, 1])
+        self.connector.simulate_index = MagicMock(return_value=[0, 'index_name']) #index_oid, index_name
         
         self.cost_evaluation = CostEvaluation(self.connector)
 
@@ -48,7 +48,7 @@ class TestCostEvaluation(unittest.TestCase):
         index_A = Index([self.columns[0]])
         index_B = Index([self.columns[1]])
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[0], self.no_indexes)
+        result = self.cost_evaluation._relevant_indexes(self.queries[0], indexes=set())
         self.assertEqual(result, frozenset())
 
         result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_A]))
@@ -66,7 +66,7 @@ class TestCostEvaluation(unittest.TestCase):
 
         CALCULATE_COST_CALLS = 3
         for i in range(CALCULATE_COST_CALLS):
-            self.cost_evaluation.calculate_cost(self.workload, self.no_indexes)
+            self.cost_evaluation.calculate_cost(self.workload, indexes=set())
 
         expected_cost_requests = len(self.workload.queries) * CALCULATE_COST_CALLS
         self.assertEqual(self.cost_evaluation.cost_requests, expected_cost_requests)
@@ -85,12 +85,12 @@ class TestCostEvaluation(unittest.TestCase):
 
         workload = Workload([self.queries[0]], self.db_name)
 
-        self.cost_evaluation.calculate_cost(workload, self.no_indexes)
+        self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
 
-        self.cost_evaluation.calculate_cost(workload, self.no_indexes)
+        self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
         self.assertEqual(self.connector.get_cost.call_count, 1)
@@ -102,7 +102,7 @@ class TestCostEvaluation(unittest.TestCase):
         workload = Workload([self.queries[0]], self.db_name)
         index_A = Index([self.columns[0]])
 
-        self.cost_evaluation.calculate_cost(workload, self.no_indexes)
+        self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
@@ -121,7 +121,7 @@ class TestCostEvaluation(unittest.TestCase):
         workload = Workload([self.queries[0]], self.db_name)
         index_B = Index([self.columns[1]])
 
-        self.cost_evaluation.calculate_cost(workload, self.no_indexes)
+        self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
