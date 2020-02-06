@@ -49,11 +49,16 @@ class Table:
 
 
 class Query:
-    def __init__(self, query_id, query_text):
+    def __init__(self, query_id, query_text, columns = None):
         self.nr = query_id
         self.text = query_text.lower()
+
         # Indexable columns
-        self.columns = []
+        if columns is None:
+            self.columns = []
+        else:
+            self.columns = columns
+        
 
     def __repr__(self):
         return f'Q{self.nr}'
