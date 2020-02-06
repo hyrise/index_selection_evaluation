@@ -95,6 +95,24 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
         self.assertEqual(self.connector.get_cost.call_count, 1)
 
+    def test_cache_hit_different_index_same_columns(self):
+        self.assertEqual(self.cost_evaluation.cost_requests, 0)
+        self.assertEqual(self.cost_evaluation.cache_hits, 0)
+
+        workload = Workload([self.queries[0]], self.db_name)
+        index_A = Index([self.columns[0]])
+        index_B = Index([self.columns[0]])
+
+        self.cost_evaluation.calculate_cost(workload, set([index_A]))
+        self.assertEqual(self.cost_evaluation.cost_requests, 1)
+        self.assertEqual(self.cost_evaluation.cache_hits, 0)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
+
+        self.cost_evaluation.calculate_cost(workload, set([index_B]))
+        self.assertEqual(self.cost_evaluation.cost_requests, 2)
+        self.assertEqual(self.cost_evaluation.cache_hits, 1)
+        self.assertEqual(self.connector.get_cost.call_count, 1)
+
     def test_no_cache_hit_unseen(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
