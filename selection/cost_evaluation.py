@@ -17,10 +17,11 @@ class CostEvaluation:
         self.cache = {}
 
     def reset(self):
-        self.current_indexes = set()
         self.cost_requests = 0
         self.cache_hits = 0
         self.cache = {}
+
+        self.complete_cost_estimation()
 
     def calculate_cost(self, workload, indexes, store_size=False):
         self._prepare_cost_calculation(indexes, store_size=store_size)
@@ -70,6 +71,8 @@ class CostEvaluation:
     def complete_cost_estimation(self):
         for index in self.current_indexes:
             self._unsimulate_or_drop_index(index)
+
+        self.current_indexes = set()
 
     def _request_cache(self, query, indexes):
         relevant_indexes = self._relevant_indexes(query, indexes)
