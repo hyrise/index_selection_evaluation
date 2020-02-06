@@ -4,10 +4,6 @@ from selection.workload import Column, Query, Table, Workload
 import unittest
 from unittest.mock import MagicMock
 
-class MockConnector:
-    def __init__(self):
-        pass
-
 
 class TestTable(unittest.TestCase):
     def test_table(self):
