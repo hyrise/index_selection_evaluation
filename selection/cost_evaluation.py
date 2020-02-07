@@ -37,7 +37,8 @@ class CostEvaluation:
     # that exist but are not in the combination.
     def _prepare_cost_calculation(self, indexes, store_size=False):
         for index in set(indexes) - self.current_indexes:
-            self._simulate_or_create_index(index, store_size)
+            self._simulate_or_create_index(index,
+                                           store_size=store_size)
         # TODO Possible Optimization by `commit()`
         # See: https://github.com/hyrise/index_selection_evaluation/pull/1#discussion_r371538510
         for index in self.current_indexes - set(indexes):
