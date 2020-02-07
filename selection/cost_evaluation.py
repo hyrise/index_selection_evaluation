@@ -37,35 +37,31 @@ class CostEvaluation:
     # that exist but are not in the combination.
     def _prepare_cost_calculation(self, indexes, store_size=False):
         for index in set(indexes) - self.current_indexes:
-            self._simulate_or_create_index(index, store_size)
-        # TODO Possible Optimization by `commit()`
-        # See: https://github.com/hyrise/index_selection_evaluation/pull/1#discussion_r371538510
+            self._simulate_or_create_index(index,
+                                           store_size=store_size)
         for index in self.current_indexes - set(indexes):
             self._unsimulate_or_drop_index(index)
-        # TODO rollback(). See above.
 
         self.current_indexes = set(indexes)
 
-    def _simulate_or_create_index(self, index, store_size):
+    def _simulate_or_create_index(self, index, store_size=False):
         if self.cost_estimation == 'whatif':
             self.what_if.simulate_index(index, store_size=store_size)
         elif self.cost_estimation == 'actual_runtimes':
-            # TODO
-            pass
+            self.db_connector.create_index(index)
 
     def _unsimulate_or_drop_index(self, index):
         if self.cost_estimation == 'whatif':
             self.what_if.drop_simulated_index(index)
         elif self.cost_estimation == 'actual_runtimes':
-            # TODO
-            pass
+            self.db_connector.drop_index(index)
 
     def _get_cost(self, query):
         if self.cost_estimation == 'whatif':
             return self.db_connector.get_cost(query)
         elif self.cost_estimation == 'actual_runtimes':
-            # TODO
-            return 0
+            runtime = self.db_connector.exec_query(query)[0]
+            return runtime
 
     def complete_cost_estimation(self):
         for index in self.current_indexes:
