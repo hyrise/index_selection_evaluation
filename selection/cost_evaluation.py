@@ -51,22 +51,20 @@ class CostEvaluation:
         if self.cost_estimation == 'whatif':
             self.what_if.simulate_index(index, store_size=store_size)
         elif self.cost_estimation == 'actual_runtimes':
-            # TODO
-            pass
+            self.db_connector.create_index(index)
 
     def _unsimulate_or_drop_index(self, index):
         if self.cost_estimation == 'whatif':
             self.what_if.drop_simulated_index(index)
         elif self.cost_estimation == 'actual_runtimes':
-            # TODO
-            pass
+            self.db_connector.drop_index(index)
 
     def _get_cost(self, query):
         if self.cost_estimation == 'whatif':
             return self.db_connector.get_cost(query)
         elif self.cost_estimation == 'actual_runtimes':
-            # TODO
-            return 0
+            runtime = self.db_connector.exec_query(query)[0]
+            return runtime
 
     def complete_cost_estimation(self):
         for index in self.current_indexes:
