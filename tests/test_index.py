@@ -106,14 +106,14 @@ class TestIndex(unittest.TestCase):
         self.assertFalse(index.appendable_by(multi_column_index))
 
     def test_appendable_by_index_with_already_present_column(self):
-        index_with_already_present_column = Index([self.column_1])        
+        index_with_already_present_column = Index([self.column_1])
 
         index = Index(self.columns)
 
         self.assertFalse(index.appendable_by(index_with_already_present_column))
 
     def test_appendable_by(self):
-        index_appendable_by = Index([self.column_3])        
+        index_appendable_by = Index([self.column_3])
 
         index = Index(self.columns)
 
