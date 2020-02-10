@@ -49,6 +49,8 @@ class EPICAlgorithm(SelectionAlgorithm):
             best['benefit_to_size_ratio'] = 0
             index_combination_size = sum(x.estimated_size
                                          for x in index_combination)
+            print(f'{index_combination} - {index_combination_size}')
+            print('####')
         return index_combination
 
     def _attach_to_indexes(self, index_combination, candidate, best, initial_cost):

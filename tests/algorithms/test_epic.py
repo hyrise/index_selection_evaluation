@@ -50,9 +50,9 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         query_1 = Query(0, 'SELECT * FROM TableA WHERE ColA = 4;', [self.column_1])
         query_2 = Query(1, 'SELECT * FROM TableA WHERE ColA = 1 AND ColB = 2 AND ColC = 3;', self.all_columns)
-        database_name = 'test_DB'
+        self.database_name = 'test_DB'
 
-        self.workload = Workload([query_1, query_2], database_name)
+        self.workload = Workload([query_1, query_2], self.database_name)
         self.algo.workload = self.workload
 
 
@@ -224,7 +224,6 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         index_combination_str = index_combination_to_str(indexes)
 
-        # Multi Indexes are expensive
         index_combination_cost = {
             '': 100,
             'tablea_cola_idx': 90,
@@ -256,21 +255,21 @@ class TestEpicAlgorithm(unittest.TestCase):
     def test_calculate_best_indexes_scenario_1(self):
         self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self.calculate_cost_mock_1)
 
+        # Each one alone of the single column indexes would fit, but the one with the best benefit/cost ratio is chosen
         self.algo.budget = 1
         indexes = self.algo._calculate_best_indexes(self.workload)
-
         expected_indexes = [Index([self.column_3])]
         self.assertEqual(indexes, expected_indexes)
 
+        # Two single column indexes would fit, but the two best ones are chosen
         self.algo.budget = 2
         indexes = self.algo._calculate_best_indexes(self.workload)
-
         expected_indexes = [Index([self.column_3]), Index([self.column_2])]
         self.assertEqual(indexes, expected_indexes)
 
+        # All single column indexes are chosen
         self.algo.budget = 3
         indexes = self.algo._calculate_best_indexes(self.workload)
-
         expected_indexes = [Index([self.column_3]), Index([self.column_2]), Index([self.column_1])]
         self.assertEqual(indexes, expected_indexes)
 
@@ -297,7 +296,6 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         index_combination_str = index_combination_to_str(indexes)
 
-        # Multi Indexes are expensive
         index_combination_cost = {
             '': 100,
             'tablea_cola_idx': 90,
@@ -328,22 +326,75 @@ class TestEpicAlgorithm(unittest.TestCase):
     def test_calculate_best_indexes_scenario_2(self):
         self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self.calculate_cost_mock_2)
 
+        # There is only one index fitting the budget
         self.algo.budget = 1
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = [Index([self.column_1])]
         self.assertEqual(indexes, expected_indexes)
 
+        # Theoretically, two indexes fit, but one has a better benefit/cost ratio
         self.algo.budget = 3
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = [Index([self.column_1])]
         self.assertEqual(indexes, expected_indexes)
 
+        # The two indexes with the best ratio should be chosen
         self.algo.budget = 5
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = [Index([self.column_1]), Index([self.column_2])]
         self.assertEqual(indexes, expected_indexes)
 
+        # All single column indexes are chosen
         self.algo.budget = 9
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = [Index([self.column_1]), Index([self.column_2]), Index([self.column_3])]
+        self.assertEqual(indexes, expected_indexes)
+
+    def assign_size_3(self, index):
+        index_sizes = {
+            'tablea_cola_idx': 2,
+            'tablea_colb_idx': 1.9,
+            'tablea_cola_colb_idx': 4,
+            'tablea_colb_cola_idx': 3,
+        }
+
+        index.estimated_size = index_sizes[index.index_idx()]
+
+
+    def calculate_cost_mock_3(self, workload, indexes, store_size):
+        for index in indexes:
+          self.assign_size_3(index)
+
+        index_combination_str = index_combination_to_str(indexes)
+
+        index_combination_cost = {
+            '': 100,
+            'tablea_cola_idx': 80,
+            'tablea_colb_idx': 80,
+            'tablea_cola_idx||tablea_colb_idx': 70,
+            ### Below here multi, they do not result in benefit
+            'tablea_cola_colb_idx': 60,
+            'tablea_colb_cola_idx': 60,
+            'tablea_colb_cola_idx||tablea_colb_idx': 60,
+        }
+
+        return index_combination_cost[index_combination_str]
+
+
+    # In this scenario, multi column indexes dominate single column indexes.
+    def test_calculate_best_indexes_scenario_3(self):
+        query_1 = Query(0, 'SELECT * FROM TableA WHERE ColA = 1 AND ColB = 2;', [self.column_1, self.column_2])
+        workload = Workload([query_1], self.database_name)
+        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self.calculate_cost_mock_3)
+
+        # Budget too small for multi
+        self.algo.budget = 2
+        indexes = self.algo._calculate_best_indexes(workload)
+        expected_indexes = [Index([self.column_2])]
+        self.assertEqual(indexes, expected_indexes)
+
+        # Picks multi with best ratio
+        self.algo.budget = 4
+        indexes = self.algo._calculate_best_indexes(workload)
+        expected_indexes = [Index([self.column_2, self.column_1])]
         self.assertEqual(indexes, expected_indexes)
