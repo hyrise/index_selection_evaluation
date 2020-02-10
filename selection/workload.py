@@ -30,7 +30,7 @@ class Column:
         if not isinstance(other, Column):
             return False
 
-        assert self.table is not None and other.table is not None
+        assert self.table is not None and other.table is not None, 'Table objects should not be None for Column.__eq__()'
 
         return self.table.name == other.table.name and self.name == other.name
 
