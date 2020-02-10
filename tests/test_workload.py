@@ -4,10 +4,6 @@ from selection.workload import Column, Query, Table, Workload
 import unittest
 from unittest.mock import MagicMock
 
-class MockConnector:
-    def __init__(self):
-        pass
-
 
 class TestTable(unittest.TestCase):
     def test_table(self):
@@ -63,7 +59,7 @@ class TestTable(unittest.TestCase):
         table_2.add_column(Column('ColC'))
         self.assertTrue(table_1 == table_2)
 
-        # Testing same columnn names, but different order
+        # Testing same column names, but different order
         table_3 = Table('TableA')
         table_3.add_column(Column('ColC'))
         table_3.add_column(Column('ColB'))
