@@ -1,3 +1,6 @@
+from functools import total_ordering
+
+@total_ordering
 class Index:
     def __init__(self, columns):
         if len(columns) == 0:
@@ -9,13 +12,19 @@ class Index:
 
     # Used to sort indexes
     def __lt__(self, other):
-        return str(self.columns) < str(other.columns)
+        if len(self.columns) != len(other.columns):
+            return len(self.columns) < len(other.columns)
+
+        return self.columns < other.columns
 
     def __repr__(self):
         columns_string = ','.join(map(str, self.columns))
         return f'I({columns_string})'
 
     def __eq__(self, other):
+        if not isinstance(other, Index):
+            return False
+
         return self.columns == other.columns
 
     def __hash__(self):
@@ -24,7 +33,7 @@ class Index:
     def _column_names(self):
         return [x.name for x in self.columns]
 
-    def singlecolumn(self):
+    def is_single_column(self):
         return True if len(self.columns) == 1 else False
 
     def table(self):
@@ -38,8 +47,13 @@ class Index:
         return ','.join(self._column_names())
 
     def appendable_by(self, other):
-        if (self.table() == other.table() and
-                other.singlecolumn() and
-                other.columns[0] not in self.columns):
-            return True
-        return False
+        if self.table() != other.table():
+            return False
+
+        if not other.is_single_column():
+            return False
+
+        if other.columns[0] in self.columns:
+            return False
+
+        return True
