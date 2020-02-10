@@ -205,7 +205,7 @@ class TestEpicAlgorithm(unittest.TestCase):
         self.assertEqual(self.algo._retrieve_reconfig_cost([]), 0)
 
 
-    def assign_size_1(self, index):
+    def _assign_size_1(self, index):
         index_sizes = {
             'tablea_cola_idx': 1,
             'tablea_colb_idx': 1,
@@ -218,9 +218,9 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         index.estimated_size = index_sizes[index.index_idx()]
 
-    def calculate_cost_mock_1(self, workload, indexes, store_size):
+    def _calculate_cost_mock_1(self, workload, indexes, store_size):
         for index in indexes:
-            self.assign_size_1(index)
+            self._assign_size_1(index)
 
         index_combination_str = index_combination_to_str(indexes)
 
@@ -253,7 +253,7 @@ class TestEpicAlgorithm(unittest.TestCase):
     # In this scenario, only single column indexes make sense.
     # They all have the same size but different benefits.
     def test_calculate_best_indexes_scenario_1(self):
-        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self.calculate_cost_mock_1)
+        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self._calculate_cost_mock_1)
 
         # Each one alone of the single column indexes would fit, but the one with the best benefit/cost ratio is chosen
         self.algo.budget = 1
@@ -274,7 +274,7 @@ class TestEpicAlgorithm(unittest.TestCase):
         self.assertEqual(indexes, expected_indexes)
 
 
-    def assign_size_2(self, index):
+    def _assign_size_2(self, index):
         index_sizes = {
             'tablea_cola_idx': 1,
             'tablea_colb_idx': 3,
@@ -290,9 +290,9 @@ class TestEpicAlgorithm(unittest.TestCase):
         index.estimated_size = index_sizes[index.index_idx()]
 
 
-    def calculate_cost_mock_2(self, workload, indexes, store_size):
+    def _calculate_cost_mock_2(self, workload, indexes, store_size):
         for index in indexes:
-          self.assign_size_2(index)
+          self._assign_size_2(index)
 
         index_combination_str = index_combination_to_str(indexes)
 
@@ -324,7 +324,7 @@ class TestEpicAlgorithm(unittest.TestCase):
     # In this scenario, only single column indexes make sense.
     # Size and benefit are antiproportional.
     def test_calculate_best_indexes_scenario_2(self):
-        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self.calculate_cost_mock_2)
+        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self._calculate_cost_mock_2)
 
         # There is only one index fitting the budget
         self.algo.budget = 1
@@ -350,7 +350,7 @@ class TestEpicAlgorithm(unittest.TestCase):
         expected_indexes = [Index([self.column_1]), Index([self.column_2]), Index([self.column_3])]
         self.assertEqual(indexes, expected_indexes)
 
-    def assign_size_3(self, index):
+    def _assign_size_3(self, index):
         index_sizes = {
             'tablea_cola_idx': 2,
             'tablea_colb_idx': 1.9,
@@ -361,9 +361,9 @@ class TestEpicAlgorithm(unittest.TestCase):
         index.estimated_size = index_sizes[index.index_idx()]
 
 
-    def calculate_cost_mock_3(self, workload, indexes, store_size):
+    def _calculate_cost_mock_3(self, workload, indexes, store_size):
         for index in indexes:
-          self.assign_size_3(index)
+          self._assign_size_3(index)
 
         index_combination_str = index_combination_to_str(indexes)
 
@@ -385,7 +385,7 @@ class TestEpicAlgorithm(unittest.TestCase):
     def test_calculate_best_indexes_scenario_3(self):
         query_1 = Query(0, 'SELECT * FROM TableA WHERE ColA = 1 AND ColB = 2;', [self.column_1, self.column_2])
         workload = Workload([query_1], self.database_name)
-        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self.calculate_cost_mock_3)
+        self.algo.cost_evaluation.calculate_cost = MagicMock(side_effect=self._calculate_cost_mock_3)
 
         # Budget too small for multi
         self.algo.budget = 2

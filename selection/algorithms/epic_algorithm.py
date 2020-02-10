@@ -54,7 +54,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         return index_combination
 
     def _attach_to_indexes(self, index_combination, candidate, best, initial_cost):
-        assert candidate.is_single_column() == True
+        assert candidate.is_single_column() == True, 'Attach to indexes called with multi column index'
 
         for position, index in enumerate(index_combination):
             if index.appendable_by(candidate):
