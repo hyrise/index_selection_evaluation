@@ -7,8 +7,6 @@ class SelectionAlgorithm:
     def __init__(self, database_connector, parameters, default_parameters={}):
         logging.debug('Init selection algorithm')
         self.parameters = parameters
-        if not parameters:
-            self.parameters = {}
         # Store default values for missing parameters
         for key, value in default_parameters.items():
             if key not in self.parameters:
