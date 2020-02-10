@@ -209,9 +209,9 @@ class TestEpicAlgorithm(unittest.TestCase):
         index_sizes = {
             'tablea_cola_idx': 1,
             'tablea_colb_idx': 1,
+            'tablea_colc_idx': 1,
             'tablea_colb_cola_idx': 2,
             'tablea_colb_colc_idx': 2,
-            'tablea_colc_idx': 1,
             'tablea_colc_cola_idx': 2,
             'tablea_colc_colb_idx': 2,
         }
@@ -242,10 +242,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             'tablea_colb_colc_idx||tablea_colc_idx': 1000,
             'tablea_colc_cola_idx': 1000,
             'tablea_colc_colb_idx': 1000,
+            'tablea_colc_idx||tablea_colb_cola_idx': 1000,
             'tablea_colc_idx||tablea_colb_colc_idx': 1000,
-            'tablea_colc_colb_idx||tablea_colb_idx': 1000,
             'tablea_colc_cola_idx||tablea_colb_idx': 1000,
-            'tablea_colc_idx||tablea_colb_cola_idx': 1000
+            'tablea_colc_colb_idx||tablea_colb_idx': 1000,
         }
 
         return index_combination_cost[index_combination_str]
@@ -278,12 +278,12 @@ class TestEpicAlgorithm(unittest.TestCase):
     def assign_size_2(self, index):
         index_sizes = {
             'tablea_cola_idx': 1,
+            'tablea_colb_idx': 3,
+            'tablea_colc_idx': 5,
             'tablea_cola_colb_idx': 20,
             'tablea_cola_colc_idx': 20,
-            'tablea_colb_idx': 3,
             'tablea_colb_cola_idx': 20,
             'tablea_colb_colc_idx': 20,
-            'tablea_colc_idx': 5,
             'tablea_colc_cola_idx': 20,
             'tablea_colc_colb_idx': 20,
         }
@@ -310,6 +310,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             ### Below here multi, they do not result in benefit
             'tablea_cola_colb_idx': 1000,
             'tablea_cola_colc_idx': 1000,
+            'tablea_colb_colc_idx': 1000,
             'tablea_cola_idx||tablea_colb_cola_idx': 1000,
             'tablea_cola_idx||tablea_colb_colc_idx': 1000,
             'tablea_cola_idx||tablea_colc_cola_idx': 1000,
@@ -317,7 +318,6 @@ class TestEpicAlgorithm(unittest.TestCase):
             'tablea_cola_colb_idx||tablea_colb_idx': 1000,
             'tablea_cola_colb_idx||tablea_colc_idx': 1000,
             'tablea_cola_colc_idx||tablea_colb_idx': 1000,
-            'tablea_colb_colc_idx': 1000,
         }
 
         return index_combination_cost[index_combination_str]
