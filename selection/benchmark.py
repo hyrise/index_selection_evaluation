@@ -8,9 +8,16 @@ import os.path
 
 
 class Benchmark:
-    def __init__(self, workload, indexes, db_connector, config,
-                 calculation_time, disable_csv, global_config,
-                 parameter_list_used=False, what_if=None):
+    def __init__(self,
+                 workload,
+                 indexes,
+                 db_connector,
+                 config,
+                 calculation_time,
+                 disable_csv,
+                 global_config,
+                 parameter_list_used=False,
+                 what_if=None):
         self.workload = workload
         self.db_connector = db_connector
         self.indexes = indexes
@@ -51,18 +58,19 @@ class Benchmark:
             self.what_if.drop_all_simulated_indexes()
 
     def _create_csv_header(self):
-        header = ['date', 'commit', 'algorithm name', 'parameters',
-                  'scale factor', 'benchmark name', 'db system',
-                  'algorithm runtime', '#indexes', 'index create time',
-                  'memory consumption']
+        header = [
+            'date', 'commit', 'algorithm name', 'parameters', 'scale factor',
+            'benchmark name', 'db system', 'algorithm runtime', '#indexes',
+            'index create time', 'memory consumption'
+        ]
         for query in self.workload.queries:
             header.append('q' + str(query.nr))
         header.append('indexed columns')
         return ';'.join(header)
 
     def _git_hash(self):
-        githash = subprocess.check_output(['git',
-                                           'rev-parse', '--short', 'HEAD'])
+        githash = subprocess.check_output(
+            ['git', 'rev-parse', '--short', 'HEAD'])
         return githash.decode('ascii').replace('\n', '')
 
     def _store_results(self, results, plans):
@@ -74,12 +82,14 @@ class Benchmark:
         indexes_size = self.db_connector.indexes_size()
         # see comment above
         if self.number_of_runs == 0:
-            indexes_size = sum([index.estimated_size
-                                for index in self.indexes])
-        csv_entry = [date, commit_hash, config['name'], config['parameters'],
-                     self.scale_factor, self.benchmark_name, self.db_system,
-                     self.calculation_time, len(self.indexes),
-                     self.index_create_time, indexes_size]
+            indexes_size = sum(
+                [index.estimated_size for index in self.indexes])
+        csv_entry = [
+            date, commit_hash, config['name'], config['parameters'],
+            self.scale_factor, self.benchmark_name, self.db_system,
+            self.calculation_time,
+            len(self.indexes), self.index_create_time, indexes_size
+        ]
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))
         self._append_to_csv(';'.join([str(x) for x in csv_entry]))
@@ -99,8 +109,7 @@ class Benchmark:
 
     def _benchmark(self):
         logging.info('Benchmark all queries')
-        results = [{'Runtimes': [], 'Hits': []}
-                   for x in self.workload.queries]
+        results = [{'Runtimes': [], 'Hits': []} for x in self.workload.queries]
         plans = {x.nr: [] for x in self.workload.queries}
 
         for query_id in range(len(self.workload.queries)):
@@ -127,8 +136,7 @@ class Benchmark:
         self._store_results(results, plans)
 
     def _benchmark_query(self, query):
-        exec_result = self.db_connector.exec_query(query,
-                                                   timeout=self.timeout)
+        exec_result = self.db_connector.exec_query(query, timeout=self.timeout)
         return exec_result
 
     def _calculate_hits(self, plan):

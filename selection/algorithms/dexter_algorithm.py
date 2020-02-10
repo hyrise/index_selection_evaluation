@@ -4,13 +4,10 @@ import subprocess
 import logging
 import os
 
-
 # Parameter is passed to dexter command line tool.
 # The mimimum percentage that an index reduces the
 # cost of a query to be selected
-DEFAULT_PARAMETERS = {
-    'min_saving_percentage': 5
-}
+DEFAULT_PARAMETERS = {'min_saving_percentage': 5}
 
 
 class DexterAlgorithm(SelectionAlgorithm):
@@ -33,9 +30,11 @@ class DexterAlgorithm(SelectionAlgorithm):
             command += self.database_connector._prepare_query(query)
             command += '"'
             self.database_connector.commit()
-            p = subprocess.Popen(command, cwd=os.getcwd(),
+            p = subprocess.Popen(command,
+                                 cwd=os.getcwd(),
                                  stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT, shell=True)
+                                 stderr=subprocess.STDOUT,
+                                 shell=True)
             with p.stdout:
                 output_string = p.stdout.read().decode('utf-8')
             p.wait()
@@ -51,10 +50,9 @@ class DexterAlgorithm(SelectionAlgorithm):
                 column_names = index[1].split(')')[0].split(', ')
                 columns = []
                 for column_name in column_names:
-                    column_object = next((c for c in query.columns
-                                          if c.name == column_name
-                                          and c.table.name == table_name),
-                                         None)
+                    column_object = next(
+                        (c for c in query.columns if c.name == column_name
+                         and c.table.name == table_name), None)
                     columns.append(column_object)
                 # Check if the same index columns already in list
                 if columns not in index_columns:

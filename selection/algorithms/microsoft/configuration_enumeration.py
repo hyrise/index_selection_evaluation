@@ -3,8 +3,12 @@ import logging
 
 
 class ConfigurationEnumeration():
-    def __init__(self, candidate_indexes, workload, cost_evaluation,
-                 microsoft_algorithm, candidate_selection=False):
+    def __init__(self,
+                 candidate_indexes,
+                 workload,
+                 cost_evaluation,
+                 microsoft_algorithm,
+                 candidate_selection=False):
         parameters = microsoft_algorithm.parameters
         self.max_indexes_naive = parameters['max_indexes_naive']
         self.max_indexes = parameters['max_indexes']
@@ -37,8 +41,7 @@ class ConfigurationEnumeration():
         log_out += 'lowest cost indexes (naive): {}'.format(self.indexes)
         logging.log(level, log_out)
 
-        number_indexes = min(self.max_indexes,
-                             len(self.candidate_indexes))
+        number_indexes = min(self.max_indexes, len(self.candidate_indexes))
         self.enumerate_greedy(number_indexes, level)
         log_out = 'lowest cost (greedy): {}\n\t'.format(self.lowest_cost)
         log_out += 'lowest cost indexes (greedy): {}\n'.format(self.indexes)
@@ -52,8 +55,9 @@ class ConfigurationEnumeration():
             return
         # (index, cost)
         best_index = (None, None)
-        index_set = [item for item in self.candidate_indexes
-                     if item not in self.indexes]
+        index_set = [
+            item for item in self.candidate_indexes if item not in self.indexes
+        ]
         logging.log(level, 'Searching in {} columns'.format(len(index_set)))
 
         for index in index_set:
@@ -81,6 +85,7 @@ class ConfigurationEnumeration():
         self.indexes = list(lowest_cost_indexes)
 
     def _simulate_and_evaluate_cost(self, indexes):
-        cost = self.cost_evaluation.calculate_cost(self.workload, indexes,
+        cost = self.cost_evaluation.calculate_cost(self.workload,
+                                                   indexes,
                                                    store_size=True)
         return round(cost, 2)

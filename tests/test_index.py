@@ -17,7 +17,6 @@ class TestIndex(unittest.TestCase):
         self.table.add_columns(self.columns)
         self.table.add_column(self.column_3)
 
-
     def test_index(self):
         index = Index(self.columns)
         self.assertEqual(index.columns, tuple(self.columns))
@@ -113,7 +112,8 @@ class TestIndex(unittest.TestCase):
 
         index = Index(self.columns)
 
-        self.assertFalse(index.appendable_by(index_with_already_present_column))
+        self.assertFalse(
+            index.appendable_by(index_with_already_present_column))
 
     def test_appendable_by(self):
         index_appendable_by = Index([self.column_3])

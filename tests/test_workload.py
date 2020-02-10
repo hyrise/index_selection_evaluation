@@ -41,7 +41,6 @@ class TestTable(unittest.TestCase):
         # Check comparing object of different class
         self.assertFalse(table_1 == int(3))
 
-
     def test_table_eq_with_columns(self):
         table_1 = Table('TableA')
         table_1.add_column(Column('ColA'))
@@ -66,8 +65,8 @@ class TestTable(unittest.TestCase):
         table_3.add_column(Column('ColA'))
         self.assertFalse(table_1 == table_3)
 
-class TestColumn(unittest.TestCase):
 
+class TestColumn(unittest.TestCase):
     def test_column(self):
         column = Column(name="ColA")
         self.assertEqual(column.name, 'cola')
@@ -131,8 +130,8 @@ class TestColumn(unittest.TestCase):
         self.assertFalse(column_1 < column_2)
         self.assertTrue(column_1 < column_3)
 
-class TestQuery(unittest.TestCase):
 
+class TestQuery(unittest.TestCase):
     def test_query(self):
         query = Query(17, 'SELECT * FROM lineitem;')
         self.assertEqual(query.nr, 17)
@@ -141,7 +140,9 @@ class TestQuery(unittest.TestCase):
 
         column_1 = Column(name='ColA')
         column_2 = Column(name='ColB')
-        query_2 = Query(18, 'SELECT * FROM nation;', columns=[column_1, column_2])
+        query_2 = Query(18,
+                        'SELECT * FROM nation;',
+                        columns=[column_1, column_2])
         self.assertEqual(query_2.nr, 18)
         self.assertEqual(query_2.text, 'select * from nation;')
         self.assertEqual(query_2.columns, [column_1, column_2])
@@ -150,8 +151,8 @@ class TestQuery(unittest.TestCase):
         query = Query(17, 'SELECT * FROM lineitem;')
         self.assertEqual(repr(query), 'Q17')
 
-class TestWorkload(unittest.TestCase):
 
+class TestWorkload(unittest.TestCase):
     def test_workload(self):
         query_1 = Query(17, 'SELECT * FROM TableA;')
         query_2 = Query(18, 'SELECT * FROM nation;')
@@ -170,13 +171,18 @@ class TestWorkload(unittest.TestCase):
         table.add_column(column_2)
         table.add_column(column_3)
 
-        query_1 = Query(17, 'SELECT * FROM TableA WHERE ColA = 4 AND ColB = 5;', columns=[column_1, column_2])
-        query_2 = Query(18, 'SELECT * FROM TableA WHERE ColA = 3 AND ColC = 2;', columns=[column_1, column_3])
+        query_1 = Query(17,
+                        'SELECT * FROM TableA WHERE ColA = 4 AND ColB = 5;',
+                        columns=[column_1, column_2])
+        query_2 = Query(18,
+                        'SELECT * FROM TableA WHERE ColA = 3 AND ColC = 2;',
+                        columns=[column_1, column_3])
         database_name = 'test_DB'
 
         workload = Workload([query_1, query_2], database_name)
         indexable_columns = workload.indexable_columns()
-        self.assertEqual(sorted(indexable_columns), sorted([column_1, column_2, column_3]))
+        self.assertEqual(sorted(indexable_columns),
+                         sorted([column_1, column_2, column_3]))
 
 
 if __name__ == '__main__':
