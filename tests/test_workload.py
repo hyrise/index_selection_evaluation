@@ -18,20 +18,18 @@ class TestTable(unittest.TestCase):
     def test_table_add_column(self):
         table = Table('TableA')
         column_1 = Column('ColA')
-        add_column_return = table.add_column(column_1)
+        table.add_column(column_1)
 
         self.assertEqual(table.columns, [column_1])
         self.assertEqual(column_1.table, table)
-        self.assertEqual(add_column_return, column_1)
 
         column_2 = Column('ColB')
         column_3 = Column('ColC')
-        add_columns_return = table.add_columns([column_2, column_3])
+        table.add_columns([column_2, column_3])
 
         self.assertEqual(table.columns, [column_1, column_2, column_3])
         self.assertEqual(column_2.table, table)
         self.assertEqual(column_3.table, table)
-        self.assertEqual(add_columns_return, [column_2, column_3])
 
     def test_table_repr(self):
         table = Table('TableA')
@@ -43,6 +41,10 @@ class TestTable(unittest.TestCase):
         table_3 = Table('TableB')
         self.assertTrue(table_1 == table_2)
         self.assertFalse(table_1 == table_3)
+
+        # Check comparing object of different class
+        self.assertFalse(table_1 == int(3))
+
 
     def test_table_eq_with_columns(self):
         table_1 = Table('TableA')
@@ -61,7 +63,7 @@ class TestTable(unittest.TestCase):
         table_2.add_column(Column('ColC'))
         self.assertTrue(table_1 == table_2)
 
-        # Testing same columnn names,but different order
+        # Testing same columnn names, but different order
         table_3 = Table('TableA')
         table_3.add_column(Column('ColC'))
         table_3.add_column(Column('ColB'))
@@ -92,24 +94,38 @@ class TestColumn(unittest.TestCase):
         self.assertEqual(repr(column), 'C tablea.cola')
 
     def test_column_eq(self):
-        table = Table('TableA')
-        # table_2 = Table('TableA')
+        table_1 = Table('TableA')
+        table_2 = Table('TableA')
         column_1 = Column(name="ColA")
         column_2 = Column(name="ColA")
         column_3 = Column(name="ColB")
 
+        # Column name equal but table (for both) is None
+        with self.assertRaises(Exception):
+            column1 == column_2
+
+        # Column name different but table (for both) is None
+        with self.assertRaises(Exception):
+            column1 == column_3
+
+        table_1.add_column(column_1)
+
+        # Column name equal but table of column_2 is None
+        with self.assertRaises(Exception):
+            column_1 == column_2
+
+        # Column name equal but table of column_2 is None
+        with self.assertRaises(Exception):
+            column_2 == column_1
+
+        table_2.add_column(column_2)
         self.assertTrue(column_1 == column_2)
+
+        table_2.add_column(column_3)
         self.assertFalse(column_1 == column_3)
 
-        table.add_column(column_1)
-        self.assertFalse(column_1 == column_2)
-        self.assertFalse(column_2 == column_1)
-
-        table.add_column(column_2)
-        self.assertTrue(column_1 == column_2)
-
-        table.add_column(column_3)
-        self.assertTrue(column_1 == column_2)
+        # Check comparing object of different class
+        self.assertFalse(column_1 == int(3))
 
     def test_column_lt(self):
         column_1 = Column(name="ColA")

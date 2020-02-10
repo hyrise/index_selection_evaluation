@@ -27,14 +27,10 @@ class Column:
     # We cannot check self.table == other.table here since Table.__eq__()
     # internally checks Column.__eq__. This would lead to endless recursions.
     def __eq__(self, other):
-        if self.table is None and other.table is not None:
+        if not isinstance(other, Column):
             return False
 
-        if self.table is not None and other.table is None:
-            return False
-
-        if self.table is None and other.table is None:
-            return self.name == other.name
+        assert self.table is not None and other.table is not None
 
         return self.table.name == other.table.name and self.name == other.name
 
@@ -51,18 +47,17 @@ class Table:
         column.table = self
         self.columns.append(column)
 
-        return column
-
     def add_columns(self, columns):
         for column in columns:
-            _ = self.add_column(column)
-
-        return columns
+            self.add_column(column)
 
     def __repr__(self):
         return self.name
 
     def __eq__(self, other):
+        if not isinstance(other, Table):
+            return False
+
         return self.name == other.name and tuple(self.columns) == tuple(other.columns)
 
     def __hash__(self):
