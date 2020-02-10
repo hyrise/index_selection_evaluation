@@ -16,17 +16,18 @@ class TestCostEvaluation(unittest.TestCase):
 
         cls.table = Table("TestTableA")
         cls.columns = [
-            Column("ColA", cls.table),
-            Column("ColB", cls.table),
-            Column("ColC", cls.table),
-            Column("ColD", cls.table),
-            Column("ColE", cls.table)
+            Column("Col0"),
+            Column("Col1"),
+            Column("Col2"),
+            Column("Col3"),
+            Column("Col4")
         ]
+        cls.table.add_columns(cls.columns)
 
         cls.queries = [
-            Query(0, "SELECT * FROM TestTableA WHERE ColA = 4", [cls.columns[0]]),
-            Query(1, "SELECT * FROM TestTableA WHERE ColB = 3", [cls.columns[1]]),
-            Query(2, "SELECT * FROM TestTableA WHERE Col A = 14 AND ColB = 13", [cls.columns[0], cls.columns[1]]),
+            Query(0, "SELECT * FROM TestTableA WHERE Col0 = 4", [cls.columns[0]]),
+            Query(1, "SELECT * FROM TestTableA WHERE Col1 = 3", [cls.columns[1]]),
+            Query(2, "SELECT * FROM TestTableA WHERE Col0 = 14 AND Col1 = 13", [cls.columns[0], cls.columns[1]]),
         ]
 
         cls.workload = Workload(cls.queries, cls.db_name)

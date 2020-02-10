@@ -48,7 +48,8 @@ class TestTableGenerator(unittest.TestCase):
         self.assertIsNotNone(lineitem_table)
 
         # Check that l_receiptdate column exists in TableGenerator and Table object
-        l_receiptdate = Column('l_receiptdate', lineitem_table)
+        l_receiptdate = Column('l_receiptdate')
+        lineitem_table.add_column(l_receiptdate)
         self.assertIn(l_receiptdate, table_generator.columns)
         self.assertIn(l_receiptdate, table.columns)
 
@@ -73,7 +74,8 @@ class TestTableGenerator(unittest.TestCase):
         self.assertIsNotNone(item_table)
 
         # Check that i_item_sk column exists in TableGenerator and Table object
-        i_item_sk = Column('i_item_sk', item_table)
+        i_item_sk = Column('i_item_sk')
+        item_table.add_column(i_item_sk)
         self.assertIn(i_item_sk, table_generator.columns)
         self.assertIn(i_item_sk, table.columns)
 
