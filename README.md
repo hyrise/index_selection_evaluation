@@ -25,3 +25,7 @@ ALGORITHMS = {'microsoft': MicrosoftAlgorithm,
               'drop_heuristic': DropHeuristicAlgorithm}
 ```
 * Create or adjust configuration files
+
+
+# Formatting
+The code can be automatically formatted by calling ./scripts/format.sh from the main folder.
