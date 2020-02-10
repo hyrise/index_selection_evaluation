@@ -58,14 +58,15 @@ class Table:
         if not isinstance(other, Table):
             return False
 
-        return self.name == other.name and tuple(self.columns) == tuple(other.columns)
+        return self.name == other.name and tuple(self.columns) == tuple(
+            other.columns)
 
     def __hash__(self):
         return hash((self.name, tuple(self.columns)))
 
 
 class Query:
-    def __init__(self, query_id, query_text, columns = None):
+    def __init__(self, query_id, query_text, columns=None):
         self.nr = query_id
         self.text = query_text.lower()
 
@@ -74,7 +75,6 @@ class Query:
             self.columns = []
         else:
             self.columns = columns
-        
 
     def __repr__(self):
         return f'Q{self.nr}'

@@ -2,13 +2,9 @@ from ..selection_algorithm import SelectionAlgorithm
 from ..index import Index
 import logging
 
-
 # cost_estimation: 'whatif' or 'acutal_runtimes'
 # Index combination budget in MB
-DEFAULT_PARAMETERS = {
-    'cost_estimation': 'whatif',
-    'budget': 10
-}
+DEFAULT_PARAMETERS = {'cost_estimation': 'whatif', 'budget': 10}
 
 
 class EPICAlgorithm(SelectionAlgorithm):
@@ -26,8 +22,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         index_combination = []
         index_combination_size = 0
         # Best index combination during evaluation step
-        best = {'combination': [],
-                'benefit_to_size_ratio': 0}
+        best = {'combination': [], 'benefit_to_size_ratio': 0}
 
         # Breaking when no cost improvement
         while True:
@@ -35,8 +30,9 @@ class EPICAlgorithm(SelectionAlgorithm):
 
             for candidate in single_attribute_index_candidates:
                 # Candidate not used anymore if too large for budget
-                if (candidate.estimated_size and index_combination_size
-                        + candidate.estimated_size > self.budget):
+                if (candidate.estimated_size
+                        and index_combination_size + candidate.estimated_size >
+                        self.budget):
                     single_attribute_index_candidates.remove(candidate)
                     continue
 
@@ -75,7 +71,8 @@ class EPICAlgorithm(SelectionAlgorithm):
             best['benefit_to_size_ratio'] = ratio
 
     def _retrieve_cost(self, workload, indexes):
-        cost = self.cost_evaluation.calculate_cost(workload, indexes,
+        cost = self.cost_evaluation.calculate_cost(workload,
+                                                   indexes,
                                                    store_size=True)
         return cost
 

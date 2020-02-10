@@ -8,8 +8,8 @@ from .workload import Query
 
 
 class QueryGenerator:
-    def __init__(self, benchmark_name, scale_factor, db_connector,
-                 query_ids, columns):
+    def __init__(self, benchmark_name, scale_factor, db_connector, query_ids,
+                 columns):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = db_connector
@@ -21,8 +21,9 @@ class QueryGenerator:
         self.generate()
 
     def filter_queries(self, query_ids):
-        self.queries = [query for query in self.queries
-                        if query.nr in query_ids]
+        self.queries = [
+            query for query in self.queries if query.nr in query_ids
+        ]
 
     def add_new_query(self, query_id, query_text):
         if not self.db_connector:
@@ -51,9 +52,10 @@ class QueryGenerator:
         logging.info('Generating TPC-H Queries')
         self._run_make()
         # Using default parameters (`-d`)
-        queries_string = self._run_command(['./qgen', '-c', '-d', '-s',
-                                            str(self.scale_factor)],
-                                           return_output=True)
+        queries_string = self._run_command(
+            ['./qgen', '-c', '-d', '-s',
+             str(self.scale_factor)],
+            return_output=True)
         for query in queries_string.split('Query (Q'):
             query_id_and_text = query.split(')\n', 1)
             if len(query_id_and_text) == 2:
@@ -69,10 +71,11 @@ class QueryGenerator:
         logging.info('Generating TPC-DS Queries')
         self._run_make()
         # dialects: ansi, db2, netezza, oracle, sqlserver
-        command = ['./dsqgen', '-DIRECTORY', '../query_templates',
-                   '-INPUT', '../query_templates/templates.lst',
-                   '-DIALECT', 'netezza', '-QUALIFY', 'Y',
-                   '-OUTPUT_DIR', '../..']
+        command = [
+            './dsqgen', '-DIRECTORY', '../query_templates', '-INPUT',
+            '../query_templates/templates.lst', '-DIALECT', 'netezza',
+            '-QUALIFY', 'Y', '-OUTPUT_DIR', '../..'
+        ]
         self._run_command(command)
         with open('query_0.sql', 'r') as file:
             queries_string = file.read()
@@ -92,14 +95,13 @@ class QueryGenerator:
         query_text = query_text.replace(') returns', ') as returns')
         replaced_string = 'case when lochierarchy = 0'
         if replaced_string in query_text:
-            new_string = re.search(r'grouping\(.*\)\+'
-                                   r'grouping\(.*\) '
-                                   r'as lochierarchy',
-                                   query_text).group(0)
+            new_string = re.search(
+                r'grouping\(.*\)\+'
+                r'grouping\(.*\) '
+                r'as lochierarchy', query_text).group(0)
             new_string = new_string.replace(' as lochierarchy', '')
             new_string = 'case when ' + new_string + ' = 0'
-            query_text = query_text.replace(replaced_string,
-                                            new_string)
+            query_text = query_text.replace(replaced_string, new_string)
         return query_text
 
     def _run_make(self):
@@ -112,9 +114,11 @@ class QueryGenerator:
     def _run_command(self, command, return_output=False, shell=False):
         env = os.environ.copy()
         env['DSS_QUERY'] = 'queries'
-        p = subprocess.Popen(command, cwd=self.directory,
+        p = subprocess.Popen(command,
+                             cwd=self.directory,
                              stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT, shell=shell,
+                             stderr=subprocess.STDOUT,
+                             shell=shell,
                              env=env)
         with p.stdout:
             output_string = p.stdout.read().decode('utf-8')

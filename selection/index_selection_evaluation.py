@@ -18,17 +18,20 @@ import sys
 import time
 import copy
 
+ALGORITHMS = {
+    'microsoft': MicrosoftAlgorithm,
+    'drop_heuristic': DropHeuristicAlgorithm,
+    'no_index': NoIndexAlgorithm,
+    'all_indexes': AllIndexesAlgorithm,
+    'ibm': IBMAlgorithm,
+    'epic': EPICAlgorithm,
+    'dexter': DexterAlgorithm
+}
 
-ALGORITHMS = {'microsoft': MicrosoftAlgorithm,
-              'drop_heuristic': DropHeuristicAlgorithm,
-              'no_index': NoIndexAlgorithm,
-              'all_indexes': AllIndexesAlgorithm,
-              'ibm': IBMAlgorithm,
-              'epic': EPICAlgorithm,
-              'dexter': DexterAlgorithm}
-
-DBMSYSTEMS = {'postgres': PostgresDatabaseConnector,
-              'hana': HanaDatabaseConnector}
+DBMSYSTEMS = {
+    'postgres': PostgresDatabaseConnector,
+    'hana': HanaDatabaseConnector
+}
 
 
 class IndexSelection:
@@ -58,14 +61,12 @@ class IndexSelection:
                                          config['scale_factor'],
                                          generating_connector)
         database_name = table_generator.database_name()
-        self.setup_db_connector(database_name,
-                                config['database_system'])
+        self.setup_db_connector(database_name, config['database_system'])
         if 'queries' not in config:
             config['queries'] = None
         query_generator = QueryGenerator(config['benchmark_name'],
                                          config['scale_factor'],
-                                         self.db_connector,
-                                         config['queries'],
+                                         self.db_connector, config['queries'],
                                          table_generator.columns)
         self.workload = Workload(query_generator.queries, database_name)
 

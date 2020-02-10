@@ -8,16 +8,17 @@ class TestDatabase(unittest.TestCase):
     def setUpClass(cls):
         cls.db_name = 'tpch_test_db_database'
         db = PostgresDatabaseConnector(None, autocommit=True)
-        table_generator = TableGenerator('tpch', 0.001, db, explicit_database_name=cls.db_name)
+        table_generator = TableGenerator('tpch',
+                                         0.001,
+                                         db,
+                                         explicit_database_name=cls.db_name)
         db.close()
 
     @classmethod
     def tearDownClass(cls):
-        connector = PostgresDatabaseConnector(None,
-                                                      autocommit=True)
+        connector = PostgresDatabaseConnector(None, autocommit=True)
         if connector.database_exists(cls.db_name):
             connector.drop_database(cls.db_name)
-
 
     def test_postgres_index_simulation(self):
         db = PostgresDatabaseConnector(self.db_name, 'postgres')

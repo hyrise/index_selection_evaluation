@@ -1,5 +1,6 @@
 from functools import total_ordering
 
+
 @total_ordering
 class Index:
     def __init__(self, columns):

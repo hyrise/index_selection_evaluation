@@ -2,7 +2,6 @@ import psycopg2
 import re
 import logging
 
-
 from ..database_connector import DatabaseConnector
 
 
@@ -36,8 +35,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
     # Updates query syntax to work in PostgreSQL
     def update_query_text(self, text):
         text = text.replace(';\nlimit ', ' limit ').replace('limit -1', '')
-        text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')",
-                      text)
+        text = re.sub(r" ([0-9]+) days\)", r" interval '\1 days')", text)
         text = self._add_alias_subquery(text)
         return text
 
@@ -56,8 +54,9 @@ class PostgresDatabaseConnector(DatabaseConnector):
                     counter -= 1
                 pos += 1
             next_word = query_text[pos:].lstrip().split(' ')[0].split('\n')[0]
-            if next_word[0] in [')', ','] or next_word in ['limit', 'group',
-                                                           'order', 'where']:
+            if next_word[0] in [')', ','] or next_word in [
+                    'limit', 'group', 'order', 'where'
+            ]:
                 positions.append(pos)
         for pos in sorted(positions, reverse=True):
             query_text = query_text[:pos] + ' as alias123 ' + query_text[pos:]
