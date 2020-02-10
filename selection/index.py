@@ -22,6 +22,9 @@ class Index:
         return f'I({columns_string})'
 
     def __eq__(self, other):
+        if not isinstance(other, Index):
+            return False
+
         return self.columns == other.columns
 
     def __hash__(self):

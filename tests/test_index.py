@@ -58,6 +58,9 @@ class TestIndex(unittest.TestCase):
         index_5 = Index([self.column_1, self.column_2])
         self.assertTrue(index_4 == index_5)
 
+        # Check comparing object of different class
+        self.assertFalse(index_4 == int(3))
+
     def test_index_column_names(self):
         index = Index(self.columns)
         column_names = index._column_names()
