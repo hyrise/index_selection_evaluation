@@ -221,21 +221,13 @@ class TestPrepareCostEvaluation(unittest.TestCase):
 
     def test_complete_cost_estimation(self):
         self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
+        self.assertFalse(self.cost_evaluation.completed)
 
         self.cost_evaluation.complete_cost_estimation()
+        self.assertTrue(self.cost_evaluation.completed)
         self.mock_what_if.drop_simulated_index.assert_any_call(self.index_0)
         self.mock_what_if.drop_simulated_index.assert_any_call(self.index_1)
         self.assertEqual(self.cost_evaluation.current_indexes, set())
-
-    def test_reset(self):
-        self.cost_evaluation.current_indexes = set([self.index_0])
-
-        self.cost_evaluation.reset()
-        self.mock_what_if.drop_simulated_index.assert_called_with(self.index_0)
-        self.assertEqual(self.cost_evaluation.current_indexes, set())
-        self.assertEqual(self.cost_evaluation.cost_requests, 0)
-        self.assertEqual(self.cost_evaluation.cache_hits, 0)
-        self.assertEqual(self.cost_evaluation.cache, {})
 
 
 if __name__ == '__main__':
