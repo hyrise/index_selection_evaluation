@@ -1,9 +1,11 @@
 from ..selection_algorithm import SelectionAlgorithm
 from ..what_if_index_creation import WhatIfIndexCreation
 from ..index import Index
+
+import itertools
 import logging
-import time
 import random
+import time
 
 # Maxiumum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
@@ -17,7 +19,9 @@ DEFAULT_PARAMETERS = {
 
 
 class IBMAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters):
+    def __init__(self, database_connector, parameters=None):
+        if parameters == None:
+            parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
         self.what_if = WhatIfIndexCreation(database_connector)
@@ -82,20 +86,19 @@ class IBMAlgorithm(SelectionAlgorithm):
         logging.debug(f'\n{query}')
         logging.debug(f'indexable columns: {len(columns)}')
         max_columns = self.parameters['max_index_columns']
-        possible_indexes = [[column] for column in columns]
 
-        for previous_number_columns in range(1, max_columns):
-            new_possible_indexes = []
-            for possible_index in possible_indexes:
-                if len(possible_index) < previous_number_columns:
-                    continue
-                for column in columns:
-                    same_table = possible_index[0].table == column.table
-                    if same_table and column not in possible_index:
-                        new_possible_index = possible_index.copy()
-                        new_possible_index.append(column)
-                        new_possible_indexes.append(new_possible_index)
-            possible_indexes.extend(new_possible_indexes)
+        indexable_columns_per_table = {}
+        for column in columns:
+            if column.table not in indexable_columns_per_table:
+                indexable_columns_per_table[column.table] = set()
+
+            indexable_columns_per_table[column.table].add(column)
+
+        possible_indexes = set()
+        for table in indexable_columns_per_table:
+            columns = indexable_columns_per_table[table]
+            for index_length in range(1, max_columns + 1):
+                possible_indexes.update(set(itertools.permutations(columns, index_length)))
 
         logging.debug(f'possible indexes: {len(possible_indexes)}')
         return [Index(p) for p in possible_indexes]
