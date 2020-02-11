@@ -9,6 +9,7 @@ class MockConnector:
     def __init__(self):
         pass
 
+
 class MockWhatIf:
     def __init__(self):
         pass
@@ -62,13 +63,16 @@ class TestCostEvaluation(unittest.TestCase):
                                                         indexes=set())
         self.assertEqual(result, frozenset())
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_0]))
+        result = self.cost_evaluation._relevant_indexes(
+            self.queries[0], set([index_0]))
         self.assertEqual(result, frozenset([index_0]))
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_1, index_0]))
+        result = self.cost_evaluation._relevant_indexes(
+            self.queries[0], set([index_1, index_0]))
         self.assertEqual(result, frozenset([index_0]))
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[2], set([index_1, index_0]))
+        result = self.cost_evaluation._relevant_indexes(
+            self.queries[2], set([index_1, index_0]))
         self.assertEqual(result, frozenset([index_1, index_0]))
 
     def test_cost_requests(self):
@@ -115,12 +119,14 @@ class TestCostEvaluation(unittest.TestCase):
 
         workload = Workload([self.queries[0]], self.db_name)
 
-        self.cost_evaluation.calculate_cost(workload, set([Index([self.columns[0]])]))
+        self.cost_evaluation.calculate_cost(workload,
+                                            set([Index([self.columns[0]])]))
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
 
-        self.cost_evaluation.calculate_cost(workload, set([Index([self.columns[0]])]))
+        self.cost_evaluation.calculate_cost(workload,
+                                            set([Index([self.columns[0]])]))
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
         self.assertEqual(self.connector.get_cost.call_count, 1)
@@ -161,6 +167,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.connector.get_cost.call_count, 1)
         self.connector.simulate_index.assert_called_with(index_1)
 
+
 class TestPrepareCostEvaluation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -196,41 +203,55 @@ class TestPrepareCostEvaluation(unittest.TestCase):
         self.mock_what_if.drop_simulated_index.assert_not_called()
         self.assertEqual(self.cost_evaluation.current_indexes, set([]))
 
-    def test_prepare_cost_calculation_does_nothing_indexes_equal_current_indexes(self):
-        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
+    def test_prepare_cost_calculation_does_nothing_indexes_equal_current_indexes(
+        self):
+        self.cost_evaluation.current_indexes = set(
+            [self.index_0, self.index_1])
 
-        self.cost_evaluation._prepare_cost_calculation([self.index_0, self.index_1])
+        self.cost_evaluation._prepare_cost_calculation(
+            [self.index_0, self.index_1])
         self.mock_what_if.simulate_index.assert_not_called()
         self.mock_what_if.drop_simulated_index.assert_not_called()
-        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0, self.index_1]))
+        self.assertEqual(self.cost_evaluation.current_indexes,
+                         set([self.index_0, self.index_1]))
 
     def test_prepare_cost_calculation_index_removed(self):
-        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
+        self.cost_evaluation.current_indexes = set(
+            [self.index_0, self.index_1])
 
         self.cost_evaluation._prepare_cost_calculation([self.index_0])
         self.mock_what_if.simulate_index.assert_not_called()
         self.mock_what_if.drop_simulated_index.assert_called_with(self.index_1)
-        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0]))
+        self.assertEqual(self.cost_evaluation.current_indexes,
+                         set([self.index_0]))
 
     def test_prepare_cost_calculation_index_added(self):
         self.cost_evaluation.current_indexes = set([self.index_0])
 
-        self.cost_evaluation._prepare_cost_calculation([self.index_0, self.index_1])
-        self.mock_what_if.simulate_index.assert_called_with(self.index_1, store_size=False)
+        self.cost_evaluation._prepare_cost_calculation(
+            [self.index_0, self.index_1])
+        self.mock_what_if.simulate_index.assert_called_with(self.index_1,
+                                                            store_size=False)
         self.mock_what_if.drop_simulated_index.assert_not_called()
-        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0, self.index_1]))
+        self.assertEqual(self.cost_evaluation.current_indexes,
+                         set([self.index_0, self.index_1]))
 
     def test_prepare_cost_calculation_index_added_and_removed(self):
-        
-        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
 
-        self.cost_evaluation._prepare_cost_calculation([self.index_0, self.index_2])
-        self.mock_what_if.simulate_index.assert_called_with(self.index_2, store_size=False)
+        self.cost_evaluation.current_indexes = set(
+            [self.index_0, self.index_1])
+
+        self.cost_evaluation._prepare_cost_calculation(
+            [self.index_0, self.index_2])
+        self.mock_what_if.simulate_index.assert_called_with(self.index_2,
+                                                            store_size=False)
         self.mock_what_if.drop_simulated_index.assert_called_with(self.index_1)
-        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0, self.index_2]))
+        self.assertEqual(self.cost_evaluation.current_indexes,
+                         set([self.index_0, self.index_2]))
 
     def test_complete_cost_estimation(self):
-        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
+        self.cost_evaluation.current_indexes = set(
+            [self.index_0, self.index_1])
         self.assertFalse(self.cost_evaluation.completed)
 
         self.cost_evaluation.complete_cost_estimation()
