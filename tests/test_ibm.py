@@ -80,7 +80,35 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.assertIn(Index([self.column_2, self.column_0, self.column_1]), indexes)
         self.assertIn(Index([self.column_2, self.column_1, self.column_0]), indexes)
 
-        # print(indexes)
+    def test_recommended_indexes(self):
+        def _simulate_index_mock(index, store_size):
+            index.hypopg_name = f'<1337>btree_{index.columns}'
 
+        # For some reason, the database decides to only use an index for one of the filters
+        def _simulate_get_plan(query):
+            plan = {
+                'Total Cost': 17,
+                'Plans': [
+                    {
+                        "Index Name": "<1337>btree_(C table0.col1,)",
+                        "Filter": "(Col0 = 1)"
+                    }
+                ]
+            }
+
+            return plan
+
+        query = Query(17, 'SELECT * FROM Table0 WHERE Col0 = 1 AND Col1 = 2;', [self.column_0, self.column_1])
+        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
+        self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
+        self.algo.what_if.drop_all_simulated_indexes = MagicMock()
+
+        indexes, cost = self.algo._recommended_indexes(query)
+        self.assertEqual(cost, 17)
+        self.assertEqual(indexes, [Index([self.column_1])])
+
+        self.assertEqual(self.algo.what_if.simulate_index.call_count, 4)
+        self.algo.what_if.drop_all_simulated_indexes.assert_called_once()
+        self.algo.database_connector.get_plan.assert_called_once_with(query)
 
 
