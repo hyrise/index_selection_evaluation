@@ -39,13 +39,6 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.table = Table('Table0')
         self.table.add_columns(self.all_columns)
 
-        # self.index_1 = Index([self.column_0])
-        # self.index_1.estimated_size = 5
-        # self.index_2 = Index([self.column_1])
-        # self.index_2.estimated_size = 1
-        # self.index_3 = Index([self.column_2])
-        # self.index_3.estimated_size = 3
-
         self.query_0 = Query(
             0,
             'SELECT * FROM Table0 WHERE Col0 = 1 AND Col1 = 2 AND Col2 = 3;',
@@ -173,3 +166,63 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.assertEqual(query_results[query_0], expected_first_result)
         self.assertEqual(query_results[query_1], expected_second_result)
         self.assertEqual(index_candidates, set([Index([self.column_1])]))
+
+    def test_calculate_index_benefits(self):
+        index_0 = Index([self.column_0])
+        index_0.estimated_size = 5
+        index_1 = Index([self.column_1])
+        index_1.estimated_size = 1
+        index_2 = Index([self.column_2])
+        index_2.estimated_size = 3
+
+        query_result_0 = {
+            'cost_without_indexes': 100,
+            'cost_with_recommended_indexes': 50,
+            'recommended_indexes': [index_0, index_1]
+        }
+        # Yes, negative benefit is possible
+        query_result_1 = {
+            'cost_without_indexes': 50,
+            'cost_with_recommended_indexes': 60,
+            'recommended_indexes': [index_1]
+        }
+        query_result_2 = {
+            'cost_without_indexes': 60,
+            'cost_with_recommended_indexes': 57,
+            'recommended_indexes': [index_2]
+        }
+        query_result_3 = {
+            'cost_without_indexes': 60,
+            'cost_with_recommended_indexes': 60,
+            'recommended_indexes': []
+        }
+        query_results = {
+            'q0': query_result_0,
+            'q1': query_result_1,
+            'q2': query_result_2,
+            'q3': query_result_3,
+        }
+
+        # TODO!!! remove size from the output
+
+        indexes_benefit_to_size = self.algo._calculate_index_benefits(
+            [index_0, index_1, index_2], query_results)
+        expected_benefit_to_size = [
+            {
+                'index': index_1,
+                'size': 1,
+                'benefit': 40
+            },
+            {
+                'index': index_0,
+                'size': 5,
+                'benefit': 50
+            },
+            {
+                'index': index_2,
+                'size': 3,
+                'benefit': 3
+            },
+        ]
+
+        self.assertEqual(indexes_benefit_to_size, expected_benefit_to_size)

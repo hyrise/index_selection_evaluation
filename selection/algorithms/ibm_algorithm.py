@@ -109,24 +109,27 @@ class IBMAlgorithm(SelectionAlgorithm):
         return [Index(p) for p in possible_indexes]
 
     def _calculate_index_benefits(self, candidates, query_results):
-        indexes_benefit_to_size = []
+        indexes_benefit_size = []
+
         for index_candidate in candidates:
             benefit = 0
+
             for query, value in query_results.items():
-                if index_candidate in value['recommended_indexes']:
-                    # TODO adjust when having weights for queries
-                    benefit += value['cost_without_indexes'] - value[
-                        'cost_with_recommended_indexes']
-            size = index_candidate.estimated_size
-            indexes_benefit_to_size.append({
+                if index_candidate not in value['recommended_indexes']:
+                    continue
+                # TODO adjust when having weights for queries
+                benefit_for_query = value['cost_without_indexes'] - value[
+                    'cost_with_recommended_indexes']
+                benefit += benefit_for_query
+
+            indexes_benefit_size.append({
                 'index': index_candidate,
-                'benefit_to_size': benefit / size,
-                'size': size,
+                'size': index_candidate.estimated_size,
                 'benefit': benefit
             })
-        return sorted(indexes_benefit_to_size,
+        return sorted(indexes_benefit_size,
                       reverse=True,
-                      key=lambda x: x['benefit_to_size'])
+                      key=lambda x: x['benefit'] / x['size'])
 
     # "Combine any index subsumed
     # by an index with a higher ratio with that index."
