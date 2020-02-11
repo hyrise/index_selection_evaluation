@@ -6,6 +6,7 @@ import logging
 class SelectionAlgorithm:
     def __init__(self, database_connector, parameters, default_parameters={}):
         logging.debug('Init selection algorithm')
+        self.did_run = False
         self.parameters = parameters
         if not parameters:
             self.parameters = {}
@@ -22,10 +23,13 @@ class SelectionAlgorithm:
             self.cost_evaluation.cost_estimation = estimation
 
     def calculate_best_indexes(self, workload):
-        self.cost_evaluation.reset()
+        assert self.did_run == False, 'Selection algorithm can only run once.'
+
+        self.did_run = True
         indexes = self._calculate_best_indexes(workload)
         self._log_cache_hits()
         self.cost_evaluation.complete_cost_estimation()
+
         return indexes
 
     def _calculate_best_indexes(self, workload):
@@ -54,7 +58,7 @@ class NoIndexAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters={}):
         SelectionAlgorithm.__init__(self, database_connector, parameters)
 
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         return []
 
 
@@ -63,5 +67,5 @@ class AllIndexesAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(self, database_connector, parameters)
 
     # Returns single column index for each indexable column
-    def calculate_best_indexes(self, workload):
+    def _calculate_best_indexes(self, workload):
         return self.potential_indexes(workload)
