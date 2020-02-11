@@ -39,9 +39,11 @@ class TestAlgorithm(unittest.TestCase):
         workload = Workload([], self.db_name)
         selection_algorithm = NoIndexAlgorithm(PostgresDatabaseConnector(None,
                                                       autocommit=True))
-        self.assertEqual(selection_algorithm.did_run, False)
+        self.assertFalse(selection_algorithm.did_run)
 
         selection_algorithm.calculate_best_indexes(workload)
+        self.assertTrue(selection_algorithm.did_run)
+
         with self.assertRaises(Exception):
             selection_algorithm.calculate_best_indexes(workload)
 
