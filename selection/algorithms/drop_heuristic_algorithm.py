@@ -11,7 +11,9 @@ DEFAULT_PARAMETERS = {
 
 
 class DropHeuristicAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters={}):
+    def __init__(self, database_connector, parameters=None):
+        if parameters == None:
+            parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
 

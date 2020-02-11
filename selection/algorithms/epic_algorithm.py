@@ -12,7 +12,9 @@ DEFAULT_PARAMETERS = {
 
 
 class EPICAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters={}):
+    def __init__(self, database_connector, parameters=None):
+        if parameters == None:
+            parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
         # MB to Bytes
@@ -95,5 +97,7 @@ class EPICAlgorithm(SelectionAlgorithm):
 
     # The cost to get to the new index combination, i.e. cost of
     # adding new indexes and dropping existing unneeded indexes
-    def _retrieve_reconfig_cost(self, new, existing_indexes=[]):
+    def _retrieve_reconfig_cost(self, new, existing_indexes=None):
+        if existing_indexes == None:
+            existing_indexes = []
         return 0
