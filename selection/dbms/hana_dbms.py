@@ -5,7 +5,6 @@ import subprocess
 import json
 import logging
 
-
 from ..database_connector import DatabaseConnector
 
 
@@ -56,12 +55,10 @@ class HanaDatabaseConnector(DatabaseConnector):
     def create_connection(self):
         if self._connection:
             self.close()
-        self._connection = pyhdb.connect(
-            host=self.host,
-            port=self.port,
-            user=self.db_user,
-            password=self.db_user_password
-        )
+        self._connection = pyhdb.connect(host=self.host,
+                                         port=self.port,
+                                         user=self.db_user,
+                                         password=self.db_user_password)
         self._connection.autocommit = self.autocommit
         self._cursor = self._connection.cursor()
         self.exec_only('set schema {}'.format(self.db_name))
@@ -123,11 +120,12 @@ class HanaDatabaseConnector(DatabaseConnector):
             if str(e) != 'Invalid or unsupported function code received: 7':
                 raise e
         # TODO store result in dictionary-like format
-        result = self.exec_fetch('select operator_name, operator_details, '
-                                 'output_size, subtree_cost, execution_engine '
-                                 'from explain_plan_table '
-                                 f"where statement_name='{statement_name}'",
-                                 one=False)
+        result = self.exec_fetch(
+            'select operator_name, operator_details, '
+            'output_size, subtree_cost, execution_engine '
+            'from explain_plan_table '
+            f"where statement_name='{statement_name}'",
+            one=False)
         self.exec_only('delete from explain_plan_table where '
                        f"statement_name='{statement_name}'")
         self._cleanup_query(query)

@@ -11,18 +11,19 @@ class TestAlgorithm(unittest.TestCase):
     def setUpClass(cls):
         cls.db_name = 'tpch_test_db_algorithm'
 
-        cls.db_connector = PostgresDatabaseConnector(None,
-                                                      autocommit=True)
-        tab_gen = TableGenerator('tpch', 0.001, cls.db_connector, explicit_database_name=cls.db_name)
+        cls.db_connector = PostgresDatabaseConnector(None, autocommit=True)
+        tab_gen = TableGenerator('tpch',
+                                 0.001,
+                                 cls.db_connector,
+                                 explicit_database_name=cls.db_name)
         cls.selection_algorithm = SelectionAlgorithm(cls.db_connector,
-                                                      {'test': 24})
+                                                     {'test': 24})
 
         cls.db_connector.close()
 
     @classmethod
     def tearDownClass(cls):
-        connector = PostgresDatabaseConnector(None,
-                                                      autocommit=True)
+        connector = PostgresDatabaseConnector(None, autocommit=True)
         if connector.database_exists(cls.db_name):
             connector.drop_database(cls.db_name)
 

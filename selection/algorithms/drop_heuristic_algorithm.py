@@ -2,12 +2,8 @@ from ..selection_algorithm import SelectionAlgorithm
 import logging
 import itertools
 
-
 # Algorithm stops when maximum number of indexes is reached
-DEFAULT_PARAMETERS = {
-    'max_indexes': 15,
-    'cost_estimation': 'whatif'
-}
+DEFAULT_PARAMETERS = {'max_indexes': 15, 'cost_estimation': 'whatif'}
 
 
 class DropHeuristicAlgorithm(SelectionAlgorithm):
@@ -27,7 +23,8 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
             lowest_cost = None
             index_to_drop = None
             for index in remaining_indexes:
-                cost = self.cost_evaluation.calculate_cost(workload, remaining_indexes - set([index]))
+                cost = self.cost_evaluation.calculate_cost(
+                    workload, remaining_indexes - set([index]))
                 if not lowest_cost or cost < lowest_cost:
                     lowest_cost, index_to_drop = cost, index
             old_len = len(remaining_indexes)

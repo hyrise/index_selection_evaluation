@@ -8,7 +8,11 @@ import re
 
 
 class TableGenerator:
-    def __init__(self, benchmark_name, scale_factor, database_connector, explicit_database_name=None):
+    def __init__(self,
+                 benchmark_name,
+                 scale_factor,
+                 database_connector,
+                 explicit_database_name=None):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = database_connector
@@ -49,8 +53,8 @@ class TableGenerator:
                 name = column.lstrip().split(' ', 1)[0]
                 if name == 'primary':
                     continue
-                column_object = Column(name, table)
-                table.columns.append(column_object)
+                column_object = Column(name)
+                table.add_column(column_object)
                 self.columns.append(column_object)
 
     def _generate(self):
@@ -106,12 +110,14 @@ class TableGenerator:
             logging.info('No need to run make')
 
     def _table_files(self):
-        self.table_files = [x for x in self._files()
-                            if '.tbl' in x or '.dat' in x]
+        self.table_files = [
+            x for x in self._files() if '.tbl' in x or '.dat' in x
+        ]
 
     def _run_command(self, command):
         cmd_out = '[SUBPROCESS OUTPUT] '
-        p = subprocess.Popen(command, cwd=self.directory,
+        p = subprocess.Popen(command,
+                             cwd=self.directory,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT)
         with p.stdout:
@@ -141,7 +147,8 @@ class TableGenerator:
             self.cmd = ['./dsdgen', '-SCALE', str(self.scale_factor), '-FORCE']
 
             # 0.001 is allowed for testing
-            if int(self.scale_factor) - self.scale_factor != 0 and self.scale_factor != 0.001:
+            if int(self.scale_factor
+                   ) - self.scale_factor != 0 and self.scale_factor != 0.001:
                 raise Exception('Wrong TPCDS scale factor')
         else:
             raise NotImplementedError('only tpch/ds implemented.')

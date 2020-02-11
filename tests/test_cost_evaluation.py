@@ -4,6 +4,7 @@ from selection.workload import Column, Query, Table, Workload
 import unittest
 from unittest.mock import MagicMock
 
+
 class MockConnector:
     def __init__(self):
         pass
@@ -20,17 +21,21 @@ class TestCostEvaluation(unittest.TestCase):
 
         cls.table = Table("TestTableA")
         cls.columns = [
-            Column("Col0", cls.table),
-            Column("Col1", cls.table),
-            Column("Col2", cls.table),
-            Column("Col3", cls.table),
-            Column("Col4", cls.table)
+            Column("Col0"),
+            Column("Col1"),
+            Column("Col2"),
+            Column("Col3"),
+            Column("Col4")
         ]
+        cls.table.add_columns(cls.columns)
 
         cls.queries = [
-            Query(0, "SELECT * FROM TestTableA WHERE Col0 = 4", [cls.columns[0]]),
-            Query(1, "SELECT * FROM TestTableA WHERE Col1 = 3", [cls.columns[1]]),
-            Query(2, "SELECT * FROM TestTableA WHERE Col0 = 14 AND Col1 = 13", [cls.columns[0], cls.columns[1]]),
+            Query(0, "SELECT * FROM TestTableA WHERE Col0 = 4",
+                  [cls.columns[0]]),
+            Query(1, "SELECT * FROM TestTableA WHERE Col1 = 3",
+                  [cls.columns[1]]),
+            Query(2, "SELECT * FROM TestTableA WHERE Col0 = 14 AND Col1 = 13",
+                  [cls.columns[0], cls.columns[1]]),
         ]
 
         cls.workload = Workload(cls.queries, cls.db_name)
@@ -40,8 +45,9 @@ class TestCostEvaluation(unittest.TestCase):
         # By also mocking some of its methods, we can test how often these are called.
         self.connector = MockConnector()
         self.connector.get_cost = MagicMock(return_value=3)
-        self.connector.simulate_index = MagicMock(return_value=[0, 'index_name']) #index_oid, index_name
-        
+        self.connector.simulate_index = MagicMock(
+            return_value=[0, 'index_name'])  #index_oid, index_name
+
         self.cost_evaluation = CostEvaluation(self.connector)
 
     def tearDown(self):
@@ -52,7 +58,8 @@ class TestCostEvaluation(unittest.TestCase):
         index_0 = Index([self.columns[0]])
         index_1 = Index([self.columns[1]])
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[0], indexes=set())
+        result = self.cost_evaluation._relevant_indexes(self.queries[0],
+                                                        indexes=set())
         self.assertEqual(result, frozenset())
 
         result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_0]))
@@ -64,7 +71,6 @@ class TestCostEvaluation(unittest.TestCase):
         result = self.cost_evaluation._relevant_indexes(self.queries[2], set([index_1, index_0]))
         self.assertEqual(result, frozenset([index_1, index_0]))
 
-
     def test_cost_requests(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
 
@@ -72,16 +78,20 @@ class TestCostEvaluation(unittest.TestCase):
         for i in range(CALCULATE_COST_CALLS):
             self.cost_evaluation.calculate_cost(self.workload, indexes=set())
 
-        expected_cost_requests = len(self.workload.queries) * CALCULATE_COST_CALLS
-        self.assertEqual(self.cost_evaluation.cost_requests, expected_cost_requests)
+        expected_cost_requests = len(
+            self.workload.queries) * CALCULATE_COST_CALLS
+        self.assertEqual(self.cost_evaluation.cost_requests,
+                         expected_cost_requests)
 
         # Since we did not change the index configuration, all calls, except the first round, should be cached
-        expected_cache_hits = expected_cost_requests - len(self.workload.queries)
+        expected_cache_hits = expected_cost_requests - len(
+            self.workload.queries)
         self.assertEqual(self.cost_evaluation.cache_hits, expected_cache_hits)
 
         # Therefore, actual calls to the database connector's get_cost method should be limited by the number
         # of queries as it is not called for cached costs.
-        self.assertEqual(self.connector.get_cost.call_count, len(self.workload.queries))
+        self.assertEqual(self.connector.get_cost.call_count,
+                         len(self.workload.queries))
 
     def test_cache_hit(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
@@ -132,7 +142,6 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 2)
         self.connector.simulate_index.assert_called_with(index_0)
-
 
     def test_cache_hit_non_relevant_index(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)

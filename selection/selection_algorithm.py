@@ -50,8 +50,7 @@ class SelectionAlgorithm:
         return workload.indexable_columns()
 
     def potential_indexes(self, workload):
-        return [Index([c]) for c
-                in self.indexable_columns(workload)]
+        return [Index([c]) for c in self.indexable_columns(workload)]
 
 
 class NoIndexAlgorithm(SelectionAlgorithm):

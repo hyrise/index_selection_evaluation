@@ -5,7 +5,6 @@ import logging
 import time
 import random
 
-
 # Maxiumum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations
@@ -30,8 +29,8 @@ class IBMAlgorithm(SelectionAlgorithm):
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes IBM')
         query_results, candidates = self._exploit_virtual_indexes(workload)
-        indexes_benefit_to_size = self._calculate_index_benefits(candidates,
-                                                                 query_results)
+        indexes_benefit_to_size = self._calculate_index_benefits(
+            candidates, query_results)
         self._combine_subsumed(indexes_benefit_to_size)
 
         selected_indexes = []
@@ -50,9 +49,11 @@ class IBMAlgorithm(SelectionAlgorithm):
             plan = self.database_connector.get_plan(query)
             initial_cost = plan['Total Cost']
             recommended, cost = self._recommended_indexes(query)
-            query_results[query] = {'initial_cost': initial_cost,
-                                    'cost': cost,
-                                    'indexes': recommended}
+            query_results[query] = {
+                'initial_cost': initial_cost,
+                'cost': cost,
+                'indexes': recommended
+            }
             index_candidates.update(recommended)
         return query_results, index_candidates
 
@@ -108,11 +109,14 @@ class IBMAlgorithm(SelectionAlgorithm):
                     # TODO adjust when having weights for queries
                     benefit += value['initial_cost'] - value['cost']
             size = index_candidate.estimated_size
-            indexes_benefit_to_size.append({'index': index_candidate,
-                                            'benefit_to_size': benefit / size,
-                                            'size': size,
-                                            'benefit': benefit})
-        return sorted(indexes_benefit_to_size, reverse=True,
+            indexes_benefit_to_size.append({
+                'index': index_candidate,
+                'benefit_to_size': benefit / size,
+                'size': size,
+                'benefit': benefit
+            })
+        return sorted(indexes_benefit_to_size,
+                      reverse=True,
                       key=lambda x: x['benefit_to_size'])
 
     # "Combine any index subsumed
@@ -135,8 +139,9 @@ class IBMAlgorithm(SelectionAlgorithm):
         logging.debug(f'Try variation for {self.seconds_limit} seconds')
         start_time = time.time()
 
-        not_used_indexes = [x for x in indexes_benefit_to_size
-                            if x not in selected_indexes]
+        not_used_indexes = [
+            x for x in indexes_benefit_to_size if x not in selected_indexes
+        ]
         current_cost = self._evaluate_workload(selected_indexes, [], workload)
         logging.debug(f'Initial cost \t{current_cost}')
 
@@ -160,8 +165,9 @@ class IBMAlgorithm(SelectionAlgorithm):
             new_selected = []
             for i in range(number_removed):
                 maximum_size = self.disk_constraint - disk_usage
-                candidates = [x for x in not_used_indexes
-                              if x['size'] <= maximum_size]
+                candidates = [
+                    x for x in not_used_indexes if x['size'] <= maximum_size
+                ]
                 if len(candidates) == 0:
                     break
                 random.shuffle(candidates)
@@ -171,8 +177,8 @@ class IBMAlgorithm(SelectionAlgorithm):
                 not_used_indexes.remove(selected_index)
 
             # reevaluate new selected and replace if lower cost
-            cost = self._evaluate_workload(selected_indexes,
-                                           new_selected, workload)
+            cost = self._evaluate_workload(selected_indexes, new_selected,
+                                           workload)
             if cost < current_cost:
                 not_used_indexes.extend(removed)
                 selected_indexes.extend(new_selected)
@@ -185,5 +191,4 @@ class IBMAlgorithm(SelectionAlgorithm):
     def _evaluate_workload(self, selected, new_selected, workload):
         index_candidates = selected + new_selected
         index_candidates = [x['index'] for x in index_candidates]
-        return self.cost_evaluation.calculate_cost(workload,
-                                                   index_candidates)
+        return self.cost_evaluation.calculate_cost(workload, index_candidates)

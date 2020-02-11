@@ -4,7 +4,6 @@ from .microsoft.configuration_enumeration import ConfigurationEnumeration
 from .microsoft.multi_column_index_generation import MultiColumnIndexGeneration
 import logging
 
-
 # multi column index methods: 'no', 'lead', 'all'
 # cost_estimation: 'whatif' or 'acutal_runtimes'
 DEFAULT_PARAMETERS = {
