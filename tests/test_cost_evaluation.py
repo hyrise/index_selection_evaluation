@@ -168,12 +168,13 @@ class TestPrepareCostEvaluation(unittest.TestCase):
 
         cls.table = Table("TestTableA")
         cls.columns = [
-            Column("Col0", cls.table),
-            Column("Col1", cls.table),
-            Column("Col2", cls.table),
-            Column("Col3", cls.table),
-            Column("Col4", cls.table)
+            Column("Col0"),
+            Column("Col1"),
+            Column("Col2"),
+            Column("Col3"),
+            Column("Col4")
         ]
+        cls.table.add_columns(cls.columns)
 
         cls.index_0 = Index([cls.columns[0]])
         cls.index_1 = Index([cls.columns[1]])
