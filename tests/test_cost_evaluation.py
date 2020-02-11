@@ -20,17 +20,17 @@ class TestCostEvaluation(unittest.TestCase):
 
         cls.table = Table("TestTableA")
         cls.columns = [
-            Column("ColA", cls.table),
-            Column("ColB", cls.table),
-            Column("ColC", cls.table),
-            Column("ColD", cls.table),
-            Column("ColE", cls.table)
+            Column("Col0", cls.table),
+            Column("Col1", cls.table),
+            Column("Col2", cls.table),
+            Column("Col3", cls.table),
+            Column("Col4", cls.table)
         ]
 
         cls.queries = [
-            Query(0, "SELECT * FROM TestTableA WHERE ColA = 4", [cls.columns[0]]),
-            Query(1, "SELECT * FROM TestTableA WHERE ColB = 3", [cls.columns[1]]),
-            Query(2, "SELECT * FROM TestTableA WHERE Col A = 14 AND ColB = 13", [cls.columns[0], cls.columns[1]]),
+            Query(0, "SELECT * FROM TestTableA WHERE Col0 = 4", [cls.columns[0]]),
+            Query(1, "SELECT * FROM TestTableA WHERE Col1 = 3", [cls.columns[1]]),
+            Query(2, "SELECT * FROM TestTableA WHERE Col0 = 14 AND Col1 = 13", [cls.columns[0], cls.columns[1]]),
         ]
 
         cls.workload = Workload(cls.queries, cls.db_name)
@@ -49,20 +49,20 @@ class TestCostEvaluation(unittest.TestCase):
         self.connector.get_cost.reset_mock()
 
     def test_relevant_indexes(self):
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[1]])
+        index_0 = Index([self.columns[0]])
+        index_1 = Index([self.columns[1]])
 
         result = self.cost_evaluation._relevant_indexes(self.queries[0], indexes=set())
         self.assertEqual(result, frozenset())
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_A]))
-        self.assertEqual(result, frozenset([index_A]))
+        result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_0]))
+        self.assertEqual(result, frozenset([index_0]))
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_B, index_A]))
-        self.assertEqual(result, frozenset([index_A]))
+        result = self.cost_evaluation._relevant_indexes(self.queries[0], set([index_1, index_0]))
+        self.assertEqual(result, frozenset([index_0]))
 
-        result = self.cost_evaluation._relevant_indexes(self.queries[2], set([index_B, index_A]))
-        self.assertEqual(result, frozenset([index_B, index_A]))
+        result = self.cost_evaluation._relevant_indexes(self.queries[2], set([index_1, index_0]))
+        self.assertEqual(result, frozenset([index_1, index_0]))
 
 
     def test_cost_requests(self):
@@ -104,15 +104,15 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
         workload = Workload([self.queries[0]], self.db_name)
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[0]])
+        index_0 = Index([self.columns[0]])
+        index_1 = Index([self.columns[0]])
 
-        self.cost_evaluation.calculate_cost(workload, set([index_A]))
+        self.cost_evaluation.calculate_cost(workload, set([index_0]))
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
 
-        self.cost_evaluation.calculate_cost(workload, set([index_B]))
+        self.cost_evaluation.calculate_cost(workload, set([index_1]))
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
         self.assertEqual(self.connector.get_cost.call_count, 1)
@@ -122,18 +122,18 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
         workload = Workload([self.queries[0]], self.db_name)
-        index_A = Index([self.columns[0]])
+        index_0 = Index([self.columns[0]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
 
-        self.cost_evaluation.calculate_cost(workload, set([index_A]))
+        self.cost_evaluation.calculate_cost(workload, set([index_0]))
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 2)
-        self.connector.simulate_index.assert_called_with(index_A)
+        self.connector.simulate_index.assert_called_with(index_0)
 
 
     def test_cache_hit_non_relevant_index(self):
@@ -141,18 +141,18 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
         workload = Workload([self.queries[0]], self.db_name)
-        index_B = Index([self.columns[1]])
+        index_1 = Index([self.columns[1]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
         self.assertEqual(self.connector.get_cost.call_count, 1)
 
-        self.cost_evaluation.calculate_cost(workload, set([index_B]))
+        self.cost_evaluation.calculate_cost(workload, set([index_1]))
         self.assertEqual(self.cost_evaluation.cost_requests, 2)
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
         self.assertEqual(self.connector.get_cost.call_count, 1)
-        self.connector.simulate_index.assert_called_with(index_B)
+        self.connector.simulate_index.assert_called_with(index_1)
 
 class TestPrepareCostEvaluation(unittest.TestCase):
     @classmethod
@@ -161,12 +161,16 @@ class TestPrepareCostEvaluation(unittest.TestCase):
 
         cls.table = Table("TestTableA")
         cls.columns = [
-            Column("ColA", cls.table),
-            Column("ColB", cls.table),
-            Column("ColC", cls.table),
-            Column("ColD", cls.table),
-            Column("ColE", cls.table)
+            Column("Col0", cls.table),
+            Column("Col1", cls.table),
+            Column("Col2", cls.table),
+            Column("Col3", cls.table),
+            Column("Col4", cls.table)
         ]
+
+        cls.index_0 = Index([cls.columns[0]])
+        cls.index_1 = Index([cls.columns[1]])
+        cls.index_2 = Index([cls.columns[2]])
 
     def setUp(self):
         self.mock_what_if = MockWhatIf()
@@ -177,7 +181,7 @@ class TestPrepareCostEvaluation(unittest.TestCase):
         self.cost_evaluation.what_if = self.mock_what_if
 
     def test_prepare_cost_calculation_does_nothing_empty_indexes(self):
-        self.cost_evaluation.current_indexes = set([])
+        self.cost_evaluation.current_indexes = set()
 
         self.cost_evaluation._prepare_cost_calculation(set([]))
         self.mock_what_if.simulate_index.assert_not_called()
@@ -185,62 +189,51 @@ class TestPrepareCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.current_indexes, set([]))
 
     def test_prepare_cost_calculation_does_nothing_indexes_equal_current_indexes(self):
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[1]])
-        self.cost_evaluation.current_indexes = set([index_A, index_B])
+        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
 
-        self.cost_evaluation._prepare_cost_calculation([index_A, index_B])
+        self.cost_evaluation._prepare_cost_calculation([self.index_0, self.index_1])
         self.mock_what_if.simulate_index.assert_not_called()
         self.mock_what_if.drop_simulated_index.assert_not_called()
-        self.assertEqual(self.cost_evaluation.current_indexes, set([index_A, index_B]))
+        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0, self.index_1]))
 
     def test_prepare_cost_calculation_index_removed(self):
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[1]])
-        self.cost_evaluation.current_indexes = set([index_A, index_B])
+        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
 
-        self.cost_evaluation._prepare_cost_calculation([index_A])
+        self.cost_evaluation._prepare_cost_calculation([self.index_0])
         self.mock_what_if.simulate_index.assert_not_called()
-        self.mock_what_if.drop_simulated_index.assert_called_with(index_B)
-        self.assertEqual(self.cost_evaluation.current_indexes, set([index_A]))
+        self.mock_what_if.drop_simulated_index.assert_called_with(self.index_1)
+        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0]))
 
     def test_prepare_cost_calculation_index_added(self):
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[1]])
-        self.cost_evaluation.current_indexes = set([index_A])
+        self.cost_evaluation.current_indexes = set([self.index_0])
 
-        self.cost_evaluation._prepare_cost_calculation([index_A, index_B])
-        self.mock_what_if.simulate_index.assert_called_with(index_B, store_size=False)
+        self.cost_evaluation._prepare_cost_calculation([self.index_0, self.index_1])
+        self.mock_what_if.simulate_index.assert_called_with(self.index_1, store_size=False)
         self.mock_what_if.drop_simulated_index.assert_not_called()
-        self.assertEqual(self.cost_evaluation.current_indexes, set([index_A, index_B]))
+        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0, self.index_1]))
 
     def test_prepare_cost_calculation_index_added_and_removed(self):
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[1]])
-        index_C = Index([self.columns[2]])
-        self.cost_evaluation.current_indexes = set([index_A, index_B])
+        
+        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
 
-        self.cost_evaluation._prepare_cost_calculation([index_A, index_C])
-        self.mock_what_if.simulate_index.assert_called_with(index_C, store_size=False)
-        self.mock_what_if.drop_simulated_index.assert_called_with(index_B)
-        self.assertEqual(self.cost_evaluation.current_indexes, set([index_A, index_C]))
+        self.cost_evaluation._prepare_cost_calculation([self.index_0, self.index_2])
+        self.mock_what_if.simulate_index.assert_called_with(self.index_2, store_size=False)
+        self.mock_what_if.drop_simulated_index.assert_called_with(self.index_1)
+        self.assertEqual(self.cost_evaluation.current_indexes, set([self.index_0, self.index_2]))
 
     def test_complete_cost_estimation(self):
-        index_A = Index([self.columns[0]])
-        index_B = Index([self.columns[1]])
-        self.cost_evaluation.current_indexes = set([index_A, index_B])
+        self.cost_evaluation.current_indexes = set([self.index_0, self.index_1])
 
         self.cost_evaluation.complete_cost_estimation()
-        self.mock_what_if.drop_simulated_index.assert_any_call(index_A)
-        self.mock_what_if.drop_simulated_index.assert_any_call(index_B)
+        self.mock_what_if.drop_simulated_index.assert_any_call(self.index_0)
+        self.mock_what_if.drop_simulated_index.assert_any_call(self.index_1)
         self.assertEqual(self.cost_evaluation.current_indexes, set())
 
     def test_reset(self):
-        index_A = Index([self.columns[0]])
-        self.cost_evaluation.current_indexes = set([index_A])
+        self.cost_evaluation.current_indexes = set([self.index_0])
 
         self.cost_evaluation.reset()
-        self.mock_what_if.drop_simulated_index.assert_called_with(index_A)
+        self.mock_what_if.drop_simulated_index.assert_called_with(self.index_0)
         self.assertEqual(self.cost_evaluation.current_indexes, set())
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
