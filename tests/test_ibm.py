@@ -226,3 +226,8 @@ class TestIBMAlgorithm(unittest.TestCase):
         ]
 
         self.assertEqual(indexes_benefit_to_size, expected_benefit_to_size)
+
+
+    def test_combine_subsumed(self):
+        # the actual method in its current state needs comments.
+        # siehe slack
