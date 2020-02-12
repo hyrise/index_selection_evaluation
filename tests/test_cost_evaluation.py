@@ -237,7 +237,6 @@ class TestPrepareCostEvaluation(unittest.TestCase):
                          set([self.index_0, self.index_1]))
 
     def test_prepare_cost_calculation_index_added_and_removed(self):
-
         self.cost_evaluation.current_indexes = set(
             [self.index_0, self.index_1])
 
