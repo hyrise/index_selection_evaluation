@@ -22,7 +22,7 @@ class SelectionAlgorithm:
             self.cost_evaluation.cost_estimation = estimation
 
     def calculate_best_indexes(self, workload):
-        self.cost_evaluation.reset()
+        # self.cost_evaluation.reset()
         indexes = self._calculate_best_indexes(workload)
         self._log_cache_hits()
         self.cost_evaluation.complete_cost_estimation()

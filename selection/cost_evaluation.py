@@ -79,7 +79,8 @@ class CostEvaluation:
             self.cache[(query, relevant_indexes)] = cost
             return cost
 
-    def _relevant_indexes(self, query, indexes):
+    @staticmethod
+    def _relevant_indexes(query, indexes):
         relevant_indexes = [
             x for x in indexes if any(c in query.columns for c in x.columns)
         ]
