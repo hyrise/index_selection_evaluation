@@ -64,14 +64,11 @@ class TestDropHeuristicAlgorithm(unittest.TestCase):
             'tablea_col0_idx||tablea_col1_idx': 80,
             'tablea_col0_idx||tablea_col2_idx': 60,
             'tablea_col1_idx||tablea_col2_idx': 70,
-            'tablea_col0_idx': 50,
-            'tablea_col2_idx': 40
+            'tablea_col0_idx': 110,
+            'tablea_col2_idx': 100
         }
 
         return index_combination_cost[index_combination_str]
-
-    # TODO add messages to asserts
-    # Make in pther pr methods private
 
     def test_calculate_best_indexes_all_fit(self):
         self.algo.parameters['max_indexes'] = 3
