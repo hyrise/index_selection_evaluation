@@ -48,6 +48,9 @@ class Index:
         return ','.join(self._column_names())
 
     def appendable_by(self, other):
+        if not isinstance(other, Index):
+            return False
+
         if self.table() != other.table():
             return False
 
@@ -56,5 +59,18 @@ class Index:
 
         if other.columns[0] in self.columns:
             return False
+
+        return True
+
+    def subsumes(self, other):
+        if not isinstance(other, Index):
+            return False
+
+        if len(other.columns) > len(self.columns):
+            return False
+
+        for column_position, column in enumerate(other.columns):
+            if self.columns[column_position] != column:
+                return False
 
         return True
