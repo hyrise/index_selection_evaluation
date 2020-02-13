@@ -18,6 +18,24 @@ DEFAULT_PARAMETERS = {
 }
 
 
+class IndexBenefit():
+    def __init__(self, index, benefit):
+        self.index = index
+        self.benefit = benefit
+
+    def __eq__(self, other):
+        if not isinstance(other, IndexBenefit):
+            return False
+
+        return other.index == self.index and self.benefit == other.benefit
+
+    def size(self):
+        return self.index.estimated_size
+
+    def benefit_size_ratio(self):
+        return self.benefit / self.size()
+
+
 class IBMAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters == None:
@@ -33,17 +51,17 @@ class IBMAlgorithm(SelectionAlgorithm):
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes IBM')
         query_results, candidates = self._exploit_virtual_indexes(workload)
-        indexes_benefit_to_size = self._calculate_index_benefits(
+        index_benefits = self._calculate_index_benefits(
             candidates, query_results)
-        self._combine_subsumed(indexes_benefit_to_size)
+        self._combine_subsumed(indexes_benefits)
 
         selected_indexes = []
         disk_usage = 0
-        for index in indexes_benefit_to_size:
+        for index in indexes_benefits:
             if disk_usage + index['size'] <= self.disk_constraint:
                 selected_indexes.append(index)
                 disk_usage += index['size']
-        self._try_variations(selected_indexes, indexes_benefit_to_size,
+        self._try_variations(selected_indexes, indexes_benefits,
                              disk_usage, workload)
         return [x['index'] for x in selected_indexes]
 
@@ -109,7 +127,7 @@ class IBMAlgorithm(SelectionAlgorithm):
         return [Index(p) for p in possible_indexes]
 
     def _calculate_index_benefits(self, candidates, query_results):
-        indexes_benefit_size = []
+        indexes_benefit = []
 
         for index_candidate in candidates:
             benefit = 0
@@ -122,14 +140,10 @@ class IBMAlgorithm(SelectionAlgorithm):
                     'cost_with_recommended_indexes']
                 benefit += benefit_for_query
 
-            indexes_benefit_size.append({
-                'index': index_candidate,
-                'size': index_candidate.estimated_size,
-                'benefit': benefit
-            })
-        return sorted(indexes_benefit_size,
+            indexes_benefit.append(IndexBenefit(index_candidate, benefit))
+        return sorted(indexes_benefit,
                       reverse=True,
-                      key=lambda x: x['benefit'] / x['size'])
+                      key=lambda x: x.benefit_size_ratio())
 
     # "Combine any index subsumed
     # by an index with a higher ratio with that index."
@@ -146,13 +160,17 @@ class IBMAlgorithm(SelectionAlgorithm):
         for remove_at_index in sorted(remove_at, reverse=True):
             del indexes[remove_at_index]
 
-    def _try_variations(self, selected_indexes, indexes_benefit_to_size,
+    # The input is a sorted 
+    def _combine_subsumed_new(self, indexes):
+        pass        
+
+    def _try_variations(self, selected_indexes, indexes_benefits,
                         disk_usage, workload):
         logging.debug(f'Try variation for {self.seconds_limit} seconds')
         start_time = time.time()
 
         not_used_indexes = [
-            x for x in indexes_benefit_to_size if x not in selected_indexes
+            x for x in indexes_benefits if x not in selected_indexes
         ]
         current_cost = self._evaluate_workload(selected_indexes, [], workload)
         logging.debug(f'Initial cost \t{current_cost}')

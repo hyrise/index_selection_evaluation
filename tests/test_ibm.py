@@ -1,4 +1,4 @@
-from selection.algorithms.ibm_algorithm import IBMAlgorithm
+from selection.algorithms.ibm_algorithm import IBMAlgorithm, IndexBenefit
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 
@@ -204,30 +204,18 @@ class TestIBMAlgorithm(unittest.TestCase):
         }
 
         # TODO!!! remove size from the output
+        # TODO!!! make this an object?
 
         indexes_benefit_to_size = self.algo._calculate_index_benefits(
             [index_0, index_1, index_2], query_results)
-        expected_benefit_to_size = [
-            {
-                'index': index_1,
-                'size': 1,
-                'benefit': 40
-            },
-            {
-                'index': index_0,
-                'size': 5,
-                'benefit': 50
-            },
-            {
-                'index': index_2,
-                'size': 3,
-                'benefit': 3
-            },
-        ]
+        expected_benefit_to_size = [IndexBenefit(index_1, 40), IndexBenefit(index_0, 50), IndexBenefit(index_2, 3)]
 
         self.assertEqual(indexes_benefit_to_size, expected_benefit_to_size)
 
 
     def test_combine_subsumed(self):
+        pass
         # the actual method in its current state needs comments.
         # siehe slack
+
+
