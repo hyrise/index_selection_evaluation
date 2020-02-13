@@ -37,7 +37,7 @@ for index_combination_size in range(0, len(relevant_indexes_query1_table_A) + 1)
         # Default cost without any beneficial index
         mock_cache[(query_1, frozenset(index_combination))] = 100
 
-assert mock_cache[(query_1, frozenset({Index([column_A_0])}))] == 20
+assert mock_cache[(query_1, frozenset({Index([column_A_0])}))] == 20, f'{mock_cache[(query_1, frozenset({Index([column_A_0])}))]} != 20'
 
 
 # Calculate relevant indexes for query2 based on potential indexes

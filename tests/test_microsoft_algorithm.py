@@ -11,13 +11,21 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
         self.connector = MockConnector()
         self.database_name = 'test_DB'
 
-    def test_workload1_1index(self):
+    def test_calcualte_indexes_2indexes_3columns(self):
         algorithm = MicrosoftAlgorithm(database_connector=self.connector, parameters={"max_indexes": 2, "max_index_columns": 3})
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = lambda indexes, store_size=False: None
 
         indexes = algorithm.calculate_best_indexes(Workload([query_1, query_2], self.database_name))
         self.assertEqual(set(indexes), set([Index([column_A_0, column_A_1, column_A_2])]))
+
+    def test_calcualte_indexes_2indexes_2columns(self):
+        algorithm = MicrosoftAlgorithm(database_connector=self.connector, parameters={"max_indexes": 2, "max_index_columns": 2})
+        algorithm.cost_evaluation.cache = mock_cache
+        algorithm.cost_evaluation._prepare_cost_calculation = lambda indexes, store_size=False: None
+
+        indexes = algorithm.calculate_best_indexes(Workload([query_1, query_2], self.database_name))
+        self.assertEqual(set(indexes), set([Index([column_A_0, column_A_1])]))
 
 
 if __name__ == '__main__':
