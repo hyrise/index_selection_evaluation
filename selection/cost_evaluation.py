@@ -15,14 +15,12 @@ class CostEvaluation:
         # Cache structure:
         # {(query_object, relevant_indexes): cost}
         self.cache = {}
-
-    def reset(self):
-        self.current_indexes = set()
-        self.cost_requests = 0
-        self.cache_hits = 0
-        self.cache = {}
+        self.completed = False
+        # It is not necessary to drop hypothetical indexes during __init__().
+        # These are only created per connection. Hence, non should be present.
 
     def calculate_cost(self, workload, indexes, store_size=False):
+        assert self.completed == False, 'Cost Evaluation is completed and cannot be reused.'
         self._prepare_cost_calculation(indexes, store_size=store_size)
         total_cost = 0
 
@@ -63,8 +61,12 @@ class CostEvaluation:
             return runtime
 
     def complete_cost_estimation(self):
+        self.completed = True
+
         for index in self.current_indexes:
             self._unsimulate_or_drop_index(index)
+
+        self.current_indexes = set()
 
     def _request_cache(self, query, indexes):
         relevant_indexes = self._relevant_indexes(query, indexes)

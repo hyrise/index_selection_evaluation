@@ -1,4 +1,4 @@
-from selection.selection_algorithm import SelectionAlgorithm
+from selection.selection_algorithm import SelectionAlgorithm, NoIndexAlgorithm
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 from selection.table_generator import TableGenerator
 from selection.workload import Workload
@@ -35,6 +35,18 @@ class TestAlgorithm(unittest.TestCase):
         workload = Workload([], self.db_name)
         with self.assertRaises(NotImplementedError):
             self.selection_algorithm.calculate_best_indexes(workload)
+
+    def test_calculate_best_only_executable_once(self):
+        workload = Workload([], self.db_name)
+        selection_algorithm = NoIndexAlgorithm(
+            PostgresDatabaseConnector(None, autocommit=True))
+        self.assertFalse(selection_algorithm.did_run)
+
+        selection_algorithm.calculate_best_indexes(workload)
+        self.assertTrue(selection_algorithm.did_run)
+
+        with self.assertRaises(Exception):
+            selection_algorithm.calculate_best_indexes(workload)
 
     def test_cost_eval(self):
         db_conn = self.selection_algorithm.cost_evaluation.db_connector
