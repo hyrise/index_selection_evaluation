@@ -16,7 +16,7 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
         logging.info('Parameters: ' + str(self.parameters))
 
         # remaining_indexes is initialized as set of all potential indexes
-        remaining_indexes = set(self.potential_indexes(workload))
+        remaining_indexes = set(workload.potential_indexes())
 
         while len(remaining_indexes) > self.parameters['max_indexes']:
             # drop one index (with the lowest cost) per iteration

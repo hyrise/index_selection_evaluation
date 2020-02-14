@@ -45,12 +45,6 @@ class SelectionAlgorithm:
         ratio = round(hits * 100 / requests, 2)
         logging.debug(f'Cost cache hit ratio:\t{ratio}%')
 
-    def indexable_columns(self, workload):
-        return workload.indexable_columns()
-
-    def potential_indexes(self, workload):
-        return [Index([c]) for c in self.indexable_columns(workload)]
-
 
 class NoIndexAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters={}):
@@ -66,4 +60,4 @@ class AllIndexesAlgorithm(SelectionAlgorithm):
 
     # Returns single column index for each indexable column
     def _calculate_best_indexes(self, workload):
-        return self.potential_indexes(workload)
+        return workload.potential_indexes()
