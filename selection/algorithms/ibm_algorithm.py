@@ -29,6 +29,12 @@ class IndexBenefit():
 
         return other.index == self.index and self.benefit == other.benefit
 
+    def __hash__(self):
+        return hash((self.index, self.benefit))
+
+    def __repr__(self):
+        return f'IndexBenefit({self.index}, {self.benefit})'
+
     def size(self):
         return self.index.estimated_size
 
@@ -145,24 +151,32 @@ class IBMAlgorithm(SelectionAlgorithm):
                       reverse=True,
                       key=lambda x: x.benefit_size_ratio())
 
-    # "Combine any index subsumed
+    # From the paper: "Combine any index subsumed
     # by an index with a higher ratio with that index."
-    def _combine_subsumed(self, indexes):
-        remove_at = set()
-        for i in range(len(indexes)):
-            index = indexes[i]['index']
-            for j in range(i):
-                higher_ratio_index = indexes[j]['index']
-                # check if "better" index includes all columns of `index`
-                # then remove `index`
-                if all(c in higher_ratio_index.columns for c in index.columns):
-                    remove_at.add(i)
-        for remove_at_index in sorted(remove_at, reverse=True):
-            del indexes[remove_at_index]
+    # The input must be a sorted list of IndexBenefit objects.
+    # E.g., the output of _calculate_index_benefits()
+    def _combine_subsumed(self, index_benefits):
+        combined_index_benefits = set()
 
-    # The input is a sorted 
-    def _combine_subsumed_new(self, indexes):
-        pass        
+        # There is no point in subsuming with less than two elements
+        if len(index_benefits) < 2:
+            return set(index_benefits)
+
+        assert index_benefits[0].benefit_size_ratio() >= index_benefits[1].benefit_size_ratio(), "_combine_subsumed got probably unsorted input"
+        
+        already_removed_index_benefits = set()
+        # We can skip the first element because it must have a better ratio than the second one
+        for high_ratio_pos, index_benefit_high_ratio in enumerate(index_benefits):
+            if index_benefit_high_ratio in already_removed_index_benefits:
+                continue
+
+            for index_benefit_low_ratio in index_benefits[high_ratio_pos + 1:]:
+                if index_benefit_low_ratio in already_removed_index_benefits:
+                    continue
+                if index_benefit_high_ratio.index.subsumes(index_benefit_low_ratio.index):
+                    already_removed_index_benefits.add(index_benefit_low_ratio)
+
+        return set(index_benefits) - already_removed_index_benefits
 
     def _try_variations(self, selected_indexes, indexes_benefits,
                         disk_usage, workload):
