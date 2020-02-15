@@ -136,9 +136,9 @@ class TestIndex(unittest.TestCase):
         index_1_0 = Index([self.column_1, self.column_0])
 
         self.assertTrue(index_0.subsumes(index_0_other))
-        
+
         self.assertFalse(index_0.subsumes(index_1))
-        
+
         self.assertTrue(index_0_1.subsumes(index_0))
         self.assertFalse(index_0_1.subsumes(index_1))
         self.assertFalse(index_0_1.subsumes(index_0_2))

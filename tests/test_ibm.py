@@ -4,6 +4,7 @@ from selection.workload import Column, Query, Table, Workload
 
 import unittest
 from unittest.mock import MagicMock
+import time
 
 
 class MockConnector:
@@ -11,6 +12,9 @@ class MockConnector:
         pass
 
     def drop_indexes(self):
+        pass
+
+    def simulate_index(self, index):
         pass
 
 
@@ -34,7 +38,15 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.column_0 = Column('Col0')
         self.column_1 = Column('Col1')
         self.column_2 = Column('Col2')
-        self.all_columns = [self.column_0, self.column_1, self.column_2]
+        self.column_3 = Column('Col3')
+        self.column_4 = Column('Col4')
+        self.column_5 = Column('Col5')
+        self.column_6 = Column('Col6')
+        self.column_7 = Column('Col7')
+        self.all_columns = [
+            self.column_0, self.column_1, self.column_2, self.column_3,
+            self.column_4, self.column_5, self.column_6, self.column_7
+        ]
 
         self.table = Table('Table0')
         self.table.add_columns(self.all_columns)
@@ -205,10 +217,13 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         index_benefits = self.algo._calculate_index_benefits(
             [index_0, index_1, index_2], query_results)
-        expected_index_benefits = [IndexBenefit(index_1, 40), IndexBenefit(index_0, 50), IndexBenefit(index_2, 3)]
+        expected_index_benefits = [
+            IndexBenefit(index_1, 40),
+            IndexBenefit(index_0, 50),
+            IndexBenefit(index_2, 3)
+        ]
 
         self.assertEqual(index_benefits, expected_index_benefits)
-
 
     def test_combine_subsumed(self):
         index_0_1 = Index([self.column_0, self.column_1])
@@ -219,15 +234,23 @@ class TestIBMAlgorithm(unittest.TestCase):
         index_1.estimated_size = 1
 
         # Scenario 1. Index subsumed because better ratio for larger index
-        index_benefits = [IndexBenefit(index_0_1, 21), IndexBenefit(index_0, 10)]
+        index_benefits = [
+            IndexBenefit(index_0_1, 21),
+            IndexBenefit(index_0, 10)
+        ]
         subsumed = self.algo._combine_subsumed(index_benefits)
         expected = frozenset([IndexBenefit(index_0_1, 21)])
         self.assertEqual(subsumed, expected)
 
         # Scenario 2. Index not subsumed because better index has fewer attributes
-        index_benefits = [IndexBenefit(index_0, 11), IndexBenefit(index_0_1, 20)]
+        index_benefits = [
+            IndexBenefit(index_0, 11),
+            IndexBenefit(index_0_1, 20)
+        ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset([IndexBenefit(index_0, 11), IndexBenefit(index_0_1, 20)])
+        expected = frozenset(
+            [IndexBenefit(index_0, 11),
+             IndexBenefit(index_0_1, 20)])
         self.assertEqual(subsumed, expected)
 
         # Scenario 3. Index not subsumed because last element does not match attribute even though better ratio
@@ -236,19 +259,31 @@ class TestIBMAlgorithm(unittest.TestCase):
         index_0_2 = Index([self.column_0, self.column_2])
         index_0_2.estimated_size = 2
 
-        index_benefits = [IndexBenefit(index_0_1_2, 31), IndexBenefit(index_0_2, 20)]
+        index_benefits = [
+            IndexBenefit(index_0_1_2, 31),
+            IndexBenefit(index_0_2, 20)
+        ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset([IndexBenefit(index_0_1_2, 31), IndexBenefit(index_0_2, 20)])
+        expected = frozenset(
+            [IndexBenefit(index_0_1_2, 31),
+             IndexBenefit(index_0_2, 20)])
         self.assertEqual(subsumed, expected)
 
         # Scenario 4. Multi Index subsumed
-        index_benefits = [IndexBenefit(index_0_1_2, 31), IndexBenefit(index_0_1, 20)]
+        index_benefits = [
+            IndexBenefit(index_0_1_2, 31),
+            IndexBenefit(index_0_1, 20)
+        ]
         subsumed = self.algo._combine_subsumed(index_benefits)
         expected = frozenset([IndexBenefit(index_0_1_2, 31)])
         self.assertEqual(subsumed, expected)
 
         # Scenario 5. Multiple Indexes subsumed
-        index_benefits = [IndexBenefit(index_0_1_2, 31), IndexBenefit(index_0_1, 20), IndexBenefit(index_0, 10)]
+        index_benefits = [
+            IndexBenefit(index_0_1_2, 31),
+            IndexBenefit(index_0_1, 20),
+            IndexBenefit(index_0, 10)
+        ]
         subsumed = self.algo._combine_subsumed(index_benefits)
         expected = frozenset([IndexBenefit(index_0_1_2, 31)])
         self.assertEqual(subsumed, expected)
@@ -260,4 +295,76 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         # Scenario 7. Input not sorted by ratio throws
         with self.assertRaises(Exception):
-            subsumed = self.algo._combine_subsumed([IndexBenefit(index_0, 10), IndexBenefit(index_0_1, 21)])
+            subsumed = self.algo._combine_subsumed(
+                [IndexBenefit(index_0, 10),
+                 IndexBenefit(index_0_1, 21)])
+
+    def test_evaluate_workload(self):
+        index_0 = Index([self.column_0])
+        index_1 = Index([self.column_1])
+        self.algo.cost_evaluation.calculate_cost = MagicMock()
+
+        self.algo._evaluate_workload(
+            [IndexBenefit(index_0, 10),
+             IndexBenefit(index_1, 9)], workload=[])
+        self.algo.cost_evaluation.calculate_cost.assert_called_once_with(
+            [], [index_0, index_1])
+
+    def test_try_variations_time_limit(self):
+        index_0 = Index([self.column_0])
+        index_0.estimated_size = 1
+        index_1 = Index([self.column_1])
+        index_1.estimated_size = 1
+        index_2 = Index([self.column_2])
+        index_2.estimated_size = 1
+        index_3 = Index([self.column_3])
+        index_3.estimated_size = 1
+        index_4 = Index([self.column_4])
+        index_4.estimated_size = 1
+        index_5 = Index([self.column_5])
+        index_5.estimated_size = 1
+        index_6 = Index([self.column_6])
+        index_6.estimated_size = 1
+        index_7 = Index([self.column_7])
+        index_7.estimated_size = 1
+        self.algo.cost_evaluation.calculate_cost = MagicMock(return_value=17)
+        self.algo.seconds_limit = 0.2
+
+        time_before = time.time()
+        self.algo._try_variations(
+            selected_index_benefits=frozenset([IndexBenefit(index_0, 1)]),
+            index_benefits=frozenset([IndexBenefit(index_1, 1)]),
+            workload=[])
+        self.assertGreaterEqual(time.time(),
+                                time_before + self.algo.seconds_limit)
+
+        def fake(selected, workload):
+            cost = 10
+            if IndexBenefit(index_3, 1.5) in selected:
+                cost -= 0.5
+            if IndexBenefit(index_4, 0.5) in selected:
+                cost += 0.5
+            if IndexBenefit(index_1, 0.5) in selected:
+                cost += 0.5
+            return cost
+
+        # In this scenario a good index has not been selected (index_3). We test three things: (i) That index_3 gets chosen by variation. (ii) That the weakest index from the original selection gets removed (index_1). (iii) That index_4 does not get chosen even though it is better than index_1.
+        self.algo._evaluate_workload = fake
+        self.algo.maximum_remove = 1
+        self.algo.disk_constraint = 3
+        new = self.algo._try_variations(selected_index_benefits=frozenset([
+            IndexBenefit(index_0, 1),
+            IndexBenefit(index_1, 0.5),
+            IndexBenefit(index_2, 1)
+        ]),
+                                        index_benefits=frozenset([
+                                            IndexBenefit(index_3, 1.5),
+                                            IndexBenefit(index_4, 0.6)
+                                        ]),
+                                        workload=[])
+        self.assertIn(IndexBenefit(index_3, 1.5), new)
+        self.assertNotIn(IndexBenefit(index_4, 0.5), new)
+        self.assertNotIn(IndexBenefit(index_1, 0.5), new)
+
+        # Test IndexBenefit
+        # Comment for subsume method
