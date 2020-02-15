@@ -4,12 +4,12 @@ import logging
 
 
 class SelectionAlgorithm:
-    def __init__(self, database_connector, parameters, default_parameters={}):
+    def __init__(self, database_connector, parameters, default_parameters=None):
+        if default_parameters == None:
+            default_parameters = {}
         logging.debug('Init selection algorithm')
         self.did_run = False
         self.parameters = parameters
-        if not parameters:
-            self.parameters = {}
         # Store default values for missing parameters
         for key, value in default_parameters.items():
             if key not in self.parameters:
@@ -54,7 +54,9 @@ class SelectionAlgorithm:
 
 
 class NoIndexAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters={}):
+    def __init__(self, database_connector, parameters=None):
+        if parameters == None:
+            parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters)
 
     def _calculate_best_indexes(self, workload):
@@ -62,7 +64,9 @@ class NoIndexAlgorithm(SelectionAlgorithm):
 
 
 class AllIndexesAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters={}):
+    def __init__(self, database_connector, parameters=None):
+        if parameters == None:
+            parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters)
 
     # Returns single column index for each indexable column
