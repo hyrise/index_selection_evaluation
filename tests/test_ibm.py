@@ -326,7 +326,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         index_6 = Index([self.column_6])
         index_6.estimated_size = 1
         index_7 = Index([self.column_7])
-        index_7.estimated_size = 1
+        index_7.estimated_size = 5
         self.algo.cost_evaluation.calculate_cost = MagicMock(return_value=17)
         self.algo.seconds_limit = 0.2
 
@@ -346,9 +346,15 @@ class TestIBMAlgorithm(unittest.TestCase):
                 cost += 0.5
             if IndexBenefit(index_1, 0.5) in selected:
                 cost += 0.5
+            if IndexBenefit(index_1, 0.5) in selected:
+                cost += 0.5
             return cost
 
-        # In this scenario a good index has not been selected (index_3). We test three things: (i) That index_3 gets chosen by variation. (ii) That the weakest index from the original selection gets removed (index_1). (iii) That index_4 does not get chosen even though it is better than index_1.
+        # In this scenario a good index has not been selected (index_3).
+        # We test three things:
+        # (i) That index_3 gets chosen by variation.
+        # (ii) That the weakest index from the original selection gets removed (index_1).
+        # (iii) That index_4 does not get chosen even though it is better than index_1.
         self.algo._evaluate_workload = fake
         self.algo.maximum_remove = 1
         self.algo.disk_constraint = 3
@@ -358,6 +364,9 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_2, 1)
         ]),
                                         index_benefits=frozenset([
+                                            IndexBenefit(index_0, 1),
+                                            IndexBenefit(index_1, 0.5),
+                                            IndexBenefit(index_2, 1),
                                             IndexBenefit(index_3, 1.5),
                                             IndexBenefit(index_4, 0.6)
                                         ]),
@@ -366,5 +375,16 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.assertNotIn(IndexBenefit(index_4, 0.5), new)
         self.assertNotIn(IndexBenefit(index_1, 0.5), new)
 
+        # Test that good index is not chosen because of storage restrictions
+        new = self.algo._try_variations(selected_index_benefits=frozenset([
+            IndexBenefit(index_0, 1),
+        ]),
+                                        index_benefits=frozenset([
+                                            IndexBenefit(index_0, 1),
+                                            IndexBenefit(index_7, 5),
+                                        ]),
+                                        workload=[])
+        self.assertEqual(new, set([IndexBenefit(index_0, 1)]))
+
         # Test IndexBenefit
-        # Comment for subsume method
+        # Test does not choose index with high storage

@@ -167,21 +167,22 @@ class IBMAlgorithm(SelectionAlgorithm):
         ) >= index_benefits[1].benefit_size_ratio(
         ), "_combine_subsumed got probably unsorted input"
 
-        already_removed_index_benefits = set()
-        # We can skip the first element because it must have a better ratio than the second one
+        index_benefits_to_remove = set()
         for high_ratio_pos, index_benefit_high_ratio in enumerate(
                 index_benefits):
-            if index_benefit_high_ratio in already_removed_index_benefits:
+            if index_benefit_high_ratio in index_benefits_to_remove:
                 continue
 
-            for index_benefit_low_ratio in index_benefits[high_ratio_pos + 1:]:
-                if index_benefit_low_ratio in already_removed_index_benefits:
+            # We take the next element because there is no point in self comparison
+            for index_benefit_lower_ratio in index_benefits[high_ratio_pos +
+                                                            1:]:
+                if index_benefit_lower_ratio in index_benefits_to_remove:
                     continue
                 if index_benefit_high_ratio.index.subsumes(
-                        index_benefit_low_ratio.index):
-                    already_removed_index_benefits.add(index_benefit_low_ratio)
+                        index_benefit_lower_ratio.index):
+                    index_benefits_to_remove.add(index_benefit_lower_ratio)
 
-        return set(index_benefits) - already_removed_index_benefits
+        return set(index_benefits) - index_benefits_to_remove
 
     def _try_variations_old(self, selected_index_benefits, index_benefits,
                             disk_usage, workload):
@@ -257,28 +258,30 @@ class IBMAlgorithm(SelectionAlgorithm):
         logging.debug(f'Initial cost \t{current_cost}')
 
         while start_time + self.seconds_limit > time.time():
-            number_of_exchanged_elements = random.randrange(
+            number_of_exchanges = random.randrange(
                 1, self.maximum_remove) if self.maximum_remove > 1 else 1
             indexes_to_remove = frozenset(
-                random.sample(selected_index_benefits,
-                              k=number_of_exchanged_elements))
+                random.sample(selected_index_benefits, k=number_of_exchanges))
+
             new_variaton = set(selected_index_benefits - indexes_to_remove)
             new_variation_size = sum([x.size() for x in new_variaton])
 
             indexes_to_add = random.sample(not_used_index_benefits,
-                                           k=number_of_exchanged_elements)
+                                           k=number_of_exchanges)
             for index_benefit in indexes_to_add:
                 if index_benefit.size(
                 ) + new_variation_size > self.disk_constraint:
                     continue
                 new_variaton.add(index_benefit)
-                new_variation_size = index_benefit.size()
+                new_variation_size += index_benefit.size()
+
             cost_of_variation = self._evaluate_workload(new_variaton, workload)
 
             if cost_of_variation < current_cost:
                 logging.debug(f'Lower cost found \t{current_cost}')
                 current_cost = cost_of_variation
                 selected_index_benefits = new_variaton
+
         return selected_index_benefits
 
     def _evaluate_workload(self, index_benefits, workload):
