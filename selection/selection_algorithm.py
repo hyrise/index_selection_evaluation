@@ -23,8 +23,7 @@ class SelectionAlgorithm:
             self.cost_evaluation.cost_estimation = estimation
 
     def calculate_best_indexes(self, workload):
-        assert self.did_run == False, 'Selection algorithm can only run once.'
-
+        assert self.did_run is False, 'Selection algorithm can only run once.'
         self.did_run = True
         indexes = self._calculate_best_indexes(workload)
         self._log_cache_hits()
@@ -46,12 +45,6 @@ class SelectionAlgorithm:
         ratio = round(hits * 100 / requests, 2)
         logging.debug(f'Cost cache hit ratio:\t{ratio}%')
 
-    def indexable_columns(self, workload):
-        return workload.indexable_columns()
-
-    def potential_indexes(self, workload):
-        return [Index([c]) for c in self.indexable_columns(workload)]
-
 
 class NoIndexAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
@@ -71,4 +64,4 @@ class AllIndexesAlgorithm(SelectionAlgorithm):
 
     # Returns single column index for each indexable column
     def _calculate_best_indexes(self, workload):
-        return self.potential_indexes(workload)
+        return workload.potential_indexes()

@@ -19,8 +19,7 @@ class EPICAlgorithm(SelectionAlgorithm):
 
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes EPIC')
-        self.workload = workload
-        single_attribute_index_candidates = self.potential_indexes(self.workload)
+        single_attribute_index_candidates = self.workload.potential_indexes()
 
         # Current index combination
         index_combination = []
