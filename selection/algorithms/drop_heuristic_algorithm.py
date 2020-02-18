@@ -29,10 +29,6 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
                     workload, remaining_indexes - set([index]))
                 if not lowest_cost or cost < lowest_cost:
                     lowest_cost, index_to_drop = cost, index
-            old_len = len(remaining_indexes)
             remaining_indexes.remove(index_to_drop)
-            assert old_len - 1 == len(
-                remaining_indexes
-            ), 'Drop heuristic should have dropped an index but did not.'
 
         return remaining_indexes
