@@ -75,13 +75,13 @@ class TestDropHeuristicAlgorithm(unittest.TestCase):
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = frozenset(
             [self.index_0, self.index_1, self.index_2])
-        self.assertCountEqual(indexes, expected_indexes)
+        self.assertEqual(indexes, expected_indexes)
 
     def test_calculate_best_indexes_two_fit(self):
         self.algo.parameters['max_indexes'] = 2
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = frozenset([self.index_0, self.index_2])
-        self.assertCountEqual(indexes, expected_indexes)
+        self.assertEqual(indexes, expected_indexes)
         self.algo.cost_evaluation.calculate_cost.assert_any_call(
             self.workload, set([self.index_0, self.index_1]))
         self.algo.cost_evaluation.calculate_cost.assert_any_call(
