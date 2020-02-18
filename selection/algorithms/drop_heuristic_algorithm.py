@@ -12,6 +12,8 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
                                     DEFAULT_PARAMETERS)
 
     def _calculate_best_indexes(self, workload):
+        assert self.parameters[
+            'max_indexes'] > 0, 'Calling the DropHeuristic with max_indexes < 1 does not make sense.'
         logging.info('Calculating best indexes (drop heuristic)')
         logging.info('Parameters: ' + str(self.parameters))
 
@@ -19,7 +21,7 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
         remaining_indexes = set(self.potential_indexes(workload))
 
         while len(remaining_indexes) > self.parameters['max_indexes']:
-            # drop one index (with the lowest cost) per iteration
+            # Drop index that, when dropped, leads to lowest cost
             lowest_cost = None
             index_to_drop = None
             for index in remaining_indexes:
@@ -27,8 +29,6 @@ class DropHeuristicAlgorithm(SelectionAlgorithm):
                     workload, remaining_indexes - set([index]))
                 if not lowest_cost or cost < lowest_cost:
                     lowest_cost, index_to_drop = cost, index
-            old_len = len(remaining_indexes)
             remaining_indexes.remove(index_to_drop)
-            assert old_len - 1 == len(remaining_indexes)
 
         return remaining_indexes
