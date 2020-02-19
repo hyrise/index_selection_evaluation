@@ -51,7 +51,6 @@ class Benchmark:
             self.index_create_time = 0
             for index in self.indexes:
                 self.what_if.simulate_index(index, store_size=True)
-        self.db_connector.create_statistics()
         self._benchmark()
         if self.number_of_runs > 0:
             self._drop_indexes()
