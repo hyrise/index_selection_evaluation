@@ -123,7 +123,6 @@ class IndexSelection:
 
     def _run_algorithm(self, config):
         self.db_connector.drop_indexes()
-        self.db_connector.create_statistics()
         self.db_connector.commit()
 
         algorithm = self.create_algorithm_object(config['name'],
