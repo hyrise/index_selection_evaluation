@@ -17,16 +17,6 @@ class MockConnector:
     def simulate_index(self, index):
         pass
 
-
-# class MockCostEvaluation:
-#     def __init__(self):
-#         pass
-
-# def index_combination_to_str(index_combination):
-#     indexes_as_str = sorted([x.index_idx() for x in index_combination])
-
-#     return '||'.join(indexes_as_str)
-
 MB_TO_BYTES = 1000000
 
 
@@ -385,6 +375,3 @@ class TestIBMAlgorithm(unittest.TestCase):
                                         ]),
                                         workload=[])
         self.assertEqual(new, set([IndexBenefit(index_0, 1)]))
-
-        # Test IndexBenefit
-        # Test does not choose index with high storage
