@@ -23,6 +23,7 @@ TOP = r"""\documentclass[tikz]{standalone}
     s3,every mark/.append style={fill=s3,fill opacity=0.1},mark=triangle*\\
     s4,every mark/.append style={fill=s4,fill opacity=0.1},mark=diamond*\\
     s5,every mark/.append style={fill=s5,fill opacity=0.1},mark=star\\
+    s6,every mark/.append style={fill=s6,fill opacity=0.1},mark=x\\
 }
 
 \begin{document}
