@@ -18,7 +18,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
-        self.max_indexes = self.parameters['max_indexes_naive']
+        self.max_indexes = self.parameters['max_indexes']
         self.max_indexes_naive = min(self.parameters['max_indexes_naive'],
                                      self.max_indexes)
         self.max_columns_per_index = self.parameters['max_index_columns']
