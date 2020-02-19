@@ -36,9 +36,8 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
                 1, self.max_columns_per_index + 1):
             candidates = self.select_index_candidates(workload,
                                                       potential_indexes)
-            indexes, _ = self.enumerate_combinations(workload, candidates)
-            assert indexes & candidates == set(
-            ), 'Intersection of indexes and candidate indexes must be empty'
+            indexes = self.enumerate_combinations(workload, candidates)
+            assert indexes <= candidates, 'Indexes must be a subset of candidate indexes'
 
             if current_max_columns_per_index < self.max_columns_per_index:
                 # Update potential indexes for the next iteration
@@ -53,9 +52,9 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
             logging.debug(f'Find candidates for query\t{query}...')
             # Create a workload consisting of one query
             query_workload = Workload([query], workload.database_name)
-            indexes = self._potential_indexes_for_query(query, potential_indexes)
-            candidates |= self.enumerate_combinations(query_workload,
-                                                      indexes)[0]
+            indexes = self._potential_indexes_for_query(
+                query, potential_indexes)
+            candidates |= self.enumerate_combinations(query_workload, indexes)
 
         logging.info(f'Number of candidates: {len(candidates)}\n'
                      f'Candidates: {candidates}')
@@ -85,18 +84,17 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
                   f'\tlowest cost indexes (naive): {current_indexes}'
         logging.debug(log_out)
 
-        candidate_indexes -= current_indexes
         number_indexes = min(self.max_indexes, len(candidate_indexes))
-        indexes, costs = self.enumerate_greedy(workload, current_indexes,
-                                               costs, candidate_indexes,
-                                               number_indexes)
+        indexes, costs = self.enumerate_greedy(
+            workload, current_indexes, costs,
+            candidate_indexes - current_indexes, number_indexes)
 
         log_out = f'lowest cost (greedy): {costs}\n' \
                   f'\tlowest cost indexes (greedy): {indexes}\n' \
                   f'(greedy): number indexes {len(indexes)}\n'
         logging.debug(log_out)
 
-        return set(indexes), costs
+        return set(indexes)
 
     def enumerate_naive(self, workload, candidate_indexes,
                         number_indexes_naive):

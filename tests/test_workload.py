@@ -3,6 +3,7 @@ from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 import unittest
 from unittest.mock import MagicMock
+from tests.mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 
 
 class TestTable(unittest.TestCase):
@@ -183,6 +184,29 @@ class TestWorkload(unittest.TestCase):
         indexable_columns = workload.indexable_columns()
         self.assertEqual(sorted(indexable_columns),
                          sorted([column_1, column_2, column_3]))
+
+    def test_potentioal_indexes(self):
+        index_set_1 = set([Index([column_A_0])])
+        index_set_2 = set(
+            [Index([column_A_0]),
+             Index([column_A_1]),
+             Index([column_A_2])])
+
+        self.assertEqual(
+            set(
+                Workload([query_0],
+                         database_name='test_DB').potential_indexes()),
+            index_set_1)
+        self.assertEqual(
+            set(
+                Workload([query_1],
+                         database_name='test_DB').potential_indexes()),
+            index_set_2)
+        self.assertEqual(
+            set(
+                Workload([query_0, query_1],
+                         database_name='test_DB').potential_indexes()),
+            index_set_2)
 
 
 if __name__ == '__main__':
