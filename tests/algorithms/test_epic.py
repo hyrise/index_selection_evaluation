@@ -139,7 +139,8 @@ class TestEpicAlgorithm(unittest.TestCase):
         self.algo.budget = 2
         best_old = {
           'combination': [self.index_2],
-          'benefit_to_size_ratio': 1
+          'benefit_to_size_ratio': 1,
+          'cost': 4
         }
         best_input = best_old.copy()
         new_index_combination = [self.index_1]
@@ -166,7 +167,7 @@ class TestEpicAlgorithm(unittest.TestCase):
         # Mock the internal algorithm state
         best_old = {
           'combination': [self.index_2],
-          'benefit_to_size_ratio': 1
+          'benefit_to_size_ratio': 1,
         }
         best_input = best_old.copy()
         new_index_combination = [self.index_1]
@@ -181,7 +182,8 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         expected_best = {
           'combination': new_index_combination,
-          'benefit_to_size_ratio': 2
+          'benefit_to_size_ratio': 2,
+          'cost': 4
         }
         self.assertEqual(expected_best, best_input)
 
