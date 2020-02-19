@@ -60,6 +60,8 @@ class EPICAlgorithm(SelectionAlgorithm):
                 new_combination = index_combination.copy()
                 new_combination[position] = Index(index.columns +
                     candidate.columns)
+                if new_combination[position] in index_combination:
+                    continue
                 self._evaluate_combination(new_combination, best,
                     current_cost)
 
