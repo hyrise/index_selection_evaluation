@@ -27,7 +27,6 @@ class Benchmark:
         self.calculation_time = calculation_time
         self.disable_csv = disable_csv
         self.parameter_list_used = parameter_list_used
-        self._set_csv_filename(disable_csv)
         self.what_if = what_if
 
         self.scale_factor = global_config['scale_factor']
@@ -36,6 +35,8 @@ class Benchmark:
         self.seed = None
         if 'seed' in global_config:
             self.seed = global_config['seed']
+
+        self._set_csv_filename(disable_csv)
 
     def benchmark(self):
         self.db_connector.drop_indexes()
@@ -161,9 +162,7 @@ class Benchmark:
         self.db_connector.commit()
 
     def _set_csv_filename(self, disable_csv):
-        name = 'results_{}_queries.csv'.format(len(self.workload.queries))
+        name = f"results_{self.config['name']}_{self.benchmark_name}_{len(self.workload.queries)}_queries.csv"
         self.filename = 'benchmark_results/' + name
-        if self.parameter_list_used:
-            self.filename = 'benchmark_results/list_' + name
         if disable_csv:
             self.filename = os.devnull
