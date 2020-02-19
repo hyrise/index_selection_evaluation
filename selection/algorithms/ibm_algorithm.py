@@ -184,63 +184,6 @@ class IBMAlgorithm(SelectionAlgorithm):
 
         return set(index_benefits) - index_benefits_to_remove
 
-    def _try_variations_old(self, selected_index_benefits, index_benefits,
-                            disk_usage, workload):
-        logging.debug(f'Try variation for {self.seconds_limit} seconds')
-        start_time = time.time()
-
-        not_used_indexes = [
-            x for x in index_benefits if x not in selected_index_benefits
-        ]
-        current_cost = self._evaluate_workload(selected_index_benefits, [],
-                                               workload)
-        logging.debug(f'Initial cost \t{current_cost}')
-
-        while start_time + self.seconds_limit > time.time():
-            disk_usage = sum([x.size() for x in selected_index_benefits])
-            # randomly choose indexes from current index set
-            number_removed = random.randrange(
-                1, self.maximum_remove) if self.maximum_remove > 1 else 1
-            remove_at_indexes = list(range(len(selected_index_benefits)))
-            random.shuffle(remove_at_indexes)
-            remove_at_indexes = remove_at_indexes[:number_removed]
-
-            # remove these chosen indexes
-            removed = []
-            for remove_at_index in sorted(remove_at_indexes, reverse=True):
-                index = selected_index_benefits[remove_at_index]
-                disk_usage -= index.size()
-                del selected_index_benefits[remove_at_index]
-                removed.append(index)
-
-            # adding random unused indexes
-            new_selected = []
-            for i in range(number_removed):
-                maximum_size = self.disk_constraint - disk_usage
-                candidates = [
-                    x for x in not_used_indexes if x.size() <= maximum_size
-                ]
-                if len(candidates) == 0:
-                    break
-                random.shuffle(candidates)
-                selected_index = candidates[0]
-                disk_usage += selected_index.size()
-                new_selected.append(selected_index)
-                not_used_indexes.remove(selected_index)
-            # reevaluate new selected and replace if lower cost
-            cost = self._evaluate_workload(selected_index_benefits,
-                                           new_selected, workload)
-            if cost < current_cost:
-                not_used_indexes.extend(removed)
-                selected_index_benefits.extend(new_selected)
-                current_cost = cost
-                logging.debug(f'Lower cost found \t{current_cost}')
-            else:
-                selected_index_benefits.extend(removed)
-                not_used_indexes.extend(new_selected)
-
-        return selected_index_benefits
-
     def _try_variations(self, selected_index_benefits, index_benefits,
                         workload):
         logging.debug(f'Try variation for {self.seconds_limit} seconds')
