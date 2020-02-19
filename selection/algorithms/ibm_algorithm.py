@@ -61,16 +61,16 @@ class IBMAlgorithm(SelectionAlgorithm):
             candidates, query_results)
         index_benefits_subsumed = self._combine_subsumed(index_benefits)
 
-        selected_index_benefits = []
+        selected_index_benefits = set()
         disk_usage = 0
         for index_benefit in index_benefits_subsumed:
             if disk_usage + index_benefit.size() <= self.disk_constraint:
-                selected_index_benefits.append(index_benefit)
+                selected_index_benefits.add(index_benefit)
                 disk_usage += index_benefit.size()
 
         self._try_variations(selected_index_benefits, index_benefits_subsumed,
-                             disk_usage, workload)
-        return [x['index'] for x in selected_index_benefits]
+                             workload)
+        return [x.index for x in selected_index_benefits]
 
     def _exploit_virtual_indexes(self, workload):
         query_results, index_candidates = {}, set()
@@ -246,13 +246,17 @@ class IBMAlgorithm(SelectionAlgorithm):
         logging.debug(f'Try variation for {self.seconds_limit} seconds')
         start_time = time.time()
 
-        min_length = min(len(selected_index_benefits), len(index_benefits))
-        if self.maximum_remove > min_length:
-            self.maximum_remove = min_length
-
         not_used_index_benefits = [
             x for x in index_benefits if x not in selected_index_benefits
         ]
+
+        min_length = min(len(selected_index_benefits), len(not_used_index_benefits))
+        if self.maximum_remove > min_length:
+            self.maximum_remove = min_length
+
+        if self.maximum_remove == 0:
+            return selected_index_benefits
+
         current_cost = self._evaluate_workload(selected_index_benefits,
                                                workload)
         logging.debug(f'Initial cost \t{current_cost}')
