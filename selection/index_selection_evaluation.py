@@ -19,6 +19,8 @@ import time
 import copy
 
 ALGORITHMS = {
+    'microsoft-max2': MicrosoftAlgorithm,
+    'microsoft-max3': MicrosoftAlgorithm,
     'microsoft': MicrosoftAlgorithm,
     'drop_heuristic': DropHeuristicAlgorithm,
     'no_index': NoIndexAlgorithm,
