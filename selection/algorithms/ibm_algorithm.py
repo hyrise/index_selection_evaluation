@@ -208,14 +208,15 @@ class IBMAlgorithm(SelectionAlgorithm):
         current_cost = self._evaluate_workload(selected_index_benefits,
                                                workload)
         logging.debug(f'Initial cost \t{current_cost}')
+        selected_index_benefits_set = set(selected_index_benefits)
 
         while start_time + self.seconds_limit > time.time():
             number_of_exchanges = random.randrange(
                 1, self.maximum_remove) if self.maximum_remove > 1 else 1
             indexes_to_remove = frozenset(
-                random.sample(selected_index_benefits, k=number_of_exchanges))
+                random.sample(selected_index_benefits_set, k=number_of_exchanges))
 
-            new_variaton = set(selected_index_benefits - indexes_to_remove)
+            new_variaton = set(selected_index_benefits_set - indexes_to_remove)
             new_variation_size = sum([x.size() for x in new_variaton])
 
             indexes_to_add = random.sample(not_used_index_benefits,
@@ -233,9 +234,9 @@ class IBMAlgorithm(SelectionAlgorithm):
             if cost_of_variation < current_cost:
                 logging.debug(f'Lower cost found \t{current_cost}')
                 current_cost = cost_of_variation
-                selected_index_benefits = new_variaton
+                selected_index_benefits_set = new_variaton
 
-        return selected_index_benefits
+        return selected_index_benefits_set
 
     def _evaluate_workload(self, index_benefits, workload):
         index_candidates = [
