@@ -7,7 +7,9 @@ DEFAULT_PARAMETERS = {'max_indexes': 15, 'cost_estimation': 'whatif'}
 
 
 class DropHeuristicAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters={}):
+    def __init__(self, database_connector, parameters=None):
+        if parameters is None:
+            parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
 
