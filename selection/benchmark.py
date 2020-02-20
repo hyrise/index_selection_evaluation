@@ -16,6 +16,8 @@ class Benchmark:
                  calculation_time,
                  disable_csv,
                  global_config,
+                 cost_requests,
+                 cache_hits,
                  parameter_list_used=False,
                  what_if=None):
         self.workload = workload
@@ -28,6 +30,8 @@ class Benchmark:
         self.disable_csv = disable_csv
         self.parameter_list_used = parameter_list_used
         self.what_if = what_if
+        self.cost_requests = cost_requests
+        self.cache_hits = cache_hits
 
         self.scale_factor = global_config['scale_factor']
         self.benchmark_name = global_config['benchmark_name']
@@ -61,7 +65,7 @@ class Benchmark:
         header = [
             'date', 'commit', 'algorithm name', 'parameters', 'scale factor',
             'benchmark name', 'db system', 'algorithm runtime', '#indexes',
-            'index create time', 'memory consumption'
+            'index create time', 'memory consumption', 'cost requests', 'cache hits'
         ]
         for query in self.workload.queries:
             header.append('q' + str(query.nr))
@@ -88,7 +92,9 @@ class Benchmark:
             date, commit_hash, config['name'], config['parameters'],
             self.scale_factor, self.benchmark_name, self.db_system,
             self.calculation_time,
-            len(self.indexes), self.index_create_time, indexes_size
+            len(self.indexes), self.index_create_time, indexes_size,
+            self.cost_requests, self.cache_hits
+
         ]
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))
