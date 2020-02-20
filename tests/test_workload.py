@@ -185,7 +185,7 @@ class TestWorkload(unittest.TestCase):
         self.assertEqual(sorted(indexable_columns),
                          sorted([column_1, column_2, column_3]))
 
-    def test_potentioal_indexes(self):
+    def test_potential_indexes(self):
         index_set_1 = set([Index([column_A_0])])
         index_set_2 = set(
             [Index([column_A_0]),
