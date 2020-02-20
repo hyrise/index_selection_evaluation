@@ -31,7 +31,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         best = {'combination': [], 'benefit_to_size_ratio': 0, 'cost': None}
 
         current_cost = self._retrieve_cost(index_combination)
-        initial_current_cost = current_cost
+        self.initial_cost = current_cost
         # Breaking when no cost improvement
         while True:
             single_attribute_index_candidates = self._remove_candidates_too_large_for_budget(index_combination_size, single_attribute_index_candidates)
