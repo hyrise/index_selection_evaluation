@@ -182,7 +182,12 @@ class IBMAlgorithm(SelectionAlgorithm):
                         index_benefit_lower_ratio.index):
                     index_benefits_to_remove.add(index_benefit_lower_ratio)
 
-        return set(index_benefits) - index_benefits_to_remove
+        result_set = set(index_benefits) - index_benefits_to_remove
+        result_list = list(result_set)
+
+        return (sorted(result_list,
+                      reverse=True,
+                      key=lambda x: x.benefit_size_ratio()))
 
     def _try_variations(self, selected_index_benefits, index_benefits,
                         workload):
@@ -215,8 +220,7 @@ class IBMAlgorithm(SelectionAlgorithm):
 
             indexes_to_add = random.sample(not_used_index_benefits,
                                            k=number_of_exchanges)
-            assert len(indexes_to_add) == len(indexes_to_remove),
-            '_try_variations must remove the same number of indexes that are added.'
+            assert len(indexes_to_add) == len(indexes_to_remove), '_try_variations must remove the same number of indexes that are added.'
             for index_benefit in indexes_to_add:
                 if index_benefit.size(
                 ) + new_variation_size > self.disk_constraint:
