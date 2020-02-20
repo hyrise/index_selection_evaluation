@@ -65,12 +65,4 @@ class Index:
     def subsumes(self, other):
         if not isinstance(other, Index):
             return False
-
-        if len(other.columns) > len(self.columns):
-            return False
-
-        for column_position, column in enumerate(other.columns):
-            if self.columns[column_position] != column:
-                return False
-
-        return True
+        return self.columns[:len(other.columns)] == other.columns

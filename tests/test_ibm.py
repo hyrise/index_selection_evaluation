@@ -17,6 +17,7 @@ class MockConnector:
     def simulate_index(self, index):
         pass
 
+
 MB_TO_BYTES = 1000000
 
 
@@ -229,7 +230,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0, 10)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset([IndexBenefit(index_0_1, 21)])
+        expected = [IndexBenefit(index_0_1, 21)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 2. Index not subsumed because better index has fewer attributes
@@ -238,9 +239,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0_1, 20)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset(
-            [IndexBenefit(index_0, 11),
-             IndexBenefit(index_0_1, 20)])
+        expected = [IndexBenefit(index_0, 11), IndexBenefit(index_0_1, 20)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 3. Index not subsumed because last element does not match attribute even though better ratio
@@ -254,9 +253,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0_2, 20)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset(
-            [IndexBenefit(index_0_1_2, 31),
-             IndexBenefit(index_0_2, 20)])
+        expected = [IndexBenefit(index_0_1_2, 31), IndexBenefit(index_0_2, 20)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 4. Multi Index subsumed
@@ -265,7 +262,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0_1, 20)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset([IndexBenefit(index_0_1_2, 31)])
+        expected = [IndexBenefit(index_0_1_2, 31)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 5. Multiple Indexes subsumed
@@ -275,12 +272,12 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0, 10)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = frozenset([IndexBenefit(index_0_1_2, 31)])
+        expected = [IndexBenefit(index_0_1_2, 31)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 6. Input returned if len(input) < 2
         subsumed = self.algo._combine_subsumed([IndexBenefit(index_0_1, 21)])
-        expected = frozenset([IndexBenefit(index_0_1, 21)])
+        expected = [IndexBenefit(index_0_1, 21)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 7. Input not sorted by ratio throws

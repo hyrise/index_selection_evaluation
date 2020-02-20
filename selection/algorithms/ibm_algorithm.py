@@ -18,7 +18,7 @@ DEFAULT_PARAMETERS = {
 }
 
 
-class IndexBenefit():
+class IndexBenefit:
     def __init__(self, index, benefit):
         self.index = index
         self.benefit = benefit
@@ -44,7 +44,7 @@ class IndexBenefit():
 
 class IBMAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
-        if parameters == None:
+        if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters,
                                     DEFAULT_PARAMETERS)
@@ -73,7 +73,8 @@ class IBMAlgorithm(SelectionAlgorithm):
         return [x.index for x in selected_index_benefits]
 
     def _exploit_virtual_indexes(self, workload):
-        query_results, index_candidates = {}, set()
+        query_results = {}
+        index_candidates = set()
         for query in workload.queries:
             plan = self.database_connector.get_plan(query)
             cost_without_indexes = plan['Total Cost']
@@ -84,7 +85,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                 'cost_with_recommended_indexes': cost_with_recommended_indexes,
                 'recommended_indexes': indexes
             }
-            index_candidates.update(indexes)
+            index_candidates |= set(indexes)
         return query_results, index_candidates
 
     def _recommended_indexes(self, query):
@@ -120,18 +121,17 @@ class IBMAlgorithm(SelectionAlgorithm):
         for column in columns:
             if column.table not in indexable_columns_per_table:
                 indexable_columns_per_table[column.table] = set()
-
             indexable_columns_per_table[column.table].add(column)
 
-        possible_indexes = set()
+        possible_column_combinations = set()
         for table in indexable_columns_per_table:
             columns = indexable_columns_per_table[table]
             for index_length in range(1, max_columns + 1):
-                possible_indexes.update(
-                    set(itertools.permutations(columns, index_length)))
+                possible_column_combinations |= set(
+                    itertools.permutations(columns, index_length))
 
-        logging.debug(f'possible indexes: {len(possible_indexes)}')
-        return [Index(p) for p in possible_indexes]
+        logging.debug(f'possible indexes: {len(possible_column_combinations)}')
+        return [Index(p) for p in possible_column_combinations]
 
     def _calculate_index_benefits(self, candidates, query_results):
         indexes_benefit = []
@@ -143,9 +143,8 @@ class IBMAlgorithm(SelectionAlgorithm):
                 if index_candidate not in value['recommended_indexes']:
                     continue
                 # TODO adjust when having weights for queries
-                benefit_for_query = value['cost_without_indexes'] - value[
+                benefit += value['cost_without_indexes'] - value[
                     'cost_with_recommended_indexes']
-                benefit += benefit_for_query
 
             indexes_benefit.append(IndexBenefit(index_candidate, benefit))
         return sorted(indexes_benefit,
@@ -157,11 +156,9 @@ class IBMAlgorithm(SelectionAlgorithm):
     # The input must be a sorted list of IndexBenefit objects.
     # E.g., the output of _calculate_index_benefits()
     def _combine_subsumed(self, index_benefits):
-        combined_index_benefits = set()
-
         # There is no point in subsuming with less than two elements
         if len(index_benefits) < 2:
-            return set(index_benefits)
+            return index_benefits
 
         assert index_benefits[0].benefit_size_ratio(
         ) >= index_benefits[1].benefit_size_ratio(
@@ -185,9 +182,9 @@ class IBMAlgorithm(SelectionAlgorithm):
         result_set = set(index_benefits) - index_benefits_to_remove
         result_list = list(result_set)
 
-        return (sorted(result_list,
+        return sorted(result_list,
                       reverse=True,
-                      key=lambda x: x.benefit_size_ratio()))
+                      key=lambda x: x.benefit_size_ratio())
 
     def _try_variations(self, selected_index_benefits, index_benefits,
                         workload):
@@ -198,7 +195,8 @@ class IBMAlgorithm(SelectionAlgorithm):
             x for x in index_benefits if x not in selected_index_benefits
         ]
 
-        min_length = min(len(selected_index_benefits), len(not_used_index_benefits))
+        min_length = min(len(selected_index_benefits),
+                         len(not_used_index_benefits))
         if self.maximum_remove > min_length:
             self.maximum_remove = min_length
 
@@ -214,14 +212,17 @@ class IBMAlgorithm(SelectionAlgorithm):
             number_of_exchanges = random.randrange(
                 1, self.maximum_remove) if self.maximum_remove > 1 else 1
             indexes_to_remove = frozenset(
-                random.sample(selected_index_benefits_set, k=number_of_exchanges))
+                random.sample(selected_index_benefits_set,
+                              k=number_of_exchanges))
 
             new_variaton = set(selected_index_benefits_set - indexes_to_remove)
             new_variation_size = sum([x.size() for x in new_variaton])
 
             indexes_to_add = random.sample(not_used_index_benefits,
                                            k=number_of_exchanges)
-            assert len(indexes_to_add) == len(indexes_to_remove), '_try_variations must remove the same number of indexes that are added.'
+            assert len(indexes_to_add) == len(
+                indexes_to_remove
+            ), '_try_variations must remove the same number of indexes that are added.'
             for index_benefit in indexes_to_add:
                 if index_benefit.size(
                 ) + new_variation_size > self.disk_constraint:
