@@ -215,6 +215,8 @@ class IBMAlgorithm(SelectionAlgorithm):
 
             indexes_to_add = random.sample(not_used_index_benefits,
                                            k=number_of_exchanges)
+            assert len(indexes_to_add) == len(indexes_to_remove),
+            '_try_variations must remove the same number of indexes that are added.'
             for index_benefit in indexes_to_add:
                 if index_benefit.size(
                 ) + new_variation_size > self.disk_constraint:
