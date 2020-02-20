@@ -5,6 +5,7 @@ from selection.workload import Column, Query, Table, Workload
 import unittest
 from unittest.mock import MagicMock
 
+
 class MockConnector:
     def __init__(self):
         pass
@@ -12,9 +13,11 @@ class MockConnector:
     def drop_indexes(self):
         pass
 
+
 class MockCostEvaluation:
     def __init__(self):
         pass
+
 
 def index_combination_to_str(index_combination):
     indexes_as_str = sorted([x.index_idx() for x in index_combination])
@@ -22,9 +25,7 @@ def index_combination_to_str(index_combination):
     return '||'.join(indexes_as_str)
 
 
-
 MB_TO_BYTES = 1000000
-
 
 
 class TestEpicAlgorithm(unittest.TestCase):
@@ -55,56 +56,55 @@ class TestEpicAlgorithm(unittest.TestCase):
         self.workload = Workload([query_1, query_2], self.database_name)
         self.algo.workload = self.workload
 
-
     def test_attach_to_indexes(self):
         index_combination = [self.index_1, self.index_2]
         candidate = self.index_3
-        initial_cost = 10
+        self.algo.initial_cost = 10
         best = {'combination': [],
                 'benefit_to_size_ratio': 0}
         self.algo._evaluate_combination = MagicMock()
-        self.algo._attach_to_indexes(index_combination, candidate, best, initial_cost)
+        self.algo._attach_to_indexes(index_combination, candidate, best)
 
         first_new_combination = [Index(index_combination[0].columns + candidate.columns), index_combination[1]]
-        self.algo._evaluate_combination.assert_any_call(first_new_combination, best, initial_cost)
+        self.algo._evaluate_combination.assert_any_call(first_new_combination, best)
 
         second_new_combination = [index_combination[0], Index(index_combination[1].columns + candidate.columns)]
-        self.algo._evaluate_combination.assert_any_call(second_new_combination, best, initial_cost)
+        self.algo._evaluate_combination.assert_any_call(second_new_combination, best)
 
         multi_column_candidate = Index([self.column_2, self.column_3])
         with self.assertRaises(Exception):
-            self.algo._attach_to_indexes(index_combination, multi_column_candidate, best, initial_cost)        
+            self.algo._attach_to_indexes(index_combination, multi_column_candidate, best)
 
     def test_remove_impossible_canidates(self):
         # All Fit
         candidates = [self.index_1, self.index_2, self.index_3]
         self.algo.budget = 10
-        new_candidates = self.algo._remove_candidates_too_large_for_budget(index_combination_size=0, candidates=candidates)
+        new_candidates = self.algo._get_candidates_within_budget(index_combination_size=0, candidates=candidates)
         expected_candidates = candidates
         self.assertEqual(new_candidates, expected_candidates)
 
         # None fit because of algorithm budget
         self.algo.budget = 0
-        new_candidates = self.algo._remove_candidates_too_large_for_budget(index_combination_size=0, candidates=candidates)
+        new_candidates = self.algo._get_candidates_within_budget(index_combination_size=0, candidates=candidates)
         expected_candidates = []
         self.assertEqual(new_candidates, expected_candidates)
 
         # None fit because of index_combination_size
         self.algo.budget = 10
-        new_candidates = self.algo._remove_candidates_too_large_for_budget(index_combination_size=10, candidates=candidates)
+        new_candidates = self.algo._get_candidates_within_budget(index_combination_size=10, candidates=candidates)
         expected_candidates = []
         self.assertEqual(new_candidates, expected_candidates)
 
         # Some do not fit
         self.algo.budget = 4
-        new_candidates = self.algo._remove_candidates_too_large_for_budget(index_combination_size=1, candidates=candidates)
+        new_candidates = self.algo._get_candidates_within_budget(index_combination_size=1, candidates=candidates)
         expected_candidates = [self.index_2, self.index_3]
         self.assertEqual(new_candidates, expected_candidates)
 
         # Index with size none is not removed even though there is no space left
         self.index_1.estimated_size = None
         self.algo.budget = 0
-        new_candidates = self.algo._remove_candidates_too_large_for_budget(index_combination_size=0, candidates=candidates)
+        new_candidates = self.algo._get_candidates_within_budget(index_combination_size=0, candidates=candidates)
         expected_candidates = [self.index_1]
         self.assertEqual(new_candidates, expected_candidates)
 
@@ -119,17 +119,18 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         # Mock internally called cost function
         self.algo.cost_evaluation.calculate_cost = MagicMock(return_value=4)
-        initial_cost = 14
+        self.algo.initial_cost = 14
 
-        cost = self.algo._retrieve_cost(new_index_combination)
-        benefit = initial_cost - cost
+        cost = self.algo.cost_evaluation.calculate_cost(self.workload, new_index_combination,
+                                                   store_size=True)
+        benefit = self.algo.initial_cost - cost
         size = sum(x.estimated_size for x in new_index_combination)
         ratio = benefit / size
         assert(best_old['benefit_to_size_ratio'] >= ratio)
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
         # The ratio is 2 which is worse than above's 10. Hence, best_input should not change
-        self.algo._evaluate_combination(new_index_combination, best_input, initial_cost)
+        self.algo._evaluate_combination(new_index_combination, best_input)
 
         expected_best = best_old
         self.assertEqual(expected_best, best_input)
@@ -147,21 +148,21 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         # Mock internally called cost function
         self.algo.cost_evaluation.calculate_cost = MagicMock(return_value=4)
-        initial_cost = 14
+        self.algo.initial_cost = 14
 
-        cost = self.algo._retrieve_cost(new_index_combination)
-        benefit = initial_cost - cost
+        cost = self.algo.cost_evaluation.calculate_cost(self.workload, new_index_combination,
+                                                   store_size=True)
+        benefit = self.algo.initial_cost - cost
         size = sum(x.estimated_size for x in new_index_combination)
         ratio = benefit / size
         assert(best_old['benefit_to_size_ratio'] < ratio)
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
         # The ratio is 2 which is better than above's 1. But the remaining budget is not sufficient.
-        self.algo._evaluate_combination(new_index_combination, best_input, initial_cost)
+        self.algo._evaluate_combination(new_index_combination, best_input)
 
         expected_best = best_old
         self.assertEqual(expected_best, best_input)
-    
 
     def test_evaluate_combination_better_ratio(self):
         # Mock the internal algorithm state
@@ -174,11 +175,11 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         # Mock internally called cost function
         self.algo.cost_evaluation.calculate_cost = MagicMock(return_value=4)
-        initial_cost = 14
+        self.algo.initial_cost = 14
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
         # The ratio is 2 which is better than above's 1. Hence, best_input should change
-        self.algo._evaluate_combination(new_index_combination, best_input, initial_cost)
+        self.algo._evaluate_combination(new_index_combination, best_input)
 
         expected_best = {
           'combination': new_index_combination,
@@ -192,20 +193,6 @@ class TestEpicAlgorithm(unittest.TestCase):
         budget_in_mb = 10
         self.assertEqual(self.algo.budget, budget_in_mb * MB_TO_BYTES)
         self.assertEqual(self.algo.cost_evaluation.cost_estimation, 'whatif')
-
-    def test_retrieve_reconfig_cost(self):
-        self.algo.cost_evaluation = MockCostEvaluation()
-        self.algo.cost_evaluation.calculate_cost = MagicMock()
-
-        cost = self.algo._retrieve_cost([self.index_1])
-
-        self.algo.cost_evaluation.calculate_cost.assert_called_with(self.workload, [self.index_1], store_size=True)
-
-    def test_retrieve_cost(self):
-        # Now, this method always returns 0. This test should be a reminder
-        # to write tests for it as soon as it gets properly implemented
-        self.assertEqual(self.algo._retrieve_reconfig_cost([]), 0)
-
 
     def _assign_size_1(self, index):
         index_sizes = {
@@ -251,7 +238,6 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         return index_combination_cost[index_combination_str]
 
-
     # In this scenario, only single column indexes make sense.
     # They all have the same size but different benefits.
     def test_calculate_best_indexes_scenario_1(self):
@@ -275,7 +261,6 @@ class TestEpicAlgorithm(unittest.TestCase):
         expected_indexes = [Index([self.column_3]), Index([self.column_2]), Index([self.column_1])]
         self.assertEqual(indexes, expected_indexes)
 
-
     def _assign_size_2(self, index):
         index_sizes = {
             'tablea_cola_idx': 1,
@@ -290,7 +275,6 @@ class TestEpicAlgorithm(unittest.TestCase):
         }
 
         index.estimated_size = index_sizes[index.index_idx()]
-
 
     def _calculate_cost_mock_2(self, workload, indexes, store_size):
         for index in indexes:
@@ -321,7 +305,6 @@ class TestEpicAlgorithm(unittest.TestCase):
         }
 
         return index_combination_cost[index_combination_str]
-
 
     # In this scenario, only single column indexes make sense.
     # Size and benefit are antiproportional.
@@ -362,7 +345,6 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         index.estimated_size = index_sizes[index.index_idx()]
 
-
     def _calculate_cost_mock_3(self, workload, indexes, store_size):
         for index in indexes:
           self._assign_size_3(index)
@@ -381,7 +363,6 @@ class TestEpicAlgorithm(unittest.TestCase):
         }
 
         return index_combination_cost[index_combination_str]
-
 
     # In this scenario, multi column indexes dominate single column indexes.
     def test_calculate_best_indexes_scenario_3(self):

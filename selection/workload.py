@@ -12,6 +12,9 @@ class Workload:
             indexable_columns.extend(query.columns)
         return list(set(indexable_columns))
 
+    def potential_indexes(self):
+        return [Index([c]) for c in self.indexable_columns()]
+
 
 class Column:
     def __init__(self, name):
