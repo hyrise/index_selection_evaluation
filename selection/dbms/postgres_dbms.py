@@ -83,10 +83,10 @@ class PostgresDatabaseConnector(DatabaseConnector):
         logging.info('Database {} dropped'.format(database_name))
 
     def create_statistics(self):
-        logging.info('Postgres: Run `vacuum analyze`')
+        logging.info('Postgres: Run `analyze`')
         self.commit()
         self._connection.autocommit = True
-        self.exec_only('vacuum analyze')
+        self.exec_only('analyze')
         self._connection.autocommit = self.autocommit
 
     def supports_index_simulation(self):

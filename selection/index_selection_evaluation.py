@@ -19,6 +19,8 @@ import time
 import copy
 
 ALGORITHMS = {
+    'microsoft-max2': MicrosoftAlgorithm,
+    'microsoft-max3': MicrosoftAlgorithm,
     'microsoft': MicrosoftAlgorithm,
     'drop_heuristic': DropHeuristicAlgorithm,
     'no_index': NoIndexAlgorithm,
@@ -86,13 +88,15 @@ class IndexSelection:
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
-                indexes, what_if = self._run_algorithm(cfg)
+                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(cfg)
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(self.workload, indexes,
                                       self.db_connector,
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
-                                      config, parameter_list_used, what_if)
+                                      config, cost_requests, cache_hits,
+                                      parameter_list_used, what_if
+                                      )
                 benchmark.benchmark()
 
     # Parameter list example: {"max_indexes": [5, 10, 20]}
@@ -123,7 +127,6 @@ class IndexSelection:
 
     def _run_algorithm(self, config):
         self.db_connector.drop_indexes()
-        self.db_connector.create_statistics()
         self.db_connector.commit()
 
         algorithm = self.create_algorithm_object(config['name'],
@@ -132,7 +135,9 @@ class IndexSelection:
         indexes = algorithm.calculate_best_indexes(self.workload)
         logging.info('Indexes found: {}'.format(indexes))
         what_if = algorithm.cost_evaluation.what_if
-        return indexes, what_if
+        cost_requests = algorithm.cost_evaluation.cost_requests
+        cache_hits = algorithm.cost_evaluation.cache_hits
+        return indexes, what_if, cost_requests, cache_hits
 
     def create_algorithm_object(self, algorithm_name, parameters):
         algorithm = ALGORITHMS[algorithm_name](self.db_connector, parameters)
