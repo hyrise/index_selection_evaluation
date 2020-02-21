@@ -84,7 +84,6 @@ class IndexSelection:
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
             configs = self._find_parameter_list(algorithm_config)
-            parameter_list_used = len(configs) > 1
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
@@ -95,7 +94,7 @@ class IndexSelection:
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
                                       config, cost_requests, cache_hits,
-                                      parameter_list_used, what_if
+                                      what_if
                                       )
                 benchmark.benchmark()
 
