@@ -18,7 +18,6 @@ class Benchmark:
                  global_config,
                  cost_requests,
                  cache_hits,
-                 parameter_list_used=False,
                  what_if=None):
         self.workload = workload
         self.db_connector = db_connector
@@ -28,7 +27,6 @@ class Benchmark:
         self.config = config
         self.calculation_time = calculation_time
         self.disable_csv = disable_csv
-        self.parameter_list_used = parameter_list_used
         self.what_if = what_if
         self.cost_requests = cost_requests
         self.cache_hits = cache_hits
