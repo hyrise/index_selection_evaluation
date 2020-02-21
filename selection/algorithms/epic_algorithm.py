@@ -4,16 +4,7 @@ import logging
 
 # cost_estimation: 'whatif' or 'acutal_runtimes'
 # Index combination budget in MB
-<<<<<<< HEAD
-DEFAULT_PARAMETERS = {
-    'cost_estimation': 'whatif',
-    'budget': 10,
-    'min_cost_improvement': 1.01
-}
-=======
 DEFAULT_PARAMETERS = {'cost_estimation': 'whatif', 'budget': 10, 'min_cost_improvement': 1.01, 'max_index_columns': 4}
->>>>>>> 6bfe7c8... Fix epic
-
 
 class EPICAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
