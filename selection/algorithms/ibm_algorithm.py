@@ -68,7 +68,8 @@ class IBMAlgorithm(SelectionAlgorithm):
                 selected_index_benefits.add(index_benefit)
                 disk_usage += index_benefit.size()
 
-        self._try_variations(selected_index_benefits, index_benefits_subsumed,
+        if self.seconds_limit > 0:
+            self._try_variations(selected_index_benefits, index_benefits_subsumed,
                              workload)
         return [x.index for x in selected_index_benefits]
 
