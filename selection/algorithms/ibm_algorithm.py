@@ -61,17 +61,19 @@ class IBMAlgorithm(SelectionAlgorithm):
             candidates, query_results)
         index_benefits_subsumed = self._combine_subsumed(index_benefits)
 
-        selected_index_benefits = set()
+        selected_index_benefits = []
         disk_usage = 0
         for index_benefit in index_benefits_subsumed:
             if disk_usage + index_benefit.size() <= self.disk_constraint:
-                selected_index_benefits.add(index_benefit)
+                selected_index_benefits.append(index_benefit)
                 disk_usage += index_benefit.size()
 
         if self.seconds_limit > 0:
-            self._try_variations(selected_index_benefits, index_benefits_subsumed,
-                             workload)
-        return [x.index for x in selected_index_benefits]
+            selected_index_benefits = self._try_variations(
+                selected_index_benefits, index_benefits_subsumed, workload)
+        return [
+            index_benefit.index for index_benefit in selected_index_benefits
+        ]
 
     def _exploit_virtual_indexes(self, workload):
         query_results = {}
@@ -79,21 +81,22 @@ class IBMAlgorithm(SelectionAlgorithm):
         for query in workload.queries:
             plan = self.database_connector.get_plan(query)
             cost_without_indexes = plan['Total Cost']
-            indexes, cost_with_recommended_indexes = self._recommended_indexes(
+            recommended_indexes, cost_with_recommended_indexes = self._recommended_indexes(
                 query)
             query_results[query] = {
                 'cost_without_indexes': cost_without_indexes,
                 'cost_with_recommended_indexes': cost_with_recommended_indexes,
-                'recommended_indexes': indexes
+                'recommended_indexes': recommended_indexes
             }
-            index_candidates |= set(indexes)
+            index_candidates |= recommended_indexes
         return query_results, index_candidates
 
     def _recommended_indexes(self, query):
+        """Simulates all possible indexes for the query and returns the used one"""
         logging.debug('Simulating indexes')
 
-        indexes = self._possible_indexes(query)
-        for index in indexes:
+        possible_indexes = self._possible_indexes(query)
+        for index in possible_indexes:
             self.what_if.simulate_index(index, store_size=True)
 
         plan = self.database_connector.get_plan(query)
@@ -102,10 +105,10 @@ class IBMAlgorithm(SelectionAlgorithm):
 
         self.what_if.drop_all_simulated_indexes()
 
-        recommended_indexes = []
-        for index in indexes:
+        recommended_indexes = set()
+        for index in possible_indexes:
             if index.hypopg_name in plan_string:
-                recommended_indexes.append(index)
+                recommended_indexes.add(index)
 
         logging.debug(f'Recommended indexes found: {len(recommended_indexes)}')
         return recommended_indexes, cost
@@ -161,17 +164,18 @@ class IBMAlgorithm(SelectionAlgorithm):
         if len(index_benefits) < 2:
             return index_benefits
 
-        assert index_benefits[0].benefit_size_ratio(
-        ) >= index_benefits[1].benefit_size_ratio(
-        ), "_combine_subsumed got probably unsorted input"
+        assert index_benefits == sorted(
+            index_benefits,
+            reverse=True,
+            key=lambda index_benefit: index_benefit.benefit_size_ratio(
+            )), "the input of _combine_subsumed must be sorted"
 
         index_benefits_to_remove = set()
         for high_ratio_pos, index_benefit_high_ratio in enumerate(
                 index_benefits):
             if index_benefit_high_ratio in index_benefits_to_remove:
                 continue
-
-            # We take the next element because there is no point in self comparison
+            # Test all following elements (with lower ratios) in the list
             for index_benefit_lower_ratio in index_benefits[high_ratio_pos +
                                                             1:]:
                 if index_benefit_lower_ratio in index_benefits_to_remove:
@@ -181,20 +185,19 @@ class IBMAlgorithm(SelectionAlgorithm):
                     index_benefits_to_remove.add(index_benefit_lower_ratio)
 
         result_set = set(index_benefits) - index_benefits_to_remove
-        result_list = list(result_set)
-
-        return sorted(result_list,
-                      reverse=True,
-                      key=lambda x: x.benefit_size_ratio())
+        # Sorting of a set results in a list
+        return sorted(
+            result_set,
+            reverse=True,
+            key=lambda index_benefit: index_benefit.benefit_size_ratio())
 
     def _try_variations(self, selected_index_benefits, index_benefits,
                         workload):
         logging.debug(f'Try variation for {self.seconds_limit} seconds')
         start_time = time.time()
 
-        not_used_index_benefits = [
-            x for x in index_benefits if x not in selected_index_benefits
-        ]
+        not_used_index_benefits = set(index_benefits) - set(
+            selected_index_benefits)
 
         min_length = min(len(selected_index_benefits),
                          len(not_used_index_benefits))
@@ -217,7 +220,8 @@ class IBMAlgorithm(SelectionAlgorithm):
                               k=number_of_exchanges))
 
             new_variaton = set(selected_index_benefits_set - indexes_to_remove)
-            new_variation_size = sum([x.size() for x in new_variaton])
+            new_variation_size = sum(
+                [index_benefit.size() for index_benefit in new_variaton])
 
             indexes_to_add = random.sample(not_used_index_benefits,
                                            k=number_of_exchanges)

@@ -116,7 +116,7 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         indexes, cost = self.algo._recommended_indexes(query)
         self.assertEqual(cost, 17)
-        self.assertEqual(indexes, [Index([self.column_1])])
+        self.assertEqual(indexes, {Index([self.column_1])})
 
         self.assertEqual(self.algo.what_if.simulate_index.call_count, 4)
         self.algo.what_if.drop_all_simulated_indexes.assert_called_once()
@@ -159,12 +159,12 @@ class TestIBMAlgorithm(unittest.TestCase):
         expected_first_result = {
             'cost_without_indexes': 17,
             'cost_with_recommended_indexes': 17,
-            'recommended_indexes': [Index([self.column_1])]
+            'recommended_indexes': {Index([self.column_1])}
         }
         expected_second_result = {
             'cost_without_indexes': 5,
             'cost_with_recommended_indexes': 5,
-            'recommended_indexes': []
+            'recommended_indexes': set()
         }
         self.assertEqual(query_results[query_0], expected_first_result)
         self.assertEqual(query_results[query_1], expected_second_result)
