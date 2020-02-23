@@ -71,7 +71,7 @@ class Table:
 class Query:
     def __init__(self, query_id, query_text, columns=None):
         self.nr = query_id
-        self.text = query_text.lower()
+        self.text = query_text
 
         # Indexable columns
         if columns is None:
