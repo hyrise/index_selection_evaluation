@@ -5,6 +5,7 @@ import logging
 import datetime
 import subprocess
 import os.path
+import pickle
 
 
 class Benchmark:
@@ -39,6 +40,8 @@ class Benchmark:
             self.seed = global_config['seed']
 
         self._set_csv_filename(disable_csv)
+        pickle.dump(self.workload, open(f"benchmark_results/workload.pickle", "wb" ))
+
 
     def benchmark(self):
         self.db_connector.drop_indexes()
