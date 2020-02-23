@@ -19,8 +19,6 @@ import time
 import copy
 
 ALGORITHMS = {
-    'microsoft-max2': MicrosoftAlgorithm,
-    'microsoft-max3': MicrosoftAlgorithm,
     'microsoft': MicrosoftAlgorithm,
     'drop_heuristic': DropHeuristicAlgorithm,
     'no_index': NoIndexAlgorithm,
@@ -42,6 +40,8 @@ class IndexSelection:
         self.db_connector = None
         self.default_config_file = 'example_configs/config.json'
         self.disable_csv = False
+        self.database_name = None
+        self.database_system = None
 
     def run(self):
         """This is called when running `python3 -m selection`.
@@ -62,15 +62,16 @@ class IndexSelection:
         table_generator = TableGenerator(config['benchmark_name'],
                                          config['scale_factor'],
                                          generating_connector)
-        database_name = table_generator.database_name()
-        self.setup_db_connector(database_name, config['database_system'])
+        self.database_name = table_generator.database_name()
+        self.database_system = config['database_system']
+        self.setup_db_connector(self.database_name, self.database_system)
         if 'queries' not in config:
             config['queries'] = None
         query_generator = QueryGenerator(config['benchmark_name'],
                                          config['scale_factor'],
                                          self.db_connector, config['queries'],
                                          table_generator.columns)
-        self.workload = Workload(query_generator.queries, database_name)
+        self.workload = Workload(query_generator.queries, self.database_name)
 
     def _run_algorithms(self, config_file):
         with open(config_file) as f:
@@ -94,7 +95,7 @@ class IndexSelection:
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
                                       config, cost_requests, cache_hits,
-                                      what_if
+                                      what_if, config['pickle_indexes']
                                       )
                 benchmark.benchmark()
 
@@ -127,6 +128,8 @@ class IndexSelection:
     def _run_algorithm(self, config):
         self.db_connector.drop_indexes()
         self.db_connector.commit()
+        self.setup_db_connector(self.database_name, self.database_system)
+
 
         algorithm = self.create_algorithm_object(config['name'],
                                                  config['parameters'])
