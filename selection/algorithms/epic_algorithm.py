@@ -71,9 +71,11 @@ class EPICAlgorithm(SelectionAlgorithm):
                 continue
             if index.appendable_by(candidate):
                 new_combination = index_combination.copy()
-                new_combination[position] = Index(index.columns +
-                                                  candidate.columns)
-                if new_combination[position] in index_combination:
+                # We do not replace, but del and append to return indexes in order
+                del new_combination[position]
+                new_combination.append(Index(index.columns +
+                    candidate.columns))
+                if new_combination[-1] in index_combination:
                     continue
                 self._evaluate_combination(new_combination, best, current_cost, index_combination[position].estimated_size)
 
