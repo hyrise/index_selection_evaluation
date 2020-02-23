@@ -21,7 +21,7 @@
         {
             "name": "microsoft-max2",
             "parameters": {
-                "max_indexes": [1, 2, 3, 4, 5, 6, 8, 10, 12],
+                "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
                 "max_indexes_naive": 2,
                 "max_index_columns": 2
             },
@@ -50,7 +50,7 @@
             "name": "ibm",
             "parameters": {
                 "max_index_columns": 3,
-                "budget": [200, 400, 800, 1200, 2000, 2400, 3200, 5000, 6400, 12800],
+                "budget": [200, 400, 800, 1200, 2000, 2400, 3200, 4000, 5000, 6400, 12800],
                 "try_variation_seconds_limit": 1
             },
             "number_of_runs": 0,
@@ -59,7 +59,7 @@
         {
             "name": "drop_heuristic",
             "parameters": {
-                "max_indexes": [1, 2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20]
+                "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
             },
             "number_of_runs": 0,
             "timeout": 300
