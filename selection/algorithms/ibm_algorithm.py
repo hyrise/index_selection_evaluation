@@ -53,6 +53,11 @@ class IBMAlgorithm(SelectionAlgorithm):
         self.disk_constraint = self.parameters['budget'] * 1000000
         self.seconds_limit = self.parameters['try_variation_seconds_limit']
         self.maximum_remove = self.parameters['try_variation_maximum_remove']
+        self.max_indexes = None
+
+        if 'max_indexes' in self.parameters:
+            self.max_indexes = self.parameters['max_indexes']
+            logging.info('IBM in max_indexes mode')
 
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes IBM')
@@ -63,14 +68,18 @@ class IBMAlgorithm(SelectionAlgorithm):
 
         selected_index_benefits = set()
         disk_usage = 0
-        for index_benefit in index_benefits_subsumed:
-            if disk_usage + index_benefit.size() <= self.disk_constraint:
-                selected_index_benefits.add(index_benefit)
-                disk_usage += index_benefit.size()
 
-        if self.seconds_limit > 0:
-            self._try_variations(selected_index_benefits, index_benefits_subsumed,
-                             workload)
+        if self.max_indexes:
+            selected_index_benefits = index_benefits_subsumed[:self.max_indexes]
+        else:
+            for index_benefit in index_benefits_subsumed:
+                if disk_usage + index_benefit.size() <= self.disk_constraint:
+                    selected_index_benefits.add(index_benefit)
+                    disk_usage += index_benefit.size()
+
+            if self.seconds_limit > 0:
+                self._try_variations(selected_index_benefits, index_benefits_subsumed,
+                                 workload)
         return [x.index for x in selected_index_benefits]
 
     def _exploit_virtual_indexes(self, workload):
