@@ -14,7 +14,7 @@ DEFAULT_PARAMETERS = {
     'max_index_columns': 3,
     'budget': 500,
     'try_variation_seconds_limit': 10,
-    'try_variation_maximum_remove': 4
+    'try_variation_maximum_remove': 10
 }
 
 
@@ -69,7 +69,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                 disk_usage += index_benefit.size()
 
         if self.seconds_limit > 0:
-            self._try_variations(selected_index_benefits, index_benefits_subsumed,
+            selected_index_benefits = self._try_variations(selected_index_benefits, index_benefits_subsumed,
                              workload)
         return [x.index for x in selected_index_benefits]
 
@@ -90,7 +90,6 @@ class IBMAlgorithm(SelectionAlgorithm):
 
     def _recommended_indexes(self, query):
         logging.debug('Simulating indexes')
-
         indexes = self._possible_indexes(query)
         for index in indexes:
             self.what_if.simulate_index(index, store_size=True)
@@ -100,7 +99,6 @@ class IBMAlgorithm(SelectionAlgorithm):
         cost = plan['Total Cost']
 
         self.what_if.drop_all_simulated_indexes()
-
         recommended_indexes = []
         for index in indexes:
             if index.hypopg_name in plan_string:
@@ -181,6 +179,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                     continue
                 if index_benefit_high_ratio.index.subsumes(
                         index_benefit_lower_ratio.index):
+                    index_benefit_high_ratio.benefit += index_benefit_lower_ratio.benefit
                     index_benefits_to_remove.add(index_benefit_lower_ratio)
 
         result_set = set(index_benefits) - index_benefits_to_remove
