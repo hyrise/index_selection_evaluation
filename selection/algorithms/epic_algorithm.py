@@ -70,13 +70,13 @@ class EPICAlgorithm(SelectionAlgorithm):
             if len(index.columns) >= self.max_index_columns:
                 continue
             if index.appendable_by(candidate):
+                new_index = Index(index.columns + candidate.columns)
+                if new_index in index_combination:
+                    continue
                 new_combination = index_combination.copy()
                 # We do not replace, but del and append to return indexes in order
                 del new_combination[position]
-                new_combination.append(Index(index.columns +
-                    candidate.columns))
-                if new_combination[-1] in index_combination:
-                    continue
+                new_combination.append(new_index)
                 self._evaluate_combination(new_combination, best, current_cost, index_combination[position].estimated_size)
 
     def _get_candidates_within_budget(self, index_combination_size,
@@ -103,8 +103,7 @@ class EPICAlgorithm(SelectionAlgorithm):
 
         ratio = benefit / new_index_size
 
-        total_size = sum(x.estimated_size for x in index_combination[:-1])
-        total_size += new_index_size
+        total_size = sum(x.estimated_size for x in index_combination)
 
         if ratio > best['benefit_to_size_ratio'] and total_size <= self.budget:
             logging.debug(f'new best cost and size: {cost}\t'
