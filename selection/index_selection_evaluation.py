@@ -1,4 +1,7 @@
 from .workload import Workload
+from .workload import Query
+from .workload import Column
+from .workload import Table
 from .benchmark import Benchmark
 from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
@@ -17,6 +20,7 @@ import json
 import sys
 import time
 import copy
+import os
 
 ALGORITHMS = {
     'microsoft': MicrosoftAlgorithm,
@@ -57,21 +61,68 @@ class IndexSelection:
         self._run_algorithms(config_file)
 
     def _setup_config(self, config):
-        dbms_class = DBMSYSTEMS[config['database_system']]
-        generating_connector = dbms_class(None, autocommit=True)
-        table_generator = TableGenerator(config['benchmark_name'],
-                                         config['scale_factor'],
-                                         generating_connector)
-        self.database_name = table_generator.database_name()
-        self.database_system = config['database_system']
-        self.setup_db_connector(self.database_name, self.database_system)
-        if 'queries' not in config:
-            config['queries'] = None
-        query_generator = QueryGenerator(config['benchmark_name'],
-                                         config['scale_factor'],
-                                         self.db_connector, config['queries'],
-                                         table_generator.columns)
-        self.workload = Workload(query_generator.queries, self.database_name)
+        if config['benchmark_name'] == 'JOB':
+            directory = "/home/Jan.Kossmann/index_selection_evaluation/join-order-benchmark"
+            tables = []
+            columns = []
+
+            filename = f"{directory}/schema.sql"
+            with open(filename, 'r') as file:
+                data = file.read().lower()
+            create_tables = data.split('create table ')[1:]
+            for create_table in create_tables:
+                splitted = create_table.split('(', 1)
+                table = Table(splitted[0].strip())
+                tables.append(table)
+                # TODO regex split? ,[whitespace]\n
+                for column in splitted[1].split(',\n'):
+                    name = column.lstrip().split(' ', 1)[0]
+                    if name == 'primary':
+                        continue
+                    column_object = Column(name)
+                    table.add_column(column_object)
+                    columns.append(column_object)
+
+            queries = []
+            for filename in os.listdir(directory):
+                if '.sql' not in filename or 'fkindexes' in filename or 'schema' in filename:
+                    continue
+                query_id = filename.replace('.sql', '')
+
+                with open(f"{directory}/{filename}", 'r') as file:
+                    query_text = file.read()
+                    query_text = query_text.replace('\t', '')
+                    queries.append(Query(query_id, query_text))
+                    assert "WHERE" in query_text
+                    split = query_text.split('WHERE')
+                    query_text_before_where = split[0]
+                    query_text_after_where = split[1]
+                    for column in columns:
+                        if column.name in query_text_after_where and f"{column.table.name} " in query_text_before_where:
+                            queries[-1].columns.append(column)
+            dbms_class = DBMSYSTEMS[config['database_system']]
+            self.database_name = 'indexselection_job___1'
+            self.database_system = config['database_system']
+            self.setup_db_connector(self.database_name, self.database_system)
+
+            self.workload = Workload(queries, self.database_name)
+        else:
+            dbms_class = DBMSYSTEMS[config['database_system']]
+            generating_connector = dbms_class(None, autocommit=True)
+            table_generator = TableGenerator(config['benchmark_name'],
+                                             config['scale_factor'],
+                                             generating_connector)
+            self.database_name = table_generator.database_name()
+            self.database_system = config['database_system']
+            self.setup_db_connector(self.database_name, self.database_system)
+            if 'queries' not in config:
+                config['queries'] = None
+
+            query_generator = QueryGenerator(config['benchmark_name'],
+                                             config['scale_factor'],
+                                             self.db_connector, config['queries'],
+                                             table_generator.columns)
+            self.workload = Workload(query_generator.queries, self.database_name)
 
     def _run_algorithms(self, config_file):
         with open(config_file) as f:
