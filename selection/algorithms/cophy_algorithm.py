@@ -55,7 +55,8 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                     costs_for_index_combination[index_combination] = costs
                     for index in index_combination:
                         useful_indexes.add(index)
-        print(f'what-if time: {time.time() - time_start}')
+        print(f'$$$what-if time: {time.time() - time_start}')
+        print(f'$$$cost_requests: {self.cost_evaluation.cost_requests}\tcache_hits: {self.cost_evaluation.cache_hits}')
 
         # generate AMPL input
         # sorted_useful_indexes = sorted(useful_indexes)
@@ -86,4 +87,5 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                 # print cost if they are lower than without indexes
                 if costs[query_id] < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
                     print(query_id + 1, i + 1, costs[query_id])
+
         return []
