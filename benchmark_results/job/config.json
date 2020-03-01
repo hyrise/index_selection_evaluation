@@ -7,7 +7,7 @@
             "name": "no_index",
             "parameters": {
             },
-            "number_of_runs": 0,
+            "number_of_actual_runs": 0,
             "timeout": 300
         },
         {
@@ -16,7 +16,7 @@
                 "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
                 "max_index_columns": 2
             },
-            "number_of_runs": 0,
+            "number_of_actual_runs": 0,
             "timeout": 300
         },
         {
@@ -24,7 +24,7 @@
             "parameters": {
                 "min_saving_percentage": [10, 50, 90, 95, 99]
             },
-            "number_of_runs": 0,
+            "number_of_actual_runs": 0,
             "timeout": 300
         },
         {
@@ -34,7 +34,7 @@
                 "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
                 "try_variation_seconds_limit": 0
             },
-            "number_of_runs": 0,
+            "number_of_actual_runs": 0,
             "timeout": 300
         },
         {
@@ -44,7 +44,7 @@
                 "max_indexes_naive": 1,
                 "max_index_columns": 2
             },
-            "number_of_runs": 0,
+            "number_of_actual_runs": 0,
             "timeout": 300
         },
         {
@@ -52,7 +52,7 @@
             "parameters": {
                 "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
             },
-            "number_of_runs": 0,
+            "number_of_actual_runs": 0,
             "timeout": 300
         }
     ]
