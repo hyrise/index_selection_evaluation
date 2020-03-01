@@ -20,6 +20,15 @@
             "timeout": 300
         },
         {
+            "name": "cophy",
+            "parameters": {
+                "max_index_columns": 1,
+                "max_indexes_per_query": 2
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
             "name": "dexter",
             "parameters": {
                 "min_saving_percentage": [10, 50, 90, 95, 99]
