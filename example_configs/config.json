@@ -6,11 +6,11 @@
         {
             "name": "cophy",
             "parameters": {
-                "max_index_columns": 1,
-                "max_indexes_per_query": 2
+                "max_index_columns": 3,
+                "max_indexes_per_query": 1
             },
-            "number_of_runs": 1,
-            "timeout": 30
+            "number_of_runs": 2,
+            "timeout": 2
         }
     ],
     "queries": [

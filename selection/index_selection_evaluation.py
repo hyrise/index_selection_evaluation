@@ -97,7 +97,7 @@ class IndexSelection:
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
                                       config, cost_requests, cache_hits,
-                                      what_if, config['pickle_indexes']
+                                      what_if
                                       )
                 benchmark.benchmark()
 

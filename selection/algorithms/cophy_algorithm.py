@@ -3,6 +3,7 @@ from ..workload import Workload
 from ..index import Index
 import logging
 import itertools
+import time
 
 # Algorithm stops when maximum number of indexes is reached
 DEFAULT_PARAMETERS = {'max_index_columns': 2, 'max_indexes_per_query': 1}
@@ -19,12 +20,12 @@ class CoPhyAlgorithm(SelectionAlgorithm):
         logging.info('Creating AMPL input for CoPhy')
         logging.info('Parameters: ' + str(self.parameters))
 
+        time_start = time.time()
         COSTS_PER_QUERY_WITHOUT_INDEXES = {}
         for query in workload.queries:
             COSTS_PER_QUERY_WITHOUT_INDEXES[query] = self.cost_evaluation.calculate_cost(Workload([query], workload.database_name), set())
 
         accessed_columns_per_table = {}
-        logging.info(workload)
         for query in workload.queries:
             for column in query.columns:
                 if column.table not in accessed_columns_per_table:
@@ -48,13 +49,13 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                 for query in workload.queries:
                     query_cost = self.cost_evaluation.calculate_cost(Workload([query], workload.database_name), set(index_combination), store_size=True)
                     costs.append(query_cost)
-                    logging.info((query_cost, index_combination))
                     if query_cost < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
                         is_useful_combination = True
                 if is_useful_combination:
                     costs_for_index_combination[index_combination] = costs
                     for index in index_combination:
                         useful_indexes.add(index)
+        print(f'what-if time: {time.time() - time_start}')
 
         # generate AMPL input
         # sorted_useful_indexes = sorted(useful_indexes)
