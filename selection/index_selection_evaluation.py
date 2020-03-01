@@ -5,6 +5,7 @@ from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from .algorithms.epic_algorithm import EPICAlgorithm
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.ibm_algorithm import IBMAlgorithm
+from .algorithms.cophy_algorithm import CoPhyAlgorithm
 from .dbms.postgres_dbms import PostgresDatabaseConnector
 from .dbms.hana_dbms import HanaDatabaseConnector
 #  from .index import Index
@@ -27,7 +28,8 @@ ALGORITHMS = {
     'all_indexes': AllIndexesAlgorithm,
     'ibm': IBMAlgorithm,
     'epic': EPICAlgorithm,
-    'dexter': DexterAlgorithm
+    'dexter': DexterAlgorithm,
+    'cophy': CoPhyAlgorithm
 }
 
 DBMSYSTEMS = {

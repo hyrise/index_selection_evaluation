@@ -81,7 +81,7 @@ class EPICAlgorithm(SelectionAlgorithm):
                 new_candidates.append(candidate)
         return new_candidates
 
-    def _evaluate_combination(self, index_combination, best, current_cost)
+    def _evaluate_combination(self, index_combination, best, current_cost):
         cost = self.cost_evaluation.calculate_cost(self.workload,
                                                    index_combination,
                                                    store_size=True)
