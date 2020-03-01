@@ -23,7 +23,7 @@ class Benchmark:
         self.db_connector = db_connector
         self.indexes = indexes
         self.timeout = config['timeout']
-        self.number_of_runs = config['number_of_runs']
+        self.number_of_runs = config['number_of_actual_runs']
         self.config = config
         self.calculation_time = calculation_time
         self.disable_csv = disable_csv
