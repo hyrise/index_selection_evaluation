@@ -182,6 +182,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                     continue
                 if index_benefit_high_ratio.index.subsumes(
                         index_benefit_lower_ratio.index):
+                    index_benefit_high_ratio.benefit += index_benefit_lower_ratio.benefit
                     index_benefits_to_remove.add(index_benefit_lower_ratio)
 
         result_set = set(index_benefits) - index_benefits_to_remove
