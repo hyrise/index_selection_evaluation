@@ -54,6 +54,14 @@ class IBMAlgorithm(SelectionAlgorithm):
         self.seconds_limit = self.parameters['try_variation_seconds_limit']
         self.maximum_remove = self.parameters['try_variation_maximum_remove']
 
+        cost_requests_file_name = f"benchmark_results/cost_requests_ibm_tpch_19_queries.csv"
+        header = [
+            'query id', 'index configuration', 'costs'
+        ]
+        header_str = ';'.join(header)
+        self.f = open(cost_requests_file_name, 'w')
+        self.f.write(f"{header_str}\n")
+
     def _calculate_best_indexes(self, workload):
         logging.info('Calculating best indexes IBM')
         query_results, candidates = self._exploit_virtual_indexes(workload)
@@ -97,6 +105,8 @@ class IBMAlgorithm(SelectionAlgorithm):
         plan = self.database_connector.get_plan(query)
         plan_string = str(plan)
         cost = plan['Total Cost']
+
+        self.f.write(f"{query};{frozenset(indexes)};{cost}\n")
 
         self.what_if.drop_all_simulated_indexes()
         recommended_indexes = []

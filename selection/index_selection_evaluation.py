@@ -139,14 +139,14 @@ class IndexSelection:
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
-                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(cfg)
+                indexes, what_if, cost_requests, cache_hits, cache = self._run_algorithm(cfg)
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(self.workload, indexes,
                                       self.db_connector,
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
                                       config, cost_requests, cache_hits,
-                                      what_if)
+                                      what_if, cache)
                 benchmark.benchmark()
 
     # Parameter list example: {"max_indexes": [5, 10, 20]}
@@ -189,7 +189,8 @@ class IndexSelection:
         what_if = algorithm.cost_evaluation.what_if
         cost_requests = algorithm.cost_evaluation.cost_requests
         cache_hits = algorithm.cost_evaluation.cache_hits
-        return indexes, what_if, cost_requests, cache_hits
+        cache = algorithm.cost_evaluation.cache
+        return indexes, what_if, cost_requests, cache_hits, cache
 
     def create_algorithm_object(self, algorithm_name, parameters):
         algorithm = ALGORITHMS[algorithm_name](self.db_connector, parameters)

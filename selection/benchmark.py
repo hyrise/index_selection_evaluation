@@ -19,7 +19,8 @@ class Benchmark:
                  global_config,
                  cost_requests,
                  cache_hits,
-                 what_if=None):
+                 what_if=None,
+                 cache=None):
         self.workload = workload
         self.db_connector = db_connector
         self.indexes = indexes
@@ -31,6 +32,7 @@ class Benchmark:
         self.what_if = what_if
         self.cost_requests = cost_requests
         self.cache_hits = cache_hits
+        self.cache = cache
 
         self.scale_factor = global_config['scale_factor']
         self.benchmark_name = global_config['benchmark_name']
@@ -41,6 +43,18 @@ class Benchmark:
 
         self._set_csv_filename(disable_csv)
         pickle.dump(self.workload, open(f"benchmark_results/workload.pickle", "wb" ))
+
+        if 'ibm' not in self.config['name']:
+            cost_requests_file_name = f"benchmark_results/cost_requests_{self.config['name']}_{self.benchmark_name}_{len(self.workload.queries)}_queries.csv"
+            header = [
+                'query id', 'index configuration', 'costs'
+            ]
+            header_str = ';'.join(header)
+            with open(cost_requests_file_name, 'w') as f:
+                f.write(f"{header_str}\n")
+                for key in self.cache:
+                    query, configuration = key
+                    f.write(f"{query};{configuration};{self.cache[key]}\n")
 
 
     def benchmark(self):
