@@ -1,6 +1,7 @@
 from .cost_evaluation import CostEvaluation
 from .index import Index
 import logging
+import itertools
 
 
 class SelectionAlgorithm:
@@ -64,4 +65,25 @@ class AllIndexesAlgorithm(SelectionAlgorithm):
 
     # Returns single column index for each indexable column
     def _calculate_best_indexes(self, workload):
-        return workload.potential_indexes()
+        print(f"Singles: {len(workload.potential_indexes())}")
+
+        for length in range(1, 3):
+            unique = set()
+            used_columns_per_table = {}
+            for query in workload.queries:
+                for column in query.columns:
+                    if column.table not in used_columns_per_table:
+                        used_columns_per_table[column.table] = set()
+                    used_columns_per_table[column.table].add(column)
+
+            count = 0
+            for key, used_columns in used_columns_per_table.items():
+                unique |= set(itertools.permutations(used_columns, length))
+                count += len(set(itertools.permutations(used_columns, length)))
+            # This can be utilized to generate the permutations for Microsoft SQL Server
+            # for i in unique:
+            #     column_str = ""
+            #     for c in i:
+            #         column_str += f"{c.name}##"
+            #     print(f"{i[0].table}++{column_str}")
+            print(f"{length}-column indexes: {count}")
