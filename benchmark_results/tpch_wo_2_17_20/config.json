@@ -2,7 +2,6 @@
     "database_system": "postgres",
     "benchmark_name": "tpch",
     "scale_factor": 10,
-    "pickle_indexes": false,
     "algorithms": [
         {
             "name": "no_index",

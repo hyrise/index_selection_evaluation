@@ -6,13 +6,13 @@
         {
             "name": "all_indexes",
             "parameters": null,
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         },
         {
             "name": "no_index",
             "parameters": null,
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         }
     ]
