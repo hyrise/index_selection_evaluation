@@ -135,7 +135,7 @@ class TestQuery(unittest.TestCase):
     def test_query(self):
         query = Query(17, 'SELECT * FROM lineitem;')
         self.assertEqual(query.nr, 17)
-        self.assertEqual(query.text, 'select * from lineitem;')
+        self.assertEqual(query.text, 'SELECT * FROM lineitem;')
         self.assertEqual(query.columns, [])
 
         column_1 = Column(name='ColA')
@@ -144,7 +144,7 @@ class TestQuery(unittest.TestCase):
                         'SELECT * FROM nation;',
                         columns=[column_1, column_2])
         self.assertEqual(query_2.nr, 18)
-        self.assertEqual(query_2.text, 'select * from nation;')
+        self.assertEqual(query_2.text, 'SELECT * FROM nation;')
         self.assertEqual(query_2.columns, [column_1, column_2])
 
     def test_query_repr(self):

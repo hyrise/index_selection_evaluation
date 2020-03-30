@@ -10,7 +10,7 @@
                 "max_indexes_naive": 2,
                 "max_index_columns": 3
             },
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         },
         {
@@ -18,7 +18,7 @@
             "parameters": {
                 "min_saving_percentage": 50
             },
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         },
         {
@@ -26,7 +26,7 @@
             "parameters": {
                 "budget": 1
             },
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         },
         {
@@ -36,7 +36,7 @@
                 "budget": 1,
                 "try_variation_seconds_limit": 1
             },
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         },
         {
@@ -44,7 +44,7 @@
             "parameters": {
                 "max_indexes": 10
             },
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         }
     ],
