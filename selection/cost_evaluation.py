@@ -20,7 +20,7 @@ class CostEvaluation:
         # These are only created per connection. Hence, non should be present.
 
     def calculate_cost(self, workload, indexes, store_size=False):
-        assert self.completed == False, 'Cost Evaluation is completed and cannot be reused.'
+        assert self.completed is False, 'Cost Evaluation is completed and cannot be reused.'
         self._prepare_cost_calculation(indexes, store_size=store_size)
         total_cost = 0
 
@@ -81,7 +81,8 @@ class CostEvaluation:
             self.cache[(query, relevant_indexes)] = cost
             return cost
 
-    def _relevant_indexes(self, query, indexes):
+    @staticmethod
+    def _relevant_indexes(query, indexes):
         relevant_indexes = [
             x for x in indexes if any(c in query.columns for c in x.columns)
         ]
