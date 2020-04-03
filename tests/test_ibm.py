@@ -128,7 +128,7 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         # For some reason, the database decides to only use an index for one of the filters
         def _simulate_get_plan(query):
-            if 'table0' in query.text:
+            if 'Table0' in query.text:
                 return {
                     'Total Cost': 17,
                     'Plans': [{
@@ -159,7 +159,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         expected_first_result = {
             'cost_without_indexes': 17,
             'cost_with_recommended_indexes': 17,
-            'recommended_indexes': {Index([self.column_1])}
+            'recommended_indexes': set([Index([self.column_1])])
         }
         expected_second_result = {
             'cost_without_indexes': 5,
@@ -230,7 +230,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0, 10)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = [IndexBenefit(index_0_1, 21)]
+        expected = [IndexBenefit(index_0_1, 31)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 2. Index not subsumed because better index has fewer attributes
@@ -262,7 +262,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0_1, 20)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = [IndexBenefit(index_0_1_2, 31)]
+        expected = [IndexBenefit(index_0_1_2, 51)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 5. Multiple Indexes subsumed
@@ -272,7 +272,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             IndexBenefit(index_0, 10)
         ]
         subsumed = self.algo._combine_subsumed(index_benefits)
-        expected = [IndexBenefit(index_0_1_2, 31)]
+        expected = [IndexBenefit(index_0_1_2, 61)]
         self.assertEqual(subsumed, expected)
 
         # Scenario 6. Input returned if len(input) < 2
