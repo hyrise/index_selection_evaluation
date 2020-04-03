@@ -63,7 +63,8 @@ class Benchmark:
         header = [
             'date', 'commit', 'algorithm name', 'parameters', 'scale factor',
             'benchmark name', 'db system', 'algorithm runtime', '#indexes',
-            'index create time', 'memory consumption', 'cost requests', 'cache hits'
+            'index create time', 'memory consumption', 'cost requests',
+            'cache hits'
         ]
         for query in self.workload.queries:
             header.append('q' + str(query.nr))
@@ -92,7 +93,6 @@ class Benchmark:
             self.calculation_time,
             len(self.indexes), self.index_create_time, indexes_size,
             self.cost_requests, self.cache_hits
-
         ]
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))

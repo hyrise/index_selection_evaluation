@@ -2,7 +2,6 @@
     "database_system": "postgres",
     "benchmark_name": "tpcds",
     "scale_factor": 10,
-    "pickle_indexes": false,
     "algorithms": [
         {
             "name": "no_index",
@@ -34,6 +33,15 @@
             "parameters": {
                 "budget": [250, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4250, 5000, 5750, 6500, 8000, 10000, 12500, 15000],
                 "max_index_columns": 2
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "cophy",
+            "parameters": {
+                "max_index_columns": 2,
+                "max_indexes_per_query": 1
             },
             "number_of_actual_runs": 0,
             "timeout": 300

@@ -65,26 +65,28 @@ class TestEpicAlgorithm(unittest.TestCase):
         self.algo.initial_cost = 10
         best = {'combination': [], 'benefit_to_size_ratio': 0}
         self.algo._evaluate_combination = MagicMock()
-        self.algo._attach_to_indexes(index_combination, candidate, best)
+        self.algo._attach_to_indexes(index_combination, candidate, best,
+                                     self.algo.initial_cost)
 
         first_new_combination = [
             Index(index_combination[0].columns + candidate.columns),
             index_combination[1]
         ]
         self.algo._evaluate_combination.assert_any_call(
-            first_new_combination, best)
+            first_new_combination, best, self.algo.initial_cost)
 
         second_new_combination = [
             index_combination[0],
             Index(index_combination[1].columns + candidate.columns)
         ]
         self.algo._evaluate_combination.assert_any_call(
-            second_new_combination, best)
+            second_new_combination, best, self.algo.initial_cost)
 
         multi_column_candidate = Index([self.column_2, self.column_3])
         with self.assertRaises(Exception):
             self.algo._attach_to_indexes(index_combination,
-                                         multi_column_candidate, best)
+                                         multi_column_candidate, best,
+                                         self.algo.initial_cost)
 
     def test_remove_impossible_canidates(self):
         # All Fit
@@ -144,7 +146,8 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
         # The ratio is 2 which is worse than above's 10. Hence, best_input should not change
-        self.algo._evaluate_combination(new_index_combination, best_input)
+        self.algo._evaluate_combination(new_index_combination, best_input,
+                                        self.algo.initial_cost)
 
         expected_best = best_old
         self.assertEqual(expected_best, best_input)
@@ -174,7 +177,8 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
         # The ratio is 2 which is better than above's 1. But the remaining budget is not sufficient.
-        self.algo._evaluate_combination(new_index_combination, best_input)
+        self.algo._evaluate_combination(new_index_combination, best_input,
+                                        self.algo.initial_cost)
 
         expected_best = best_old
         self.assertEqual(expected_best, best_input)
@@ -194,7 +198,8 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
         # The ratio is 2 which is better than above's 1. Hence, best_input should change
-        self.algo._evaluate_combination(new_index_combination, best_input)
+        self.algo._evaluate_combination(new_index_combination, best_input,
+                                        self.algo.initial_cost)
 
         expected_best = {
             'combination': new_index_combination,

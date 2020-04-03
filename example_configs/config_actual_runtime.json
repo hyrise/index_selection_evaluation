@@ -11,7 +11,7 @@
                 "max_indexes_naive": 1,
                 "max_index_columns": 3
             },
-            "number_of_runs": 5,
+            "number_of_actual_runs": 5,
             "timeout": 30
         }
     ],

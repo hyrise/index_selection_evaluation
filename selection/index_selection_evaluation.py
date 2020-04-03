@@ -88,15 +88,15 @@ class IndexSelection:
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
                 cfg = algorithm_config_unfolded
-                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(cfg)
+                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(
+                    cfg)
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(self.workload, indexes,
                                       self.db_connector,
                                       algorithm_config_unfolded,
                                       calculation_time, self.disable_csv,
                                       config, cost_requests, cache_hits,
-                                      what_if, config['pickle_indexes']
-                                      )
+                                      what_if)
                 benchmark.benchmark()
 
     # Parameter list example: {"max_indexes": [5, 10, 20]}
@@ -129,7 +129,6 @@ class IndexSelection:
         self.db_connector.drop_indexes()
         self.db_connector.commit()
         self.setup_db_connector(self.database_name, self.database_system)
-
 
         algorithm = self.create_algorithm_object(config['name'],
                                                  config['parameters'])
