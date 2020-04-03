@@ -1,7 +1,7 @@
 from selection.algorithms.microsoft_algorithm import MicrosoftAlgorithm
 from selection.workload import Workload
 from selection.index import Index
-from tests.mock_connector import MockConnector, mock_cache, column_A_0, column_A_1, column_A_2, query_0, query_1, table_A
+from mock_connector import MockConnector, mock_cache, column_A_0, column_A_1, column_A_2, query_0, query_1, table_A
 import unittest
 
 
