@@ -40,7 +40,7 @@ class DatabaseConnector:
                     self.exec_only(query_statement)
                 except Exception as e:
                     logging.error(e)
-            elif 'select' in query_statement:
+            elif 'select' in query_statement or 'SELECT' in query_statement:
                 return query_statement
 
     def table_exists(self, table_name):

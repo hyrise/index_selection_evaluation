@@ -16,19 +16,20 @@ class Benchmark:
                  calculation_time,
                  disable_csv,
                  global_config,
-                 parameter_list_used=False,
+                 cost_requests,
+                 cache_hits,
                  what_if=None):
         self.workload = workload
         self.db_connector = db_connector
         self.indexes = indexes
         self.timeout = config['timeout']
-        self.number_of_runs = config['number_of_runs']
+        self.number_of_runs = config['number_of_actual_runs']
         self.config = config
         self.calculation_time = calculation_time
         self.disable_csv = disable_csv
-        self.parameter_list_used = parameter_list_used
-        self._set_csv_filename(disable_csv)
         self.what_if = what_if
+        self.cost_requests = cost_requests
+        self.cache_hits = cache_hits
 
         self.scale_factor = global_config['scale_factor']
         self.benchmark_name = global_config['benchmark_name']
@@ -36,6 +37,8 @@ class Benchmark:
         self.seed = None
         if 'seed' in global_config:
             self.seed = global_config['seed']
+
+        self._set_csv_filename(disable_csv)
 
     def benchmark(self):
         self.db_connector.drop_indexes()
@@ -50,7 +53,6 @@ class Benchmark:
             self.index_create_time = 0
             for index in self.indexes:
                 self.what_if.simulate_index(index, store_size=True)
-        self.db_connector.create_statistics()
         self._benchmark()
         if self.number_of_runs > 0:
             self._drop_indexes()
@@ -61,7 +63,7 @@ class Benchmark:
         header = [
             'date', 'commit', 'algorithm name', 'parameters', 'scale factor',
             'benchmark name', 'db system', 'algorithm runtime', '#indexes',
-            'index create time', 'memory consumption'
+            'index create time', 'memory consumption', 'cost requests', 'cache hits'
         ]
         for query in self.workload.queries:
             header.append('q' + str(query.nr))
@@ -88,7 +90,9 @@ class Benchmark:
             date, commit_hash, config['name'], config['parameters'],
             self.scale_factor, self.benchmark_name, self.db_system,
             self.calculation_time,
-            len(self.indexes), self.index_create_time, indexes_size
+            len(self.indexes), self.index_create_time, indexes_size,
+            self.cost_requests, self.cache_hits
+
         ]
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))
@@ -161,9 +165,7 @@ class Benchmark:
         self.db_connector.commit()
 
     def _set_csv_filename(self, disable_csv):
-        name = 'results_{}_queries.csv'.format(len(self.workload.queries))
+        name = f"results_{self.config['name']}_{self.benchmark_name}_{len(self.workload.queries)}_queries.csv"
         self.filename = 'benchmark_results/' + name
-        if self.parameter_list_used:
-            self.filename = 'benchmark_results/list_' + name
         if disable_csv:
             self.filename = os.devnull

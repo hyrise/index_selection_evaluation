@@ -12,6 +12,9 @@ class Workload:
             indexable_columns.extend(query.columns)
         return list(set(indexable_columns))
 
+    def potential_indexes(self):
+        return [Index([c]) for c in self.indexable_columns()]
+
 
 class Column:
     def __init__(self, name):
@@ -30,7 +33,7 @@ class Column:
         if not isinstance(other, Column):
             return False
 
-        assert self.table is not None and other.table is not None
+        assert self.table is not None and other.table is not None, 'Table objects should not be None for Column.__eq__()'
 
         return self.table.name == other.table.name and self.name == other.name
 
@@ -68,7 +71,7 @@ class Table:
 class Query:
     def __init__(self, query_id, query_text, columns=None):
         self.nr = query_id
-        self.text = query_text.lower()
+        self.text = query_text
 
         # Indexable columns
         if columns is None:
