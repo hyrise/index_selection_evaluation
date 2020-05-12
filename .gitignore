@@ -13,6 +13,7 @@ misc/**
 
 database_connection.json
 benchmark_results/plans
+benchmark_results/notebooks/.ipynb_checkpoints/**
 benchmark_results/**/*.csv
 benchmark_results/**/*.pickle
 benchmark_results/parameters_tpcds
