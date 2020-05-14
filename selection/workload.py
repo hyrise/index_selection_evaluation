@@ -15,9 +15,6 @@ class Workload:
     def potential_indexes(self):
         return [Index([c]) for c in self.indexable_columns()]
 
-    def potential_indexes(self):
-        return [Index([c]) for c in self.indexable_columns()]
-
 
 class Column:
     def __init__(self, name):
