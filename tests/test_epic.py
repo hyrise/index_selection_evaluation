@@ -2,6 +2,7 @@ from selection.algorithms.epic_algorithm import EPICAlgorithm
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 
+import sys
 import unittest
 from unittest.mock import MagicMock
 
@@ -69,18 +70,17 @@ class TestEpicAlgorithm(unittest.TestCase):
                                      self.algo.initial_cost)
 
         first_new_combination = [
-            Index(index_combination[0].columns + candidate.columns),
-            index_combination[1]
+            index_combination[1], Index(index_combination[0].columns + candidate.columns)
         ]
         self.algo._evaluate_combination.assert_any_call(
-            first_new_combination, best, self.algo.initial_cost)
+            first_new_combination, best, self.algo.initial_cost, 5)
 
         second_new_combination = [
             index_combination[0],
             Index(index_combination[1].columns + candidate.columns)
         ]
         self.algo._evaluate_combination.assert_any_call(
-            second_new_combination, best, self.algo.initial_cost)
+            second_new_combination, best, self.algo.initial_cost, 1)
 
         multi_column_candidate = Index([self.column_2, self.column_3])
         with self.assertRaises(Exception):
@@ -225,6 +225,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             'tablea_colc_colb_idx': 2,
         }
 
+        # Assume large size if index not in mocked size table
+        if index.index_idx() not in index_sizes:
+            return sys.maxsize
+
         index.estimated_size = index_sizes[index.index_idx()]
 
     def _calculate_cost_mock_1(self, workload, indexes, store_size):
@@ -255,6 +259,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             'tablea_colc_cola_idx||tablea_colb_idx': 1000,
             'tablea_colc_colb_idx||tablea_colb_idx': 1000,
         }
+
+        # Assume high cost if index not in mocked cost table
+        if index_combination_str not in index_combination_cost:
+            return sys.maxsize
 
         return index_combination_cost[index_combination_str]
 
@@ -328,6 +336,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             'tablea_cola_colb_idx||tablea_colc_idx': 1000,
             'tablea_cola_colc_idx||tablea_colb_idx': 1000,
         }
+
+        # Assume high cost if index not in mocked cost table
+        if index_combination_str not in index_combination_cost:
+            return sys.maxsize
 
         return index_combination_cost[index_combination_str]
 
