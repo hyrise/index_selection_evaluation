@@ -76,7 +76,7 @@ class IndexSelection:
 
         if 'pickle_workload' in config and config['pickle_workload'] is True:
             pickle_filename = f"benchmark_results/workload_{config['benchmark_name']}_{len(self.workload.queries)}_queries.pickle"
-            pickle.dump(self.workload, open(pickle_filename, "wb" ))
+            pickle.dump(self.workload, open(pickle_filename, "wb"))
 
     def _run_algorithms(self, config_file):
         with open(config_file) as f:
