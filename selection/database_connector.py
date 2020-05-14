@@ -51,3 +51,9 @@ class DatabaseConnector:
 
     def drop_database(self, database_name):
         raise NotImplementedError
+
+    def create_statistics(self):
+        raise NotImplementedError
+
+    def set_random_seed(self, value):
+        raise NotImplementedError

@@ -83,6 +83,7 @@ class IndexSelection:
             config = json.load(f)
         self._setup_config(config)
         self.db_connector.drop_indexes()
+        self.db_connector.set_random_seed()
         self.db_connector.create_statistics()
         self.db_connector.commit()
 
