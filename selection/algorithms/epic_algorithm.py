@@ -108,8 +108,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         benefit = current_cost - cost
         new_index = index_combination[-1]
         new_index_size_difference = new_index.estimated_size - old_index_size
-        if new_index_size_difference == 0:
-            new_index_size_difference = 1
+        assert new_index_size_difference != 0, "Index size difference should not be 0!"
 
         ratio = benefit / new_index_size_difference
 
