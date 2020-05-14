@@ -10,10 +10,10 @@ class Workload:
         indexable_columns = set()
         for query in self.queries:
             indexable_columns |= set(query.columns)
-        return list(indexable_columns)
+        return sorted(list(indexable_columns))
 
     def potential_indexes(self):
-        return [Index([c]) for c in self.indexable_columns()]
+        return sorted([Index([c]) for c in self.indexable_columns()])
 
 
 class Column:
