@@ -40,7 +40,6 @@ class Benchmark:
 
         self._set_csv_filename(disable_csv)
 
-
     def benchmark(self):
         self.db_connector.drop_indexes()
 
