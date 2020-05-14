@@ -96,18 +96,17 @@ class EPICAlgorithm(SelectionAlgorithm):
             return
         benefit = current_cost - cost
         new_index = index_combination[-1]
-        new_index_size = new_index.estimated_size
-        new_index_size -= old_index_size
+        new_index_size = new_index.estimated_size - old_index_size
         if new_index_size == 0:
             new_index_size = 1
 
         ratio = benefit / new_index_size
 
-        total_size = sum(x.estimated_size for x in index_combination)
+        total_size = sum(index.estimated_size for index in index_combination)
 
         if ratio > best['benefit_to_size_ratio'] and total_size <= self.budget:
             logging.debug(f'new best cost and size: {cost}\t'
-                          f'{round(total_size/1000000, 2)}MB')
+                          f'{round(total_size / 1000000, 2)}MB')
             best['combination'] = index_combination
             best['benefit_to_size_ratio'] = ratio
             best['cost'] = cost
