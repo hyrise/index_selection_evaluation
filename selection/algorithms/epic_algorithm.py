@@ -78,7 +78,7 @@ class EPICAlgorithm(SelectionAlgorithm):
                 if new_index in index_combination:
                     continue
                 new_combination = index_combination.copy()
-                # We do not replace, but del and append to return indexes in order
+                # We do not replace, but del and append to keep track of their addition order
                 del new_combination[position]
                 new_combination.append(new_index)
                 self._evaluate_combination(
