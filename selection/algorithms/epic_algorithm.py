@@ -107,11 +107,11 @@ class EPICAlgorithm(SelectionAlgorithm):
             return
         benefit = current_cost - cost
         new_index = index_combination[-1]
-        new_index_size = new_index.estimated_size - old_index_size
-        if new_index_size == 0:
-            new_index_size = 1
+        new_index_size_difference = new_index.estimated_size - old_index_size
+        if new_index_size_difference == 0:
+            new_index_size_difference = 1
 
-        ratio = benefit / new_index_size
+        ratio = benefit / new_index_size_difference
 
         total_size = sum(index.estimated_size for index in index_combination)
 
