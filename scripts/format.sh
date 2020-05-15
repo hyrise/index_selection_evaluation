@@ -1,2 +1,2 @@
-yapf -r -i selection
-yapf -r -i tests
+black selection
+black tests
