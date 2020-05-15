@@ -28,7 +28,7 @@ class Column:
         return self.name < other.name
 
     def __repr__(self):
-        return f'C {self.table}.{self.name}'
+        return f"C {self.table}.{self.name}"
 
     # We cannot check self.table == other.table here since Table.__eq__()
     # internally checks Column.__eq__. This would lead to endless recursions.
@@ -36,7 +36,9 @@ class Column:
         if not isinstance(other, Column):
             return False
 
-        assert self.table is not None and other.table is not None, 'Table objects should not be None for Column.__eq__()'
+        assert (
+            self.table is not None and other.table is not None
+        ), "Table objects should not be None for Column.__eq__()"
 
         return self.table.name == other.table.name and self.name == other.name
 
@@ -64,8 +66,7 @@ class Table:
         if not isinstance(other, Table):
             return False
 
-        return self.name == other.name and tuple(self.columns) == tuple(
-            other.columns)
+        return self.name == other.name and tuple(self.columns) == tuple(other.columns)
 
     def __hash__(self):
         return hash((self.name, tuple(self.columns)))
@@ -83,4 +84,4 @@ class Query:
             self.columns = columns
 
     def __repr__(self):
-        return f'Q{self.nr}'
+        return f"Q{self.nr}"

@@ -4,13 +4,10 @@ import logging
 
 
 class SelectionAlgorithm:
-    def __init__(self,
-                 database_connector,
-                 parameters,
-                 default_parameters=None):
+    def __init__(self, database_connector, parameters, default_parameters=None):
         if default_parameters == None:
             default_parameters = {}
-        logging.debug('Init selection algorithm')
+        logging.debug("Init selection algorithm")
         self.did_run = False
         self.parameters = parameters
         # Store default values for missing parameters
@@ -21,12 +18,12 @@ class SelectionAlgorithm:
         self.database_connector = database_connector
         self.database_connector.drop_indexes()
         self.cost_evaluation = CostEvaluation(database_connector)
-        if 'cost_estimation' in self.parameters:
-            estimation = self.parameters['cost_estimation']
+        if "cost_estimation" in self.parameters:
+            estimation = self.parameters["cost_estimation"]
             self.cost_evaluation.cost_estimation = estimation
 
     def calculate_best_indexes(self, workload):
-        assert self.did_run is False, 'Selection algorithm can only run once.'
+        assert self.did_run is False, "Selection algorithm can only run once."
         self.did_run = True
         indexes = self._calculate_best_indexes(workload)
         self._log_cache_hits()
@@ -35,18 +32,17 @@ class SelectionAlgorithm:
         return indexes
 
     def _calculate_best_indexes(self, workload):
-        raise NotImplementedError('_calculate_best_indexes(self, '
-                                  'workload) missing')
+        raise NotImplementedError("_calculate_best_indexes(self, " "workload) missing")
 
     def _log_cache_hits(self):
         hits = self.cost_evaluation.cache_hits
         requests = self.cost_evaluation.cost_requests
-        logging.debug(f'Total cost cache hits:\t{hits}')
-        logging.debug(f'Total cost requests:\t\t{requests}')
+        logging.debug(f"Total cost cache hits:\t{hits}")
+        logging.debug(f"Total cost requests:\t\t{requests}")
         if requests == 0:
             return
         ratio = round(hits * 100 / requests, 2)
-        logging.debug(f'Cost cache hit ratio:\t{ratio}%')
+        logging.debug(f"Cost cache hit ratio:\t{ratio}%")
 
 
 class NoIndexAlgorithm(SelectionAlgorithm):
