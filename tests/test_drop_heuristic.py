@@ -117,4 +117,4 @@ class TestDropHeuristicAlgorithm(unittest.TestCase):
     def test_calculate_best_indexes_none_fits(self):
         self.algo.parameters["max_indexes"] = 0
         with self.assertRaises(Exception):
-            indexes = self.algo._calculate_best_indexes(self.workload)
+            self.algo._calculate_best_indexes(self.workload)

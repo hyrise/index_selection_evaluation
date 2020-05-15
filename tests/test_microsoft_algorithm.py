@@ -8,8 +8,7 @@ from mock_connector import (
     column_A_1,
     column_A_2,
     query_0,
-    query_1,
-    table_A,
+    query_1
 )
 import unittest
 

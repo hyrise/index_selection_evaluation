@@ -1,4 +1,3 @@
-from unittest.mock import MagicMock
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table
@@ -105,7 +104,7 @@ for index_combination_size in range(0, len(relevant_indexes_query2_table_A) + 1)
 assert (
     mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))]
     == 20
-), f"{mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))]} != 20"
+), f"{mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))]} != 20"  # noqa: E501
 
 
 class MockConnector:

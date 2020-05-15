@@ -1,8 +1,6 @@
-from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 import unittest
-from unittest.mock import MagicMock
 from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 
 
@@ -98,11 +96,11 @@ class TestColumn(unittest.TestCase):
 
         # Column name equal but table (for both) is None
         with self.assertRaises(Exception):
-            column1 == column_2
+            column_1 == column_2
 
         # Column name different but table (for both) is None
         with self.assertRaises(Exception):
-            column1 == column_3
+            column_1 == column_3
 
         table_1.add_column(column_1)
 

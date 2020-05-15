@@ -171,7 +171,8 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
     def create_multicolumn_indexes(self, workload, indexes):
         multicolumn_candidates = set()
         for index in indexes:
-            # Extend the index with all indexable columns of the same table, that are not already part of the index
+            # Extend the index with all indexable columns of the same table,
+            # that are not already part of the index
             for column in (
                 set(index.table().columns) & set(workload.indexable_columns())
             ) - set(index.columns):

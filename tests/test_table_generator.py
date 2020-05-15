@@ -1,6 +1,6 @@
 from selection.table_generator import TableGenerator
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
-from selection.workload import Column, Table
+from selection.workload import Column
 import unittest
 
 

@@ -19,7 +19,7 @@ class TestQueryGenerator(unittest.TestCase):
     def test_generate_tpch(self):
         self.db_name = "tpch_test_db"
 
-        table_generator = TableGenerator(
+        TableGenerator(
             "tpch",
             0.001,
             self.generating_connector,
@@ -35,7 +35,7 @@ class TestQueryGenerator(unittest.TestCase):
     def test_generate_tpcds(self):
         self.db_name = "tpcds_test_db"
 
-        table_generator = TableGenerator(
+        TableGenerator(
             "tpcds",
             0.001,
             self.generating_connector,

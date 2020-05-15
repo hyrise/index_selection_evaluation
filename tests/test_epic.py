@@ -153,7 +153,8 @@ class TestEpicAlgorithm(unittest.TestCase):
         assert best_old["benefit_to_size_ratio"] >= ratio
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
-        # The ratio is 2 which is worse than above's 10. Hence, best_input should not change
+        # The ratio is 2 which is worse than above's 10. Hence, best_input
+        # should not change
         self.algo._evaluate_combination(
             new_index_combination, best_input, self.algo.initial_cost
         )
@@ -185,7 +186,8 @@ class TestEpicAlgorithm(unittest.TestCase):
         assert best_old["benefit_to_size_ratio"] < ratio
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
-        # The ratio is 2 which is better than above's 1. But the remaining budget is not sufficient.
+        # The ratio is 2 which is better than above's 1. But the remaining budget
+        # is not sufficient.
         self.algo._evaluate_combination(
             new_index_combination, best_input, self.algo.initial_cost
         )
@@ -254,7 +256,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_colc_idx||tablea_cola_idx": 60,
             "tablea_colc_idx||tablea_colb_idx": 50,
             "tablea_cola_idx||tablea_colb_idx||tablea_colc_idx": 40,
-            ### Below here multi, they do not result in benefit
+            # Below here multi, they do not result in benefit
             "tablea_colb_idx||tablea_colc_cola_idx": 1000,
             "tablea_colb_idx||tablea_colc_colb_idx": 1000,
             "tablea_colb_cola_idx||tablea_colc_idx": 1000,
@@ -276,7 +278,8 @@ class TestEpicAlgorithm(unittest.TestCase):
             side_effect=self._calculate_cost_mock_1
         )
 
-        # Each one alone of the single column indexes would fit, but the one with the best benefit/cost ratio is chosen
+        # Each one alone of the single column indexes would fit,
+        # but the one with the best benefit/cost ratio is chosen
         self.algo.budget = 1
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = [Index([self.column_3])]
@@ -328,7 +331,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_cola_idx||tablea_colc_idx": 60,
             "tablea_colb_idx||tablea_colc_idx": 50,
             "tablea_cola_idx||tablea_colb_idx||tablea_colc_idx": 40,
-            ### Below here multi, they do not result in benefit
+            # Below here multi, they do not result in benefit
             "tablea_cola_colb_idx": 1000,
             "tablea_cola_colc_idx": 1000,
             "tablea_colb_colc_idx": 1000,
@@ -399,7 +402,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_cola_idx": 80,
             "tablea_colb_idx": 80,
             "tablea_cola_idx||tablea_colb_idx": 70,
-            ### Below here multi, they do not result in benefit
+            # Below here multi, they do not result in benefit
             "tablea_cola_colb_idx": 60,
             "tablea_colb_cola_idx": 60,
             "tablea_colb_cola_idx||tablea_colb_idx": 60,

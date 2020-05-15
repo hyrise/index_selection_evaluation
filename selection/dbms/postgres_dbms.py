@@ -84,8 +84,10 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return result[0]
 
     def drop_database(self, database_name):
-        self.exec_only("drop database {}".format(database_name))
-        logging.info("Database {} dropped".format(database_name))
+        statement = f"""DROP DATABASE {database_name};"""
+        self.exec_only(statement)
+
+        logging.info(f"Database {database_name} dropped")
 
     def create_statistics(self):
         logging.info("Postgres: Run `analyze`")
@@ -193,7 +195,3 @@ class PostgresDatabaseConnector(DatabaseConnector):
             WHERE datname = '{database_name}');"""
         result = self.exec_fetch(statement)
         return result[0]
-
-    def drop_database(self, database_name):
-        statement = f"""DROP DATABASE {database_name};"""
-        self.exec_only(statement)

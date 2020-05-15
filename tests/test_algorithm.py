@@ -12,7 +12,7 @@ class TestAlgorithm(unittest.TestCase):
         cls.db_name = "tpch_test_db_algorithm"
 
         cls.db_connector = PostgresDatabaseConnector(None, autocommit=True)
-        tab_gen = TableGenerator(
+        TableGenerator(
             "tpch", 0.001, cls.db_connector, explicit_database_name=cls.db_name
         )
         cls.selection_algorithm = SelectionAlgorithm(cls.db_connector, {"test": 24})
