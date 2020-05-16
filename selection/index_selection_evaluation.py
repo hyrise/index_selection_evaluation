@@ -5,6 +5,7 @@ from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from .algorithms.epic_algorithm import EPICAlgorithm
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.ibm_algorithm import IBMAlgorithm
+from .algorithms.relaxation_algorithm import RelaxationAlgorithm
 from .dbms.postgres_dbms import PostgresDatabaseConnector
 from .dbms.hana_dbms import HanaDatabaseConnector
 
@@ -27,6 +28,7 @@ ALGORITHMS = {
     "ibm": IBMAlgorithm,
     "epic": EPICAlgorithm,
     "dexter": DexterAlgorithm,
+    "relaxation": RelaxationAlgorithm,
 }
 
 DBMSYSTEMS = {"postgres": PostgresDatabaseConnector, "hana": HanaDatabaseConnector}
