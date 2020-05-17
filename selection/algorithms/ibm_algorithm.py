@@ -7,7 +7,7 @@ import logging
 import random
 import time
 
-# Maxiumum number of columns per index, storage budget in MB,
+# Maximum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations
 DEFAULT_PARAMETERS = {
@@ -179,7 +179,7 @@ class IBMAlgorithm(SelectionAlgorithm):
             if index_benefit_high_ratio in index_benefits_to_remove:
                 continue
             # Test all following elements (with lower ratios) in the list
-            for index_benefit_lower_ratio in index_benefits[high_ratio_pos + 1 :]:
+            for index_benefit_lower_ratio in index_benefits[high_ratio_pos + 1:]:
                 if index_benefit_lower_ratio in index_benefits_to_remove:
                     continue
                 if index_benefit_high_ratio.index.subsumes(

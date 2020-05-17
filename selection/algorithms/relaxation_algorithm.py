@@ -4,10 +4,8 @@ from ..index import Index
 
 import itertools
 import logging
-import random
-import time
 
-# Maxiumum number of columns per index, storage budget in MB,
+# Maximum number of columns per index, storage budget in MB,
 DEFAULT_PARAMETERS = {
     "max_index_columns": 3,
     "budget": 500,
@@ -28,7 +26,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes Relaxation")
         # Obtain best indexes per query
-        query_results, candidates = self._exploit_virtual_indexes(workload)
+        _, candidates = self._exploit_virtual_indexes(workload)
 
         # CP in Figure 5
         cp = candidates.copy()

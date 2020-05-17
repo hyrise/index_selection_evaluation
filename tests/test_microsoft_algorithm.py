@@ -1,7 +1,7 @@
 from selection.algorithms.microsoft_algorithm import MicrosoftAlgorithm
 from selection.workload import Workload
 from selection.index import Index
-from mock_connector import (
+from tests.mock_connector import (
     MockConnector,
     mock_cache,
     column_A_0,
@@ -9,7 +9,6 @@ from mock_connector import (
     column_A_2,
     query_0,
     query_1,
-    table_A,
 )
 import unittest
 
@@ -29,11 +28,11 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
             lambda indexes, store_size=False: None
         )
 
-        indexes = algorithm.calculate_best_indexes(
+        index_selection = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
         self.assertEqual(
-            set(indexes), set([Index([column_A_0, column_A_1, column_A_2])])
+            set(index_selection), set([Index([column_A_0, column_A_1, column_A_2])])
         )
 
     def test_calculate_indexes_2indexes_2columns(self):
@@ -46,10 +45,10 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
             lambda indexes, store_size=False: None
         )
 
-        indexes = algorithm.calculate_best_indexes(
+        index_selection = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
-        self.assertEqual(set(indexes), set([Index([column_A_0, column_A_1])]))
+        self.assertEqual(set(index_selection), set([Index([column_A_0, column_A_1])]))
 
 
 if __name__ == "__main__":

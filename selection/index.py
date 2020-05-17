@@ -3,12 +3,12 @@ from functools import total_ordering
 
 @total_ordering
 class Index:
-    def __init__(self, columns):
+    def __init__(self, columns, size=None):
         if len(columns) == 0:
             raise ValueError("Index needs at least 1 column")
         self.columns = tuple(columns)
         # Store hypopg estimated size when `store_size=True` (whatif)
-        self.estimated_size = None
+        self.estimated_size = size
         self.hypopg_name = None
 
     # Used to sort indexes
