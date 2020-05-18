@@ -1,6 +1,5 @@
 from ..selection_algorithm import SelectionAlgorithm
 import logging
-import itertools
 
 # Algorithm stops when maximum number of indexes is reached
 DEFAULT_PARAMETERS = {"max_indexes": 15, "cost_estimation": "whatif"}

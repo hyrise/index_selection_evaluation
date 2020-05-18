@@ -9,7 +9,6 @@ from mock_connector import (
     column_A_2,
     query_0,
     query_1,
-    table_A,
 )
 import unittest
 
@@ -32,9 +31,7 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
         indexes = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
-        self.assertEqual(
-            set(indexes), set([Index([column_A_0, column_A_1, column_A_2])])
-        )
+        self.assertEqual(set(indexes), set([Index([column_A_0, column_A_1, column_A_2])]))
 
     def test_calculate_indexes_2indexes_2columns(self):
         algorithm = MicrosoftAlgorithm(

@@ -1,6 +1,6 @@
 from selection.table_generator import TableGenerator
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
-from selection.workload import Column, Table
+from selection.workload import Column
 import unittest
 
 
@@ -24,9 +24,7 @@ class TestTableGenerator(unittest.TestCase):
         )
 
         table_generator = TableGenerator("tpcds", 0.001, self.generating_connector)
-        self.assertEqual(
-            table_generator.database_name(), "indexselection_tpcds___0_001"
-        )
+        self.assertEqual(table_generator.database_name(), "indexselection_tpcds___0_001")
         self.assertTrue(
             self.generating_connector.database_exists("indexselection_tpcds___0_001")
         )

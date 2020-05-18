@@ -69,7 +69,8 @@ class TestIBMAlgorithm(unittest.TestCase):
         table_1.add_column(column_0_table_1)
         query = Query(
             17,
-            "SELECT * FROM Table0 as t0, Table1 as t1 WHERE t0.Col0 = 1 AND t0.Col1 = 2 AND t0.Col2 = 3 AND t1.Col0 = 17;",
+            """SELECT * FROM Table0 as t0, Table1 as t1 WHERE t0.Col0 = 1"
+                AND t0.Col1 = 2 AND t0.Col2 = 3 AND t1.Col0 = 17;""",
             [self.column_0, self.column_1, self.column_2, column_0_table_1],
         )
         indexes = self.algo._possible_indexes(query)
@@ -94,7 +95,8 @@ class TestIBMAlgorithm(unittest.TestCase):
         def _simulate_index_mock(index, store_size):
             index.hypopg_name = f"<1337>btree_{index.columns}"
 
-        # For some reason, the database decides to only use an index for one of the filters
+        # For some reason, the database decides to only use an index for one of
+        # the filters
         def _simulate_get_plan(query):
             plan = {
                 "Total Cost": 17,
@@ -114,9 +116,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             [self.column_0, self.column_1],
         )
 
-        self.algo.database_connector.get_plan = MagicMock(
-            side_effect=_simulate_get_plan
-        )
+        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
         self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
         self.algo.what_if.drop_all_simulated_indexes = MagicMock()
 
@@ -132,7 +132,8 @@ class TestIBMAlgorithm(unittest.TestCase):
         def _simulate_index_mock(index, store_size):
             index.hypopg_name = f"<1337>btree_{index.columns}"
 
-        # For some reason, the database decides to only use an index for one of the filters
+        # For some reason, the database decides to only use an index for one of
+        # the filters
         def _simulate_get_plan(query):
             if "Table0" in query.text:
                 return {
@@ -150,9 +151,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         query_1 = Query(1, "SELECT * FROM Table1;", [])
         workload = Workload([query_0, query_1], "database_name")
 
-        self.algo.database_connector.get_plan = MagicMock(
-            side_effect=_simulate_get_plan
-        )
+        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
         self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
         self.algo.what_if.drop_all_simulated_indexes = MagicMock()
         query_results, index_candidates = self.algo._exploit_virtual_indexes(workload)
@@ -238,7 +237,8 @@ class TestIBMAlgorithm(unittest.TestCase):
         expected = [IndexBenefit(index_0, 11), IndexBenefit(index_0_1, 20)]
         self.assertEqual(subsumed, expected)
 
-        # Scenario 3. Index not subsumed because last element does not match attribute even though better ratio
+        # Scenario 3. Index not subsumed because last element does not match
+        # attribute even though better ratio
         index_0_1_2 = Index([self.column_0, self.column_1, self.column_2])
         index_0_1_2.estimated_size = 3
         index_0_2 = Index([self.column_0, self.column_2])
@@ -271,7 +271,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.assertEqual(subsumed, expected)
 
         # Scenario 7. Input not sorted by ratio throws
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             subsumed = self.algo._combine_subsumed(
                 [IndexBenefit(index_0, 10), IndexBenefit(index_0_1, 21)]
             )
@@ -330,8 +330,9 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         # In this scenario a good index has not been selected (index_3).
         # We test three things:
-        # (i) That index_3 gets chosen by variation.
-        # (ii) That the weakest index from the original selection gets removed (index_1).
+        # (i)   That index_3 gets chosen by variation.
+        # (ii)  That the weakest index from the original selection gets
+        #         removed (index_1).
         # (iii) That index_4 does not get chosen even though it is better than index_1.
         self.algo._evaluate_workload = fake
         self.algo.maximum_remove = 1
@@ -361,9 +362,9 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         # Test that good index is not chosen because of storage restrictions
         new = self.algo._try_variations(
-            selected_index_benefits=frozenset([IndexBenefit(index_0, 1),]),
+            selected_index_benefits=frozenset([IndexBenefit(index_0, 1)]),
             index_benefits=frozenset(
-                [IndexBenefit(index_0, 1), IndexBenefit(index_7, 5),]
+                [IndexBenefit(index_0, 1), IndexBenefit(index_7, 5)]
             ),
             workload=[],
         )

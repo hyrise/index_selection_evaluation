@@ -12,7 +12,7 @@ class TestAlgorithm(unittest.TestCase):
         cls.db_name = "tpch_test_db_algorithm"
 
         cls.db_connector = PostgresDatabaseConnector(None, autocommit=True)
-        tab_gen = TableGenerator(
+        TableGenerator(
             "tpch", 0.001, cls.db_connector, explicit_database_name=cls.db_name
         )
         cls.selection_algorithm = SelectionAlgorithm(cls.db_connector, {"test": 24})
@@ -44,7 +44,7 @@ class TestAlgorithm(unittest.TestCase):
         selection_algorithm.calculate_best_indexes(workload)
         self.assertTrue(selection_algorithm.did_run)
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             selection_algorithm.calculate_best_indexes(workload)
 
     def test_cost_eval(self):

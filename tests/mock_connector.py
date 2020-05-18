@@ -1,4 +1,3 @@
-from unittest.mock import MagicMock
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table
@@ -69,19 +68,13 @@ for index_combination_size in range(0, len(relevant_indexes_query2_table_A) + 1)
 
         # Each index with leading Col0, Col1 lowers the cost to 25
         if any(
-            [
-                (column_A_0, column_A_1) == index.columns[:2]
-                for index in index_combination
-            ]
+            [(column_A_0, column_A_1) == index.columns[:2] for index in index_combination]
         ):
             mock_cache[(query_1, frozenset(index_combination))] = 25
             continue
         # Each index with leading Col0, Col2 lowers the cost to 27
         if any(
-            [
-                (column_A_0, column_A_2) == index.columns[:2]
-                for index in index_combination
-            ]
+            [(column_A_0, column_A_2) == index.columns[:2] for index in index_combination]
         ):
             mock_cache[(query_1, frozenset(index_combination))] = 27
             continue
@@ -103,9 +96,8 @@ for index_combination_size in range(0, len(relevant_indexes_query2_table_A) + 1)
         mock_cache[(query_1, frozenset(index_combination))] = 150
 
 assert (
-    mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))]
-    == 20
-), f"{mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))]} != 20"
+    mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))] == 20
+), f"{mock_cache[(query_1, frozenset({Index([column_A_0, column_A_1, column_A_2])}))]} != 20"  # noqa: E501
 
 
 class MockConnector:

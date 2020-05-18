@@ -19,11 +19,8 @@ class TestQueryGenerator(unittest.TestCase):
     def test_generate_tpch(self):
         self.db_name = "tpch_test_db"
 
-        table_generator = TableGenerator(
-            "tpch",
-            0.001,
-            self.generating_connector,
-            explicit_database_name=self.db_name,
+        TableGenerator(
+            "tpch", 0.001, self.generating_connector, explicit_database_name=self.db_name,
         )
 
         db_connector = PostgresDatabaseConnector(self.db_name, autocommit=True)
@@ -35,7 +32,7 @@ class TestQueryGenerator(unittest.TestCase):
     def test_generate_tpcds(self):
         self.db_name = "tpcds_test_db"
 
-        table_generator = TableGenerator(
+        TableGenerator(
             "tpcds",
             0.001,
             self.generating_connector,

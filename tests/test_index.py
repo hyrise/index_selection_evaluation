@@ -1,8 +1,6 @@
-from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
-from selection.workload import Column, Query, Table, Workload
+from selection.workload import Column, Table
 import unittest
-from unittest.mock import MagicMock
 
 
 class TestIndex(unittest.TestCase):
