@@ -86,7 +86,7 @@ class TestEpicAlgorithm(unittest.TestCase):
         )
 
         multi_column_candidate = Index([self.column_2, self.column_3])
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             self.algo._attach_to_indexes(
                 index_combination, multi_column_candidate, best, self.algo.initial_cost
             )

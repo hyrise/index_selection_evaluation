@@ -84,7 +84,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return result[0]
 
     def drop_database(self, database_name):
-        statement = f"""DROP DATABASE {database_name};"""
+        statement = f"DROP DATABASE {database_name};"
         self.exec_only(statement)
 
         logging.info(f"Database {database_name} dropped")

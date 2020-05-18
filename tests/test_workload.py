@@ -95,21 +95,21 @@ class TestColumn(unittest.TestCase):
         column_3 = Column(name="ColB")
 
         # Column name equal but table (for both) is None
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             column_1 == column_2
 
         # Column name different but table (for both) is None
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             column_1 == column_3
 
         table_1.add_column(column_1)
 
         # Column name equal but table of column_2 is None
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             column_1 == column_2
 
         # Column name equal but table of column_2 is None
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             column_2 == column_1
 
         table_2.add_column(column_2)

@@ -44,7 +44,7 @@ class TestAlgorithm(unittest.TestCase):
         selection_algorithm.calculate_best_indexes(workload)
         self.assertTrue(selection_algorithm.did_run)
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             selection_algorithm.calculate_best_indexes(workload)
 
     def test_cost_eval(self):

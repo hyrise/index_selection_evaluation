@@ -275,7 +275,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.assertEqual(subsumed, expected)
 
         # Scenario 7. Input not sorted by ratio throws
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             subsumed = self.algo._combine_subsumed(
                 [IndexBenefit(index_0, 10), IndexBenefit(index_0_1, 21)]
             )
