@@ -72,17 +72,19 @@ class TestEpicAlgorithm(unittest.TestCase):
 
         first_new_combination = [
             index_combination[1],
-            Index(index_combination[0].columns + candidate.columns)
+            Index(index_combination[0].columns + candidate.columns),
         ]
         self.algo._evaluate_combination.assert_any_call(
-            first_new_combination, best, self.algo.initial_cost, 5)
+            first_new_combination, best, self.algo.initial_cost, 5
+        )
 
         second_new_combination = [
             index_combination[0],
             Index(index_combination[1].columns + candidate.columns),
         ]
         self.algo._evaluate_combination.assert_any_call(
-            second_new_combination, best, self.algo.initial_cost, 1)
+            second_new_combination, best, self.algo.initial_cost, 1
+        )
 
         multi_column_candidate = Index([self.column_2, self.column_3])
         with self.assertRaises(AssertionError):
