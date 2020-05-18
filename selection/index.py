@@ -70,8 +70,11 @@ class Index:
 
 # The following methods implement the index transformation rules presented by
 # Bruno and Chaudhuri their 2005 paper Automatic Physical Database Tuning:
-# A Relaxation-based Approach. The removal transformation is not implemented
-# because it does not directly work on index objects, but more on an index configuration.
+# A Relaxation-based Approach.
+#   The "removal" transformation is not implemented, because it does not directly work on
+#     index objects, but more on an index configuration.
+#   The "promotion to clustered" transformation is not implemented, because clustered
+#     indexes are currently not chosen by selection algorithms
 #
 # The authors define an index I as a sequence of key columns K and a set of suffix
 # columns S: I = (K;S). If the database system does not support suffix columns, only
@@ -83,7 +86,12 @@ class Index:
 # If K_1 is a prefix of K_2, I_1_2 = (K2; (S_1 ∪ S_2) - K_2)).
 # Returns the merged index.
 def index_merge(index_1, index_2):
-    raise NotImplementedError
+    merged_columns = list(index_1.columns)
+    for column in index_2.columns:
+        if column not in index_1.columns:
+            merged_columns.append(column)
+    return Index(merged_columns)
+
 
 # Splitting two indexes produces a common index I_C and at most two additional
 # residual indexes I_R1 and I_R2. Splitting I_1(K_1;S_1) and I_2(K_2;S_2):
@@ -96,6 +104,7 @@ def index_merge(index_1, index_2):
 def index_split(index_1, index_2):
     raise NotImplementedError
 
+
 # Consider I(K;S). For any prefix K' of K (including K' = K if S is not empty), an
 # index I_P = (K';Ø) is obtained.
 # Returns the prefixed index.
@@ -104,8 +113,3 @@ def index_prefix(index_1):
     raise NotImplementedError
     # Do we want the following behaviour?
     # assert len(index_1.columns) > 1, "Index prefix cannot be obtained for single attribute index."
-
-
-# TODO: do we need that?
-def index_promote_to_clustered(index_1):
-    raise NotImplementedError

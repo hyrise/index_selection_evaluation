@@ -1,34 +1,32 @@
-from selection.cost_evaluation import CostEvaluation
-from selection.index import Index
-from selection.workload import Column, Query, Table, Workload
+from selection.index import Index, index_merge, index_prefix, index_split
+from selection.workload import Column, Table
 import unittest
-from unittest.mock import MagicMock
 
 
 class TestIndex(unittest.TestCase):
     @classmethod
-    def setUp(self):
-        self.column_0 = Column("Col0")
-        self.column_1 = Column("Col1")
-        self.column_2 = Column("Col2")
+    def setUpClass(cls):
+        cls.column_0 = Column("Col0")
+        cls.column_1 = Column("Col1")
+        cls.column_2 = Column("Col2")
 
-        self.columns = [self.column_0, self.column_1]
-        self.table = Table("TableA")
-        self.table.add_columns(self.columns)
-        self.table.add_column(self.column_2)
+        columns = [cls.column_0, cls.column_1, cls.column_2]
+        cls.table = Table("TableA")
+        cls.table.add_columns(columns)
 
     def test_index(self):
-        index = Index(self.columns)
-        self.assertEqual(index.columns, tuple(self.columns))
+        columns = [self.column_0, self.column_1]
+        index = Index(columns)
+        self.assertEqual(index.columns, tuple(columns))
         self.assertEqual(index.estimated_size, None)
         self.assertEqual(index.hypopg_name, None)
 
         with self.assertRaises(ValueError):
-            index = Index([])
+            Index([])
 
     def test_repr(self):
-        index = Index(self.columns)
-        self.assertEqual(repr(index), "I(C tablea.col0,C tablea.col1)")
+        index_0_1 = Index([self.column_0, self.column_1])
+        self.assertEqual(repr(index_0_1), "I(C tablea.col0,C tablea.col1)")
 
     def test_index_lt(self):
         index_0 = Index([self.column_0])
@@ -37,13 +35,14 @@ class TestIndex(unittest.TestCase):
         self.assertTrue(index_0 < index_1)
         self.assertFalse(index_1 < index_0)
 
-        index_0_1_2 = Index(self.columns)
+        index_0_1_2 = Index([self.column_0, self.column_1, self.column_2])
         self.assertTrue(index_0 < index_0_1_2)
         self.assertFalse(index_0_1_2 < index_0)
 
+        index_0_1 = Index([self.column_0, self.column_1])
         index_0_2 = Index([self.column_0, self.column_2])
-        self.assertTrue(index_0_1_2 < index_0_2)
-        self.assertFalse(index_0_2 < index_0_1_2)
+        self.assertTrue(index_0_1 < index_0_2)
+        self.assertFalse(index_0_2 < index_0_1)
 
     def test_index_eq(self):
         index_0 = Index([self.column_0])
@@ -53,41 +52,40 @@ class TestIndex(unittest.TestCase):
         self.assertFalse(index_0 == index_1)
         self.assertTrue(index_0 == index_2)
 
-        index_0_1_2 = Index(self.columns)
         index_0_1 = Index([self.column_0, self.column_1])
-        self.assertTrue(index_0_1_2 == index_0_1)
+        self.assertTrue(index_0_1 == Index([self.column_0, self.column_1]))
 
         # Check comparing object of different class
-        self.assertFalse(index_0_1_2 == int(3))
+        self.assertFalse(index_0_1 == int(3))
 
     def test_index_column_names(self):
-        index = Index(self.columns)
-        column_names = index._column_names()
+        index_0_1 = Index([self.column_0, self.column_1])
+        column_names = index_0_1._column_names()
         self.assertEqual(column_names, ["col0", "col1"])
 
     def test_index_is_single_column(self):
         index_2 = Index([self.column_2])
-        index_0_1_2 = Index(self.columns)
+        index_0_1_2 = Index([self.column_0, self.column_1, self.column_2])
 
         self.assertTrue(index_2.is_single_column())
         self.assertFalse(index_0_1_2.is_single_column())
 
     def test_index_table(self):
-        index = Index(self.columns)
+        index_0 = Index([self.column_0])
 
-        table = index.table()
+        table = index_0.table()
         self.assertEqual(table, self.table)
 
     def test_index_idx(self):
-        index = Index(self.columns)
+        index_0_1 = Index([self.column_0, self.column_1])
 
-        index_idx = index.index_idx()
+        index_idx = index_0_1.index_idx()
         self.assertEqual(index_idx, "tablea_col0_col1_idx")
 
     def test_joined_column_names(self):
-        index = Index(self.columns)
+        index_0_1 = Index([self.column_0, self.column_1])
 
-        index_idx = index.joined_column_names()
+        index_idx = index_0_1.joined_column_names()
         self.assertEqual(index_idx, "col0,col1")
 
     def test_appendable_by_other_table(self):
@@ -96,35 +94,35 @@ class TestIndex(unittest.TestCase):
         table.add_column(column)
         index_on_other_table = Index([column])
 
-        index = Index([self.column_0])
+        index_0 = Index([self.column_0])
 
-        self.assertFalse(index.appendable_by(index_on_other_table))
+        self.assertFalse(index_0.appendable_by(index_on_other_table))
 
     def test_appendable_by_multi_column_index(self):
-        multi_column_index = Index(self.columns)
+        multi_column_index = Index([self.column_0, self.column_1])
 
-        index = Index([self.column_2])
+        index_2 = Index([self.column_2])
 
-        self.assertFalse(index.appendable_by(multi_column_index))
+        self.assertFalse(index_2.appendable_by(multi_column_index))
 
     def test_appendable_by_index_with_already_present_column(self):
         index_with_already_present_column = Index([self.column_0])
 
-        index = Index(self.columns)
+        index_0_1 = Index([self.column_0, self.column_1])
 
-        self.assertFalse(index.appendable_by(index_with_already_present_column))
+        self.assertFalse(index_0_1.appendable_by(index_with_already_present_column))
 
     def test_appendable_by(self):
         index_appendable_by = Index([self.column_2])
 
-        index = Index(self.columns)
+        index_0_1 = Index([self.column_0, self.column_1])
 
-        self.assertTrue(index.appendable_by(index_appendable_by))
+        self.assertTrue(index_0_1.appendable_by(index_appendable_by))
 
     def test_appendable_by_other_type(self):
-        index = Index(self.columns)
+        index_0_1 = Index([self.column_0, self.column_1])
 
-        self.assertFalse(index.appendable_by(int(17)))
+        self.assertFalse(index_0_1.appendable_by(int(17)))
 
     def test_subsumes(self):
         index_0 = Index([self.column_0])
@@ -166,6 +164,26 @@ class TestIndex(unittest.TestCase):
         expected = Index([self.column_0, self.column_1])
         self.assertEqual(result, expected)
 
+        # Example from Bruno's paper
+        column_a = Column("a")
+        column_b = Column("b")
+        column_c = Column("c")
+        column_d = Column("d")
+        column_e = Column("e")
+        column_f = Column("f")
+        column_g = Column("g")
+
+        columns = [column_a, column_b, column_c, column_d, column_e, column_f, column_g]
+        table = Table("TableB")
+        table.add_columns(columns)
+
+        index_1 = Index([column_a, column_b, column_c, column_d, column_e, column_f])
+        index_2 = Index([column_c, column_d, column_g, column_e])
+        result = index_merge(index_1, index_2)
+        expected = Index([column_a, column_b, column_c, column_d, column_e, column_f, column_g])
+        self.assertEqual(result, expected)
+
+    @unittest.skip("not implemented yet")
     def test_split(self):
         # If there are no common columns, index splits are undefined
         index_0 = Index([self.column_0])
@@ -201,6 +219,7 @@ class TestIndex(unittest.TestCase):
         expected = [I_C, I_R_1, I_R_2]
         self.assertEqual(result, expected)
 
+    @unittest.skip("not implemented yet")
     def test_prefix(self):
         index = Index([self.column_0, self.column_1])
         result = index_prefix(index)
