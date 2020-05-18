@@ -1,8 +1,6 @@
-from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
-from selection.workload import Column, Query, Table, Workload
+from selection.workload import Column, Table
 import unittest
-from unittest.mock import MagicMock
 
 
 class TestIndex(unittest.TestCase):
@@ -13,7 +11,7 @@ class TestIndex(unittest.TestCase):
         self.column_2 = Column("Col2")
 
         self.columns = [self.column_0, self.column_1]
-        self.table = Table('TableA')
+        self.table = Table("TableA")
         self.table.add_columns(self.columns)
         self.table.add_column(self.column_2)
 
@@ -28,7 +26,7 @@ class TestIndex(unittest.TestCase):
 
     def test_repr(self):
         index = Index(self.columns)
-        self.assertEqual(repr(index), 'I(C tablea.col0,C tablea.col1)')
+        self.assertEqual(repr(index), "I(C tablea.col0,C tablea.col1)")
 
     def test_index_lt(self):
         index_0 = Index([self.column_0])
@@ -63,7 +61,7 @@ class TestIndex(unittest.TestCase):
     def test_index_column_names(self):
         index = Index(self.columns)
         column_names = index._column_names()
-        self.assertEqual(column_names, ['col0', 'col1'])
+        self.assertEqual(column_names, ["col0", "col1"])
 
     def test_index_is_single_column(self):
         index_2 = Index([self.column_2])
@@ -82,17 +80,17 @@ class TestIndex(unittest.TestCase):
         index = Index(self.columns)
 
         index_idx = index.index_idx()
-        self.assertEqual(index_idx, 'tablea_col0_col1_idx')
+        self.assertEqual(index_idx, "tablea_col0_col1_idx")
 
     def test_joined_column_names(self):
         index = Index(self.columns)
 
         index_idx = index.joined_column_names()
-        self.assertEqual(index_idx, 'col0,col1')
+        self.assertEqual(index_idx, "col0,col1")
 
     def test_appendable_by_other_table(self):
-        column = Column('ColZ')
-        table = Table('TableZ')
+        column = Column("ColZ")
+        table = Table("TableZ")
         table.add_column(column)
         index_on_other_table = Index([column])
 
@@ -112,8 +110,7 @@ class TestIndex(unittest.TestCase):
 
         index = Index(self.columns)
 
-        self.assertFalse(
-            index.appendable_by(index_with_already_present_column))
+        self.assertFalse(index.appendable_by(index_with_already_present_column))
 
     def test_appendable_by(self):
         index_appendable_by = Index([self.column_2])
@@ -149,5 +146,5 @@ class TestIndex(unittest.TestCase):
         self.assertFalse(index_0.subsumes(int(17)))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
