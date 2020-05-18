@@ -75,8 +75,11 @@ class IndexSelection:
         )
         self.workload = Workload(query_generator.queries, self.database_name)
 
-        if 'pickle_workload' in config and config['pickle_workload'] is True:
-            pickle_filename = f"benchmark_results/workload_{config['benchmark_name']}_{len(self.workload.queries)}_queries.pickle"
+        if "pickle_workload" in config and config["pickle_workload"] is True:
+            pickle_filename = (
+                f"benchmark_results/workload_{config['benchmark_name']}"
+                f"_{len(self.workload.queries)}_queries.pickle"
+            )
             pickle.dump(self.workload, open(pickle_filename, "wb"))
 
     def _run_algorithms(self, config_file):
@@ -84,7 +87,7 @@ class IndexSelection:
             config = json.load(f)
         self._setup_config(config)
         self.db_connector.drop_indexes()
-        
+
         # Set the random seed to obtain deterministic statistics (and cost estimations)
         # because ANALYZE (and alike) use sampling for large tables
         self.db_connector.set_random_seed()
