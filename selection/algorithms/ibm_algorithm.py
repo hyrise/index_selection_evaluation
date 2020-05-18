@@ -150,14 +150,11 @@ class IBMAlgorithm(SelectionAlgorithm):
                     continue
                 # TODO adjust when having weights for queries
                 benefit += (
-                    value["cost_without_indexes"]
-                    - value["cost_with_recommended_indexes"]
+                    value["cost_without_indexes"] - value["cost_with_recommended_indexes"]
                 )
 
             indexes_benefit.append(IndexBenefit(index_candidate, benefit))
-        return sorted(
-            indexes_benefit, reverse=True, key=lambda x: x.benefit_size_ratio()
-        )
+        return sorted(indexes_benefit, reverse=True, key=lambda x: x.benefit_size_ratio())
 
     # From the paper: "Combine any index subsumed
     # by an index with a higher ratio with that index."
@@ -179,15 +176,14 @@ class IBMAlgorithm(SelectionAlgorithm):
             if index_benefit_high_ratio in index_benefits_to_remove:
                 continue
             # Test all following elements (with lower ratios) in the list
-            for index_benefit_lower_ratio in index_benefits[high_ratio_pos + 1:]:
+            iteration_pos = high_ratio_pos + 1
+            for index_benefit_lower_ratio in index_benefits[iteration_pos:]:
                 if index_benefit_lower_ratio in index_benefits_to_remove:
                     continue
                 if index_benefit_high_ratio.index.subsumes(
                     index_benefit_lower_ratio.index
                 ):
-                    index_benefit_high_ratio.benefit += (
-                        index_benefit_lower_ratio.benefit
-                    )
+                    index_benefit_high_ratio.benefit += index_benefit_lower_ratio.benefit
                     index_benefits_to_remove.add(index_benefit_lower_ratio)
 
         result_set = set(index_benefits) - index_benefits_to_remove
@@ -217,9 +213,7 @@ class IBMAlgorithm(SelectionAlgorithm):
 
         while start_time + self.seconds_limit > time.time():
             number_of_exchanges = (
-                random.randrange(1, self.maximum_remove)
-                if self.maximum_remove > 1
-                else 1
+                random.randrange(1, self.maximum_remove) if self.maximum_remove > 1 else 1
             )
             indexes_to_remove = frozenset(
                 random.sample(selected_index_benefits_set, k=number_of_exchanges)
@@ -230,9 +224,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                 [index_benefit.size() for index_benefit in new_variaton]
             )
 
-            indexes_to_add = random.sample(
-                not_used_index_benefits, k=number_of_exchanges
-            )
+            indexes_to_add = random.sample(not_used_index_benefits, k=number_of_exchanges)
             assert len(indexes_to_add) == len(
                 indexes_to_remove
             ), "_try_variations must remove the same number of indexes that are added."

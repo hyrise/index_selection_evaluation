@@ -20,10 +20,7 @@ class TestQueryGenerator(unittest.TestCase):
         self.db_name = "tpch_test_db"
 
         TableGenerator(
-            "tpch",
-            0.001,
-            self.generating_connector,
-            explicit_database_name=self.db_name,
+            "tpch", 0.001, self.generating_connector, explicit_database_name=self.db_name,
         )
 
         db_connector = PostgresDatabaseConnector(self.db_name, autocommit=True)

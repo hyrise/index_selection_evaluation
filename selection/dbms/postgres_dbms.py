@@ -119,8 +119,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         )
         self.exec_only(statement)
         size = self.exec_fetch(
-            f"select relpages from pg_class c "
-            f"where c.relname = '{index.index_idx()}'"
+            f"select relpages from pg_class c " f"where c.relname = '{index.index_idx()}'"
         )
         size = size[0]
         index.estimated_size = size * 8 * 1024

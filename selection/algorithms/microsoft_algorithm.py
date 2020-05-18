@@ -37,9 +37,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         for current_max_columns_per_index in range(1, self.max_columns_per_index + 1):
             candidates = self.select_index_candidates(workload, potential_indexes)
             indexes = self.enumerate_combinations(workload, candidates)
-            assert (
-                indexes <= candidates
-            ), "Indexes must be a subset of candidate indexes"
+            assert indexes <= candidates, "Indexes must be a subset of candidate indexes"
 
             if current_max_columns_per_index < self.max_columns_per_index:
                 # Update potential indexes for the next iteration
@@ -124,12 +122,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         return set(lowest_cost_indexes), lowest_cost
 
     def enumerate_greedy(
-        self,
-        workload,
-        current_indexes,
-        current_costs,
-        candidate_indexes,
-        number_indexes,
+        self, workload, current_indexes, current_costs, candidate_indexes, number_indexes,
     ):
         assert (
             current_indexes & candidate_indexes == set()

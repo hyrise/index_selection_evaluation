@@ -8,9 +8,7 @@ class TestDatabase(unittest.TestCase):
     def setUpClass(cls):
         cls.db_name = "tpch_test_db_database"
         db = PostgresDatabaseConnector(None, autocommit=True)
-        TableGenerator(
-            "tpch", 0.001, db, explicit_database_name=cls.db_name
-        )
+        TableGenerator("tpch", 0.001, db, explicit_database_name=cls.db_name)
         db.close()
 
     @classmethod

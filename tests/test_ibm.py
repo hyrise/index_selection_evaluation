@@ -116,9 +116,7 @@ class TestIBMAlgorithm(unittest.TestCase):
             [self.column_0, self.column_1],
         )
 
-        self.algo.database_connector.get_plan = MagicMock(
-            side_effect=_simulate_get_plan
-        )
+        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
         self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
         self.algo.what_if.drop_all_simulated_indexes = MagicMock()
 
@@ -153,9 +151,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         query_1 = Query(1, "SELECT * FROM Table1;", [])
         workload = Workload([query_0, query_1], "database_name")
 
-        self.algo.database_connector.get_plan = MagicMock(
-            side_effect=_simulate_get_plan
-        )
+        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
         self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
         self.algo.what_if.drop_all_simulated_indexes = MagicMock()
         query_results, index_candidates = self.algo._exploit_virtual_indexes(workload)

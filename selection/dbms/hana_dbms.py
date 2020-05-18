@@ -138,9 +138,7 @@ class HanaDatabaseConnector(DatabaseConnector):
         query_text = self._prepare_query(query)
         statement_name = f"{self.db_name}_q{query.nr}"
         statement = (
-            f"explain plan set "
-            f"statement_name='{statement_name}' for "
-            f"{query_text}"
+            f"explain plan set " f"statement_name='{statement_name}' for " f"{query_text}"
         )
         try:
             self.exec_only(statement)

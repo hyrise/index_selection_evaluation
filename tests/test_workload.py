@@ -188,9 +188,7 @@ class TestWorkload(unittest.TestCase):
 
     def test_potential_indexes(self):
         index_set_1 = set([Index([column_A_0])])
-        index_set_2 = set(
-            [Index([column_A_0]), Index([column_A_1]), Index([column_A_2])]
-        )
+        index_set_2 = set([Index([column_A_0]), Index([column_A_1]), Index([column_A_2])])
 
         self.assertEqual(
             set(Workload([query_0], database_name="test_DB").potential_indexes()),
@@ -202,9 +200,7 @@ class TestWorkload(unittest.TestCase):
         )
         self.assertEqual(
             set(
-                Workload(
-                    [query_0, query_1], database_name="test_DB"
-                ).potential_indexes()
+                Workload([query_0, query_1], database_name="test_DB").potential_indexes()
             ),
             index_set_2,
         )
