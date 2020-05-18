@@ -147,6 +147,71 @@ class TestIndex(unittest.TestCase):
 
         self.assertFalse(index_0.subsumes(int(17)))
 
+    def test_merge(self):
+        index_0 = Index([self.column_0])
+        index_1 = Index([self.column_1])
+        result = index_merge(index_0, index_1)
+        expected = Index([self.column_0, self.column_1])
+        self.assertEqual(result, expected)
+
+        index_0 = Index([self.column_0, self.column_1])
+        index_1 = Index([self.column_1, self.column_2])
+        result = index_merge(index_0, index_1)
+        expected = Index([self.column_0, self.column_1, self.column_2])
+        self.assertEqual(result, expected)
+
+        index_0 = Index([self.column_0, self.column_1])
+        index_1 = Index([self.column_1, self.column_0])
+        result = index_merge(index_0, index_1)
+        expected = Index([self.column_0, self.column_1])
+        self.assertEqual(result, expected)
+
+    def test_split(self):
+        # If there are no common columns, index splits are undefined
+        index_0 = Index([self.column_0])
+        index_1 = Index([self.column_1])
+        result = index_split(index_0, index_1)
+        expected = None
+        self.assertEqual(result, expected)
+
+        index_0 = Index([self.column_0, self.column_1])
+        index_1 = Index([self.column_1])
+        result = index_split(index_0, index_1)
+        I_C   = Index([self.column_1])
+        I_R_1 = Index([self.column_0])
+        I_R_2 = None
+        expected = [I_C, I_R_1, I_R_2]
+        self.assertEqual(result, expected)
+
+        index_0 = Index([self.column_1])
+        index_1 = Index([self.column_1, self.column_2])
+        result = index_split(index_0, index_1)
+        I_C   = Index([self.column_1])
+        I_R_1 = None
+        I_R_2 = Index([self.column_2])
+        expected = [I_C, I_R_1, I_R_2]
+        self.assertEqual(result, expected)
+
+        index_0 = Index([self.column_0, self.column_1])
+        index_1 = Index([self.column_1, self.column_2])
+        result = index_split(index_0, index_1)
+        I_C   = Index([self.column_1])
+        I_R_1 = Index([self.column_0])
+        I_R_2 = Index([self.column_2])
+        expected = [I_C, I_R_1, I_R_2]
+        self.assertEqual(result, expected)
+
+    def test_prefix(self):
+        index = Index([self.column_0, self.column_1])
+        result = index_prefix(index)
+        expected = Index([self.column_0])
+        self.assertEqual(result, expected)
+
+        # Prefixing a single-column index is not possible.
+        index = Index([self.column_0])
+        with self.assertRaises(AssertionError):
+            index_prefix(index)
+
 
 if __name__ == "__main__":
     unittest.main()

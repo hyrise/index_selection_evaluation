@@ -81,23 +81,31 @@ class Index:
 # index did. Merging I_1(K_1;S_1) and I_2(K_2;S_2) results in
 # I_1_2 = (K1;(S_1 ∪ K_2 ∪ S_2) - K_1). 
 # If K_1 is a prefix of K_2, I_1_2 = (K2; (S_1 ∪ S_2) - K_2)).
-def merge(index_1, index_2):
+# Returns the merged index.
+def index_merge(index_1, index_2):
     raise NotImplementedError
 
 # Splitting two indexes produces a common index I_C and at most two additional
 # residual indexes I_R1 and I_R2. Splitting I_1(K_1;S_1) and I_2(K_2;S_2):
 # I_C = (K_C;S_C) with K_C = K_1 ∩ K_2 and S_C = S_1 ∩ S_2 where K_C cannot be empty.
-# Split is undefined if K_1 and K_2 have no common columns.If K_1 and K_C are different:
-# I_R1 = (K_1 - K_C, I_1 - I_C) and if K_2 and K_C are different
+# Split is undefined if K_1 and K_2 have no common columns. If K_1 and K_C are different:
+# I_R_1 = (K_1 - K_C, I_1 - I_C) and if K_2 and K_C are different
 # I_R_2 = (K_2 - K_C, I_2 - I_C).
-def split(index_1, index_2):
+# Returns None if K_1 and K_2 have no common columns or a list: [I_C, I_R_1, I_R_2] where
+# items of that list can be None.
+def index_split(index_1, index_2):
     raise NotImplementedError
 
 # Consider I(K;S). For any prefix K' of K (including K' = K if S is not empty), an
 # index I_P = (K';Ø) is obtained.
-def prefix(index_1, index_2):
+# Returns the prefixed index.
+# TODO: this only makes sense with suffix columns. How about removing the last column?
+def index_prefix(index_1):
     raise NotImplementedError
+    # Do we want the following behaviour?
+    # assert len(index_1.columns) > 1, "Index prefix cannot be obtained for single attribute index."
+
 
 # TODO: do we need that?
-def promote_to_clustered(index_1, index_2):
+def index_promote_to_clustered(index_1):
     raise NotImplementedError
