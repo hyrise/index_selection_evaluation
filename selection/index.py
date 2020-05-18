@@ -66,3 +66,38 @@ class Index:
         if not isinstance(other, Index):
             return False
         return self.columns[: len(other.columns)] == other.columns
+
+
+# The following methods implement the index transformation rules presented by
+# Bruno and Chaudhuri their 2005 paper Automatic Physical Database Tuning:
+# A Relaxation-based Approach. The removal transformation is not implemented
+# because it does not directly work on index objects, but more on an index configuration.
+#
+# The authors define an index I as a sequence of key columns K and a set of suffix
+# columns S: I = (K;S). If the database system does not support suffix columns, only
+# key columns are considered.
+
+# A merged index is the best index that can answer all requests that either previous
+# index did. Merging I_1(K_1;S_1) and I_2(K_2;S_2) results in
+# I_1_2 = (K1;(S_1 ∪ K_2 ∪ S_2) - K_1). 
+# If K_1 is a prefix of K_2, I_1_2 = (K2; (S_1 ∪ S_2) - K_2)).
+def merge(index_1, index_2):
+    raise NotImplementedError
+
+# Splitting two indexes produces a common index I_C and at most two additional
+# residual indexes I_R1 and I_R2. Splitting I_1(K_1;S_1) and I_2(K_2;S_2):
+# I_C = (K_C;S_C) with K_C = K_1 ∩ K_2 and S_C = S_1 ∩ S_2 where K_C cannot be empty.
+# Split is undefined if K_1 and K_2 have no common columns.If K_1 and K_C are different:
+# I_R1 = (K_1 - K_C, I_1 - I_C) and if K_2 and K_C are different
+# I_R_2 = (K_2 - K_C, I_2 - I_C).
+def split(index_1, index_2):
+    raise NotImplementedError
+
+# Consider I(K;S). For any prefix K' of K (including K' = K if S is not empty), an
+# index I_P = (K';Ø) is obtained.
+def prefix(index_1, index_2):
+    raise NotImplementedError
+
+# TODO: do we need that?
+def promote_to_clustered(index_1, index_2):
+    raise NotImplementedError
