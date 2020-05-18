@@ -96,6 +96,10 @@ class PostgresDatabaseConnector(DatabaseConnector):
         self.exec_only("analyze")
         self._connection.autocommit = self.autocommit
 
+    def set_random_seed(self, value=0.17):
+        logging.info(f'Postgres: Set random seed `SELECT setseed({value})`')
+        self.exec_only(f'SELECT setseed({value})')
+
     def supports_index_simulation(self):
         if self.db_system == "postgres":
             return True
