@@ -2,9 +2,9 @@ import logging
 
 
 # Uses hypopg for postgreSQL
-class WhatIfIndexCreation():
+class WhatIfIndexCreation:
     def __init__(self, db_connector):
-        logging.debug('Init WhatIfIndexCreation')
+        logging.debug("Init WhatIfIndexCreation")
 
         self.simulated_indexes = {}
         self.db_connector = db_connector
@@ -26,16 +26,16 @@ class WhatIfIndexCreation():
         self._drop_index_by_id(oid)
 
     def _drop_index_by_id(self, oid):
-        statement = f'select * from hypopg_drop_index({oid})'
+        statement = f"select * from hypopg_drop_index({oid})"
         self.db_connector.exec_only(statement)
 
     def store_estimated_size(self, index, index_oid):
-        statement = f'select hypopg_relation_size({index_oid})'
+        statement = f"select hypopg_relation_size({index_oid})"
         result = self.db_connector.exec_fetch(statement)
         index.estimated_size = result[0]
 
     def all_simulated_indexes(self):
-        statement = 'select * from hypopg_list_indexes()'
+        statement = "select * from hypopg_list_indexes()"
         indexes = self.db_connector.exec_fetch(statement, one=False)
         return indexes
 

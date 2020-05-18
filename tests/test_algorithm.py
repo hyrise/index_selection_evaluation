@@ -9,15 +9,13 @@ import unittest
 class TestAlgorithm(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.db_name = 'tpch_test_db_algorithm'
+        cls.db_name = "tpch_test_db_algorithm"
 
         cls.db_connector = PostgresDatabaseConnector(None, autocommit=True)
-        tab_gen = TableGenerator('tpch',
-                                 0.001,
-                                 cls.db_connector,
-                                 explicit_database_name=cls.db_name)
-        cls.selection_algorithm = SelectionAlgorithm(cls.db_connector,
-                                                     {'test': 24})
+        TableGenerator(
+            "tpch", 0.001, cls.db_connector, explicit_database_name=cls.db_name
+        )
+        cls.selection_algorithm = SelectionAlgorithm(cls.db_connector, {"test": 24})
 
         cls.db_connector.close()
 
@@ -29,7 +27,7 @@ class TestAlgorithm(unittest.TestCase):
 
     def test_parameters(self):
         params = self.selection_algorithm.parameters
-        self.assertEqual(params, {'test': 24})
+        self.assertEqual(params, {"test": 24})
 
     def test_calculate_best(self):
         workload = Workload([], self.db_name)
@@ -39,13 +37,14 @@ class TestAlgorithm(unittest.TestCase):
     def test_calculate_best_only_executable_once(self):
         workload = Workload([], self.db_name)
         selection_algorithm = NoIndexAlgorithm(
-            PostgresDatabaseConnector(None, autocommit=True))
+            PostgresDatabaseConnector(None, autocommit=True)
+        )
         self.assertFalse(selection_algorithm.did_run)
 
         selection_algorithm.calculate_best_indexes(workload)
         self.assertTrue(selection_algorithm.did_run)
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             selection_algorithm.calculate_best_indexes(workload)
 
     def test_cost_eval(self):
@@ -59,5 +58,5 @@ class TestAlgorithm(unittest.TestCase):
         self.assertEqual(cost, 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

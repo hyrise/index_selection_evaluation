@@ -8,22 +8,24 @@ import os.path
 
 
 class Benchmark:
-    def __init__(self,
-                 workload,
-                 indexes,
-                 db_connector,
-                 config,
-                 calculation_time,
-                 disable_csv,
-                 global_config,
-                 cost_requests,
-                 cache_hits,
-                 what_if=None):
+    def __init__(
+        self,
+        workload,
+        indexes,
+        db_connector,
+        config,
+        calculation_time,
+        disable_csv,
+        global_config,
+        cost_requests,
+        cache_hits,
+        what_if=None,
+    ):
         self.workload = workload
         self.db_connector = db_connector
         self.indexes = indexes
-        self.timeout = config['timeout']
-        self.number_of_runs = config['number_of_actual_runs']
+        self.timeout = config["timeout"]
+        self.number_of_runs = config["number_of_actual_runs"]
         self.config = config
         self.calculation_time = calculation_time
         self.disable_csv = disable_csv
@@ -31,19 +33,19 @@ class Benchmark:
         self.cost_requests = cost_requests
         self.cache_hits = cache_hits
 
-        self.scale_factor = global_config['scale_factor']
-        self.benchmark_name = global_config['benchmark_name']
-        self.db_system = global_config['database_system']
+        self.scale_factor = global_config["scale_factor"]
+        self.benchmark_name = global_config["benchmark_name"]
+        self.db_system = global_config["database_system"]
         self.seed = None
-        if 'seed' in global_config:
-            self.seed = global_config['seed']
+        if "seed" in global_config:
+            self.seed = global_config["seed"]
 
         self._set_csv_filename(disable_csv)
 
     def benchmark(self):
         self.db_connector.drop_indexes()
 
-        logging.info('Benchmark with config: {}'.format(self.config))
+        logging.info("Benchmark with config: {}".format(self.config))
         # Number of runs can be set to 0 to get estimated workload
         # costs. Estimated sizes are returned instead of actual index sizes
         # to avoid creating the indexes.
@@ -61,20 +63,28 @@ class Benchmark:
 
     def _create_csv_header(self):
         header = [
-            'date', 'commit', 'algorithm name', 'parameters', 'scale factor',
-            'benchmark name', 'db system', 'algorithm runtime', '#indexes',
-            'index create time', 'memory consumption', 'cost requests',
-            'cache hits'
+            "date",
+            "commit",
+            "algorithm name",
+            "parameters",
+            "scale factor",
+            "benchmark name",
+            "db system",
+            "algorithm runtime",
+            "#indexes",
+            "index create time",
+            "memory consumption",
+            "cost requests",
+            "cache hits",
         ]
         for query in self.workload.queries:
-            header.append('q' + str(query.nr))
-        header.append('indexed columns')
-        return ';'.join(header)
+            header.append("q" + str(query.nr))
+        header.append("indexed columns")
+        return ";".join(header)
 
     def _git_hash(self):
-        githash = subprocess.check_output(
-            ['git', 'rev-parse', '--short', 'HEAD'])
-        return githash.decode('ascii').replace('\n', '')
+        githash = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+        return githash.decode("ascii").replace("\n", "")
 
     def _store_results(self, results, plans):
         config = self.config
@@ -85,58 +95,65 @@ class Benchmark:
         indexes_size = self.db_connector.indexes_size()
         # see comment above
         if self.number_of_runs == 0:
-            indexes_size = sum(
-                [index.estimated_size for index in self.indexes])
+            indexes_size = sum([index.estimated_size for index in self.indexes])
         csv_entry = [
-            date, commit_hash, config['name'], config['parameters'],
-            self.scale_factor, self.benchmark_name, self.db_system,
+            date,
+            commit_hash,
+            config["name"],
+            config["parameters"],
+            self.scale_factor,
+            self.benchmark_name,
+            self.db_system,
             self.calculation_time,
-            len(self.indexes), self.index_create_time, indexes_size,
-            self.cost_requests, self.cache_hits
+            len(self.indexes),
+            self.index_create_time,
+            indexes_size,
+            self.cost_requests,
+            self.cache_hits,
         ]
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))
-        self._append_to_csv(';'.join([str(x) for x in csv_entry]))
+        self._append_to_csv(";".join([str(x) for x in csv_entry]))
 
     def _write_query_plans(self, date, plans):
-        with open(f'benchmark_results/plans/{date}.json', 'w') as f:
+        with open(f"benchmark_results/plans/{date}.json", "w") as f:
             json.dump(plans, f)
 
     def _append_to_csv(self, entry):
         header = self._create_csv_header()
-        entry = entry.replace("'", '"').replace('None', 'null')
+        entry = entry.replace("'", '"').replace("None", "null")
         if not os.path.isfile(self.filename):
-            entry = header + '\n' + entry
-        with open(self.filename, 'a') as f:
-            f.write(entry + '\n')
-        logging.info(f'Results written to {self.filename}')
+            entry = header + "\n" + entry
+        with open(self.filename, "a") as f:
+            f.write(entry + "\n")
+        logging.info(f"Results written to {self.filename}")
 
     def _benchmark(self):
-        logging.info('Benchmark all queries')
-        results = [{'Runtimes': [], 'Hits': []} for x in self.workload.queries]
+        logging.info("Benchmark all queries")
+        results = [{"Runtimes": [], "Hits": []} for x in self.workload.queries]
         plans = {x.nr: [] for x in self.workload.queries}
 
         for query_id in range(len(self.workload.queries)):
             query = self.workload.queries[query_id]
             cost = self.db_connector.get_cost(query)
-            results[query_id]['Cost'] = cost
+            results[query_id]["Cost"] = cost
         for i in range(self.number_of_runs):
-            logging.debug('Benchmark Run {}'.format(i))
+            logging.debug("Benchmark Run {}".format(i))
             random_query_indexes = list(range(len(self.workload.queries)))
             seed = time.time()
             if self.seed:
                 seed = self.seed
-            logging.debug(f'Random seed: {seed}')
+            logging.debug(f"Random seed: {seed}")
             random.seed(seed)
             random.shuffle(random_query_indexes)
             for query_index in random_query_indexes:
                 query = self.workload.queries[query_index]
-                logging.debug('Run {}'.format(query))
+                logging.debug("Run {}".format(query))
                 execution_time, plan = self._benchmark_query(query)
-                results[query_index]['Runtimes'].append(execution_time)
-                results[query_index]['Hits'].append(self._calculate_hits(plan))
+                results[query_index]["Runtimes"].append(execution_time)
+                results[query_index]["Hits"].append(self._calculate_hits(plan))
                 plans[query.nr].append(plan)
-        logging.debug('Execution times: {}'.format(results))
+        logging.debug("Execution times: {}".format(results))
         self._store_results(results, plans)
 
     def _benchmark_query(self, query):
@@ -145,17 +162,17 @@ class Benchmark:
 
     def _calculate_hits(self, plan):
         ratio = None
-        if 'Shared Hit Blocks' in plan:
-            hits = plan['Shared Hit Blocks']
-            reads = plan['Shared Read Blocks']
+        if "Shared Hit Blocks" in plan:
+            hits = plan["Shared Hit Blocks"]
+            reads = plan["Shared Read Blocks"]
             ratio = hits / (hits + reads)
         return ratio
 
     def _create_indexes(self):
-        logging.info('Creating the indexes')
+        logging.info("Creating the indexes")
         start_time = time.time()
         for index in self.indexes:
-            logging.debug('create index on {}'.format(index))
+            logging.debug("create index on {}".format(index))
             self.db_connector.create_index(index)
         self.index_create_time = round(time.time() - start_time, 2)
 
@@ -165,7 +182,10 @@ class Benchmark:
         self.db_connector.commit()
 
     def _set_csv_filename(self, disable_csv):
-        name = f"results_{self.config['name']}_{self.benchmark_name}_{len(self.workload.queries)}_queries.csv"
-        self.filename = 'benchmark_results/' + name
+        identifier = (
+            f"{self.config['name']}_{self.benchmark_name}"
+            f"_{len(self.workload.queries)}"
+        )
+        self.filename = f"benchmark_results/results_{identifier}_queries.csv"
         if disable_csv:
             self.filename = os.devnull

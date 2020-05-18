@@ -3,11 +3,11 @@ import logging
 
 
 class CostEvaluation:
-    def __init__(self, db_connector, cost_estimation='whatif'):
-        logging.debug('Init cost evaluation')
+    def __init__(self, db_connector, cost_estimation="whatif"):
+        logging.debug("Init cost evaluation")
         self.db_connector = db_connector
         self.cost_estimation = cost_estimation
-        logging.info('Cost estimation with ' + self.cost_estimation)
+        logging.info("Cost estimation with " + self.cost_estimation)
         self.what_if = WhatIfIndexCreation(db_connector)
         self.current_indexes = set()
         self.cost_requests = 0
@@ -20,7 +20,9 @@ class CostEvaluation:
         # These are only created per connection. Hence, non should be present.
 
     def calculate_cost(self, workload, indexes, store_size=False):
-        assert self.completed is False, 'Cost Evaluation is completed and cannot be reused.'
+        assert (
+            self.completed is False
+        ), "Cost Evaluation is completed and cannot be reused."
         self._prepare_cost_calculation(indexes, store_size=store_size)
         total_cost = 0
 
@@ -42,21 +44,21 @@ class CostEvaluation:
         self.current_indexes = set(indexes)
 
     def _simulate_or_create_index(self, index, store_size=False):
-        if self.cost_estimation == 'whatif':
+        if self.cost_estimation == "whatif":
             self.what_if.simulate_index(index, store_size=store_size)
-        elif self.cost_estimation == 'actual_runtimes':
+        elif self.cost_estimation == "actual_runtimes":
             self.db_connector.create_index(index)
 
     def _unsimulate_or_drop_index(self, index):
-        if self.cost_estimation == 'whatif':
+        if self.cost_estimation == "whatif":
             self.what_if.drop_simulated_index(index)
-        elif self.cost_estimation == 'actual_runtimes':
+        elif self.cost_estimation == "actual_runtimes":
             self.db_connector.drop_index(index)
 
     def _get_cost(self, query):
-        if self.cost_estimation == 'whatif':
+        if self.cost_estimation == "whatif":
             return self.db_connector.get_cost(query)
-        elif self.cost_estimation == 'actual_runtimes':
+        elif self.cost_estimation == "actual_runtimes":
             runtime = self.db_connector.exec_query(query)[0]
             return runtime
 

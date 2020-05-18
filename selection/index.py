@@ -5,7 +5,7 @@ from functools import total_ordering
 class Index:
     def __init__(self, columns):
         if len(columns) == 0:
-            raise ValueError('Index needs at least 1 column')
+            raise ValueError("Index needs at least 1 column")
         self.columns = tuple(columns)
         # Store hypopg estimated size when `store_size=True` (whatif)
         self.estimated_size = None
@@ -19,8 +19,8 @@ class Index:
         return self.columns < other.columns
 
     def __repr__(self):
-        columns_string = ','.join(map(str, self.columns))
-        return f'I({columns_string})'
+        columns_string = ",".join(map(str, self.columns))
+        return f"I({columns_string})"
 
     def __eq__(self, other):
         if not isinstance(other, Index):
@@ -41,11 +41,11 @@ class Index:
         return self.columns[0].table
 
     def index_idx(self):
-        columns = '_'.join(self._column_names())
-        return f'{self.table()}_{columns}_idx'
+        columns = "_".join(self._column_names())
+        return f"{self.table()}_{columns}_idx"
 
     def joined_column_names(self):
-        return ','.join(self._column_names())
+        return ",".join(self._column_names())
 
     def appendable_by(self, other):
         if not isinstance(other, Index):
@@ -65,4 +65,4 @@ class Index:
     def subsumes(self, other):
         if not isinstance(other, Index):
             return False
-        return self.columns[:len(other.columns)] == other.columns
+        return self.columns[: len(other.columns)] == other.columns
