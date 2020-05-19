@@ -1,5 +1,7 @@
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
+from selection.index import Index
 from selection.table_generator import TableGenerator
+from selection.workload import Column, Query, Table
 import unittest
 
 
@@ -30,6 +32,25 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(result[0], 25)
 
         db.close()
+
+    def test_runtime_data_logging(self):
+        db = PostgresDatabaseConnector(self.db_name, "postgres")
+
+        query = Query(17, "SELECT count(*) FROM nation;")
+        db.get_cost(query)
+        self.assertGreater(db.cost_estimation_duration, 0)
+
+        column_n_name = Column("n_name")
+        nation_table = Table("nation")
+        nation_table.add_column(column_n_name)
+        index = Index([column_n_name])
+        index_oid = db.simulate_index(index)[0]
+        self.assertGreater(db.index_simulation_duration, 0)
+        self.assertEqual(db.simulated_indexes, 1)
+
+        previou_simulation_duration = db.index_simulation_duration
+        db.drop_simulated_index(index_oid)
+        self.assertGreater(db.index_simulation_duration, previou_simulation_duration)
 
 
 if __name__ == "__main__":

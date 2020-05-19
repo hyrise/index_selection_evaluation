@@ -105,7 +105,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
             return True
         return False
 
-    def simulate_index(self, index):
+    def _simulate_index(self, index):
         table_name = index.table()
         statement = (
             "select * from hypopg_create_index( "
@@ -114,6 +114,12 @@ class PostgresDatabaseConnector(DatabaseConnector):
         )
         result = self.exec_fetch(statement)
         return result
+
+    def _drop_simulated_index(self, oid):
+        statement = f"select * from hypopg_drop_index({oid})"
+        result = self.exec_fetch(statement)
+
+        assert result[0] is True, f"Could not drop simulated index with oid = {oid}."
 
     def create_index(self, index):
         table_name = index.table()
@@ -165,7 +171,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 self.exec_only(query_statement)
                 self.commit()
 
-    def get_cost(self, query):
+    def _get_cost(self, query):
         query_plan = self.get_plan(query)
         total_cost = query_plan["Total Cost"]
         return total_cost
