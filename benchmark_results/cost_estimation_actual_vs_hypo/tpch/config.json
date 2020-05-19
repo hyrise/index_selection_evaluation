@@ -4,6 +4,13 @@
     "scale_factor": 10,
     "algorithms": [
         {
+            "name": "no_index",
+            "parameters": {
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
             "name": "all_indexes",
             "parameters": {
             },
