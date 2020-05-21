@@ -36,6 +36,10 @@ The resulting queries were the following.
 
 We also adapted the model's hyperparameters to reflect for the new problem size. We obtained the new [configuration](https://github.com/Bensk1/autoindex/commit/560db372c207deed0b7a71f914224c184c536ab7) by try and error.
 
+## Traditional Index Selection Approaches
+
+The configurations for the compared index selection approaches can be found in the [config.json](https://github.com/hyrise/index_selection_evaluation/blob/bensk1/deep_reinforcement_learning/benchmark_results/tpch_reinforcement_learning/config.json). Where applicable the number of indexes was also set to `4`, in other cases the constraints were chosen to also result in four indexes.
+
 ## Results
 
 The final model weights for the aforementioned queries were exported and stored in `model_weights.h5`. The following solution was identified by the model:
