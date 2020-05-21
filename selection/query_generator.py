@@ -8,7 +8,15 @@ from .workload import Query
 
 
 class QueryGenerator:
-    def __init__(self, benchmark_name, scale_factor, db_connector, query_ids, columns):
+    def __init__(
+        self,
+        benchmark_name,
+        scale_factor,
+        db_connector,
+        query_ids,
+        columns,
+        reinfocement_learning_queries=False,
+    ):
         self.scale_factor = scale_factor
         self.benchmark_name = benchmark_name
         self.db_connector = db_connector
@@ -16,6 +24,7 @@ class QueryGenerator:
         self.query_ids = query_ids
         # All columns in current database/schema
         self.columns = columns
+        self.reinfocement_learning_queries = reinfocement_learning_queries
 
         self.generate()
 
@@ -137,6 +146,28 @@ class QueryGenerator:
         return os.listdir(self.directory)
 
     def generate(self):
+        if self.reinfocement_learning_queries:
+            # The following queries were obtained from the testing phase of the deep
+            # reinforcement learning model.
+            # See: https://github.com/Bensk1/autoindex/tree/index_selection_evaluation
+            # for further information and to obtain the same or similar queries.
+            queries = [
+                "select count(*) from lineitem where l_partkey < 100000 and l_tax = 0.0 and l_extendedprice < 1000 and l_shipinstruct = 'NONE';",  # noqa: E501
+                "select count(*) from lineitem where l_shipdate < '1993-01-01' and l_receiptdate < '1992-06-29' and l_discount = 0.01 and l_returnflag = 'A' and l_shipmode = 'MAIL';",  # noqa: E501
+                "select count(*) from lineitem where l_discount = 0.0 and l_commitdate < '1996-01-01';",  # noqa: E501
+                "select count(*) from lineitem where l_discount = 0.02 and l_shipdate < '1993-01-01' and l_partkey < 1000;",  # noqa: E501
+                "select count(*) from lineitem where l_partkey < 1000 and l_linestatus = 'F' and l_shipmode = 'SHIP';",  # noqa: E501
+                "select count(*) from lineitem where l_quantity = 2 and l_suppkey < 100 and l_commitdate < '1992-04-15' and l_shipmode = 'AIR';",  # noqa: E501
+                "select count(*) from lineitem where l_shipinstruct = 'NONE';",  # noqa: E501
+                "select count(*) from lineitem where l_shipinstruct = 'COLLECT COD' and l_receiptdate < '1992-06-29';",  # noqa: E501
+                "select count(*) from lineitem where l_orderkey < 10000 and l_partkey < 1000000 and l_linenumber = 2 and l_returnflag = 'A' and l_linestatus = 'O';",  # noqa: E501
+                "select count(*) from lineitem where l_orderkey < 25000 and l_extendedprice < 1000 and l_commitdate < '1996-01-01' and l_linenumber = 3 and l_shipinstruct = 'DELIVER IN PERSON';",  # noqa: E501
+            ]
+            for idx, query in enumerate(queries):
+                self.add_new_query(idx + 1, query)
+
+            return
+
         if self.benchmark_name == "tpch":
             self.directory = "./tpch-kit/dbgen"
             # DBMS in tpch-kit dbgen Makefile:

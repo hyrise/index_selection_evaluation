@@ -72,6 +72,7 @@ class IndexSelection:
             self.db_connector,
             config["queries"],
             table_generator.columns,
+            reinfocement_learning_queries=True,
         )
         self.workload = Workload(query_generator.queries, self.database_name)
 
