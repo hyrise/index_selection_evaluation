@@ -63,3 +63,36 @@ class AllIndexesAlgorithm(SelectionAlgorithm):
     # Returns single column index for each indexable column
     def _calculate_best_indexes(self, workload):
         return workload.potential_indexes()
+
+
+class DeepReinforcementAlgorithm(SelectionAlgorithm):
+    def __init__(self, database_connector, parameters=None):
+        if parameters is None:
+            parameters = {}
+        SelectionAlgorithm.__init__(self, database_connector, parameters)
+
+    # Returns single column index for each indexable column
+    def _calculate_best_indexes(self, workload):
+        # These indexes were selected by the reinforcement learning approach for the
+        # example workload (see query_generator.py generate()). For the model and
+        # further information, see:
+        # https://github.com/Bensk1/autoindex/tree/index_selection_evaluation
+        # The model's weights can also be found in:
+        # benchmark_results/tpch_reinforcement_learning/model_weights.h5
+        indexes_selected_by_rl_algorithm = [
+            "l_extendedprice",
+            "l_partkey",
+            "l_returnflag",
+            "l_suppkey",
+        ]
+
+        potential_indexes = workload.potential_indexes()
+        rl_indexes = []
+
+        for index in potential_indexes:
+            if index.columns[0].name in indexes_selected_by_rl_algorithm:
+                rl_indexes.append(index)
+
+        assert len(rl_indexes) == 4, "Something went wrong during RL index generation."
+
+        return rl_indexes

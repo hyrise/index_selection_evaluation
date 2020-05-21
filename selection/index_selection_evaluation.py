@@ -9,7 +9,11 @@ from .dbms.postgres_dbms import PostgresDatabaseConnector
 from .dbms.hana_dbms import HanaDatabaseConnector
 
 #  from .index import Index
-from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
+from .selection_algorithm import (
+    NoIndexAlgorithm,
+    AllIndexesAlgorithm,
+    DeepReinforcementAlgorithm,
+)
 from .table_generator import TableGenerator
 from .query_generator import QueryGenerator
 
@@ -28,6 +32,7 @@ ALGORITHMS = {
     "ibm": IBMAlgorithm,
     "epic": EPICAlgorithm,
     "dexter": DexterAlgorithm,
+    "reinforcement_learning": DeepReinforcementAlgorithm,
 }
 
 DBMSYSTEMS = {"postgres": PostgresDatabaseConnector, "hana": HanaDatabaseConnector}
