@@ -1,0 +1,66 @@
+{
+    "database_system": "postgres",
+    "benchmark_name": "tpch",
+    "scale_factor": 10,
+    "algorithms": [
+        {
+            "name": "no_index",
+            "parameters": {
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "epic",
+            "parameters": {
+                "budget": [6650],
+                "max_index_columns": 1
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "dexter",
+            "parameters": {
+                "min_saving_percentage": [75]
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "ibm",
+            "parameters": {
+                "max_index_columns": 1,
+                "budget": [6650],
+                "try_variation_seconds_limit": 0
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "microsoft",
+            "parameters": {
+                "max_indexes": [4],
+                "max_indexes_naive": 1,
+                "max_index_columns": 1
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "drop_heuristic",
+            "parameters": {
+                "max_indexes": [4]
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        },
+        {
+            "name": "reinforcement_learning",
+            "parameters": {
+            },
+            "number_of_actual_runs": 0,
+            "timeout": 300
+        }
+    ]
+}
