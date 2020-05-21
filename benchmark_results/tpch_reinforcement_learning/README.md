@@ -45,6 +45,8 @@ Original Cost Estimate: 12369876.740000002, Optimized Cost Estimate: 6925730.29
 ['l_extendedprice', 'l_partkey', 'l_returnflag', 'l_suppkey']
 ```
 
+These indexes are manually passed into the evaluation via the [DeepReinforcementAlgorithm](https://github.com/hyrise/index_selection_evaluation/blob/bensk1/deep_reinforcement_learning/selection/selection_algorithm.py).
+
 Even though the traditonal approaches outperform the reinforcement approach in the examined case, the results are promising, given that the model does not rely on any manually implemented index selection logic, but learned to select these indexes.
 
 ![Experimental Results](./tpch_reinforcement_learning.png)
