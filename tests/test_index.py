@@ -1,4 +1,4 @@
-from selection.index import Index, index_merge, index_prefix, index_split
+from selection.index import Index, index_merge, index_split
 from selection.workload import Column, Table
 import unittest
 
@@ -219,17 +219,17 @@ class TestIndex(unittest.TestCase):
         expected = [I_C, I_R_1, I_R_2]
         self.assertEqual(result, expected)
 
-    @unittest.skip("not implemented yet")
-    def test_prefix(self):
-        index = Index([self.column_0, self.column_1])
-        result = index_prefix(index)
-        expected = Index([self.column_0])
+    def test_prefixes(self):
+        index = Index([self.column_0, self.column_1, self.column_2])
+        result = index.prefixes()
+        expected = [Index([self.column_0, self.column_1]), Index([self.column_0])]
         self.assertEqual(result, expected)
 
-        # Prefixing a single-column index is not possible.
+        # A single-column index has no prefixes.
         index = Index([self.column_0])
-        with self.assertRaises(AssertionError):
-            index_prefix(index)
+        result = index.prefixes()
+        expected = []
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":

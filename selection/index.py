@@ -67,6 +67,15 @@ class Index:
             return False
         return self.columns[: len(other.columns)] == other.columns
 
+    def prefixes(self):
+        """"Consider I(K;S). For any prefix K' of K (including K' = K if S is not
+empty), an index I_P = (K';Ø) is obtained.
+Returns a list of index prefixes ordered by decreasing width."""
+        index_prefixes = []
+        for prefix_width in range(len(self.columns) - 1, 0, -1):
+            index_prefixes.append(Index(self.columns[:prefix_width]))
+        return index_prefixes
+
 
 # The following methods implement the index transformation rules presented by
 # Bruno and Chaudhuri their 2005 paper Automatic Physical Database Tuning:
@@ -75,6 +84,7 @@ class Index:
 #     index objects, but more on an index configuration.
 #   The "promotion to clustered" transformation is not implemented, because clustered
 #     indexes are currently not chosen by selection algorithms
+#   The "prefixing" is implemented as method of the Index class
 #
 # The authors define an index I as a sequence of key columns K and a set of suffix
 # columns S: I = (K;S). If the database system does not support suffix columns, only
@@ -104,12 +114,3 @@ def index_merge(index_1, index_2):
 def index_split(index_1, index_2):
     raise NotImplementedError
 
-
-# Consider I(K;S). For any prefix K' of K (including K' = K if S is not empty), an
-# index I_P = (K';Ø) is obtained.
-# Returns the prefixed index.
-# TODO: this only makes sense with suffix columns. How about removing the last column?
-def index_prefix(index_1):
-    raise NotImplementedError
-    # Do we want the following behaviour?
-    # assert len(index_1.columns) > 1, "Index prefix cannot be obtained for single attribute index."
