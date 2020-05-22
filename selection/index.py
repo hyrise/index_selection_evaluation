@@ -109,8 +109,29 @@ def index_merge(index_1, index_2):
 # Split is undefined if K_1 and K_2 have no common columns. If K_1 and K_C are different:
 # I_R_1 = (K_1 - K_C, I_1 - I_C) and if K_2 and K_C are different
 # I_R_2 = (K_2 - K_C, I_2 - I_C).
-# Returns None if K_1 and K_2 have no common columns or a list: [I_C, I_R_1, I_R_2] where
-# items of that list can be None.
+# Returns None if K_1 and K_2 have no common columns or a set: {I_C, I_R_1, I_R_2} where
+# both I_R_1 are I_R_2 optional.
 def index_split(index_1, index_2):
-    raise NotImplementedError
+    common_columns = []
+    index_1_residual_columns = []
+    for column in index_1.columns:
+        if column in index_2.columns:
+            common_columns.append(column)
+        else:
+            index_1_residual_columns.append(column)
+    if len(common_columns) == 0:
+        return None
+    result = {Index(common_columns)}
+    if len(index_1_residual_columns) > 0:
+        result.add(Index(index_1_residual_columns))
+
+    index_2_residual_columns = []
+    for column in index_2.columns:
+        if column not in index_1.columns:
+            index_2_residual_columns.append(column)
+        else:
+            assert column in common_columns, "Column must be common, as it is not residual."
+    if len(index_2_residual_columns) > 0:
+        result.add(Index(index_2_residual_columns))
+    return result
 

@@ -183,7 +183,6 @@ class TestIndex(unittest.TestCase):
         expected = Index([column_a, column_b, column_c, column_d, column_e, column_f, column_g])
         self.assertEqual(result, expected)
 
-    @unittest.skip("not implemented yet")
     def test_split(self):
         # If there are no common columns, index splits are undefined
         index_0 = Index([self.column_0])
@@ -195,28 +194,53 @@ class TestIndex(unittest.TestCase):
         index_0 = Index([self.column_0, self.column_1])
         index_1 = Index([self.column_1])
         result = index_split(index_0, index_1)
-        I_C   = Index([self.column_1])
-        I_R_1 = Index([self.column_0])
-        I_R_2 = None
-        expected = [I_C, I_R_1, I_R_2]
+        common_column_index = Index([self.column_1])
+        residual_column_index_0 = Index([self.column_0])
+        expected = {common_column_index, residual_column_index_0}
         self.assertEqual(result, expected)
 
         index_0 = Index([self.column_1])
         index_1 = Index([self.column_1, self.column_2])
         result = index_split(index_0, index_1)
-        I_C   = Index([self.column_1])
-        I_R_1 = None
-        I_R_2 = Index([self.column_2])
-        expected = [I_C, I_R_1, I_R_2]
+        common_column_index = Index([self.column_1])
+        residual_column_index_1 = Index([self.column_2])
+        expected = {common_column_index, residual_column_index_1}
         self.assertEqual(result, expected)
 
         index_0 = Index([self.column_0, self.column_1])
         index_1 = Index([self.column_1, self.column_2])
         result = index_split(index_0, index_1)
-        I_C   = Index([self.column_1])
-        I_R_1 = Index([self.column_0])
-        I_R_2 = Index([self.column_2])
-        expected = [I_C, I_R_1, I_R_2]
+        common_column_index = Index([self.column_1])
+        residual_column_index_0 = Index([self.column_0])
+        residual_column_index_1 = Index([self.column_2])
+        expected = {common_column_index, residual_column_index_0, residual_column_index_1}
+        self.assertEqual(result, expected)
+
+        # Example from Bruno's paper
+        column_a = Column("a")
+        column_b = Column("b")
+        column_c = Column("c")
+        column_d = Column("d")
+        column_e = Column("e")
+        column_f = Column("f")
+        column_g = Column("g")
+
+        columns = [column_a, column_b, column_c, column_d, column_e, column_f, column_g]
+        table = Table("TableB")
+        table.add_columns(columns)
+
+        index_1 = Index([column_a, column_b, column_c, column_d, column_e, column_f])
+        index_2 = Index([column_c, column_a, column_e])
+        index_3 = Index([column_a, column_b, column_d, column_g])
+
+        result = index_split(index_1, index_2)
+        # expected is different from the paper, because there was an error for I_R2
+        expected = {Index([column_a, column_c, column_e]), Index([column_b, column_d, column_f])}
+        self.assertEqual(result, expected)
+
+        result = index_split(index_1, index_3)
+        # expected is different from the paper, because all columns are part of the key (there is no suffix)
+        expected = {Index([column_a, column_b, column_d]), Index([column_c, column_e, column_f]), Index([column_g])}
         self.assertEqual(result, expected)
 
     def test_prefixes(self):
