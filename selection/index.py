@@ -92,7 +92,7 @@ Returns a list of index prefixes ordered by decreasing width."""
 
 # A merged index is the best index that can answer all requests that either previous
 # index did. Merging I_1(K_1;S_1) and I_2(K_2;S_2) results in
-# I_1_2 = (K1;(S_1 ∪ K_2 ∪ S_2) - K_1). 
+# I_1_2 = (K1;(S_1 ∪ K_2 ∪ S_2) - K_1).
 # If K_1 is a prefix of K_2, I_1_2 = (K2; (S_1 ∪ S_2) - K_2)).
 # Returns the merged index.
 def index_merge(index_1, index_2):
@@ -130,8 +130,9 @@ def index_split(index_1, index_2):
         if column not in index_1.columns:
             index_2_residual_columns.append(column)
         else:
-            assert column in common_columns, "Column must be common, as it is not residual."
+            assert (
+                column in common_columns
+            ), "Column must be common, as it is not residual."
     if len(index_2_residual_columns) > 0:
         result.add(Index(index_2_residual_columns))
     return result
-

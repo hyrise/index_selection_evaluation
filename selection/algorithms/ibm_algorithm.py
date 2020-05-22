@@ -179,7 +179,7 @@ class IBMAlgorithm(SelectionAlgorithm):
             if index_benefit_high_ratio in index_benefits_to_remove:
                 continue
             # Test all following elements (with lower ratios) in the list
-            for index_benefit_lower_ratio in index_benefits[high_ratio_pos + 1:]:
+            for index_benefit_lower_ratio in index_benefits[high_ratio_pos + 1 :]:
                 if index_benefit_lower_ratio in index_benefits_to_remove:
                     continue
                 if index_benefit_high_ratio.index.subsumes(

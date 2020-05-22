@@ -25,14 +25,15 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         algorithm.cost_evaluation._prepare_cost_calculation = (
             lambda indexes, store_size=True: None
         )
-        algorithm._exploit_virtual_indexes = lambda workload: (None, set([Index([column_A_0], 100)]))
+        algorithm._exploit_virtual_indexes = lambda workload: (
+            None,
+            set([Index([column_A_0], 100)]),
+        )
 
         index_selection = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
-        self.assertEqual(
-            set(index_selection), set([Index([column_A_0])])
-        )
+        self.assertEqual(set(index_selection), set([Index([column_A_0])]))
 
 
 if __name__ == "__main__":

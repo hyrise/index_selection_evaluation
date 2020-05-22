@@ -180,7 +180,9 @@ class TestIndex(unittest.TestCase):
         index_1 = Index([column_a, column_b, column_c, column_d, column_e, column_f])
         index_2 = Index([column_c, column_d, column_g, column_e])
         result = index_merge(index_1, index_2)
-        expected = Index([column_a, column_b, column_c, column_d, column_e, column_f, column_g])
+        expected = Index(
+            [column_a, column_b, column_c, column_d, column_e, column_f, column_g]
+        )
         self.assertEqual(result, expected)
 
     def test_split(self):
@@ -213,7 +215,11 @@ class TestIndex(unittest.TestCase):
         common_column_index = Index([self.column_1])
         residual_column_index_0 = Index([self.column_0])
         residual_column_index_1 = Index([self.column_2])
-        expected = {common_column_index, residual_column_index_0, residual_column_index_1}
+        expected = {
+            common_column_index,
+            residual_column_index_0,
+            residual_column_index_1,
+        }
         self.assertEqual(result, expected)
 
         # Example from Bruno's paper
@@ -235,12 +241,19 @@ class TestIndex(unittest.TestCase):
 
         result = index_split(index_1, index_2)
         # expected is different from the paper, because there was an error for I_R2
-        expected = {Index([column_a, column_c, column_e]), Index([column_b, column_d, column_f])}
+        expected = {
+            Index([column_a, column_c, column_e]),
+            Index([column_b, column_d, column_f]),
+        }
         self.assertEqual(result, expected)
 
         result = index_split(index_1, index_3)
         # expected is different from the paper, because all columns are part of the key (there is no suffix)
-        expected = {Index([column_a, column_b, column_d]), Index([column_c, column_e, column_f]), Index([column_g])}
+        expected = {
+            Index([column_a, column_b, column_d]),
+            Index([column_c, column_e, column_f]),
+            Index([column_g]),
+        }
         self.assertEqual(result, expected)
 
     def test_prefixes(self):
