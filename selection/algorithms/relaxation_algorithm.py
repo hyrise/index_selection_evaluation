@@ -43,38 +43,47 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             lowest_relaxed_penalty = None
 
             # removal
-            for index in cp:
-                relaxed = cp.copy()
-                relaxed.remove(index)
-                relaxed_cost = self.cost_evaluation.calculate_cost(
-                    workload, relaxed, store_size=True
-                )
-                relaxed_cost_increase = relaxed_cost - cp_cost
-                assert (
-                    relaxed_cost_increase >= 0
-                ), "Relaxed cost increase must be positive"
-                # any storage decrease beyond the disk_constraint is not considered
-                relaxed_storage_savings = min(
-                    index.estimated_size, cp_size - self.disk_constraint
-                )
-                assert (
-                    relaxed_storage_savings > 0
-                ), "Relaxed storage savings must be positive"
-
-                if best_relaxed is None or lowest_relaxed_penalty > (
-                    relaxed_cost_increase / relaxed_storage_savings
-                ):
-                    # set new best relaxed configuration
-                    best_relaxed = relaxed
-                    best_relaxed_size = cp_size - index.estimated_size
-                    lowest_relaxed_penalty = (
-                        relaxed_cost_increase / relaxed_storage_savings
+            for transformation in ["removal"]:
+                for (
+                    relaxed,
+                    relaxed_storage_savings,
+                ) in self.configurations_by_transformation(cp, transformation):
+                    relaxed_cost = self.cost_evaluation.calculate_cost(
+                        workload, relaxed, store_size=True
                     )
+                    relaxed_cost_increase = relaxed_cost - cp_cost
+                    assert (
+                        relaxed_cost_increase >= 0
+                    ), "Relaxed cost increase must be positive"
+                    # any storage decrease beyond the disk_constraint is not considered
+                    relaxed_considered_storage_savings = min(
+                        relaxed_storage_savings, cp_size - self.disk_constraint
+                    )
+                    assert (
+                        relaxed_storage_savings > 0
+                    ), "Relaxed storage savings must be positive"
+
+                    if best_relaxed is None or lowest_relaxed_penalty > (
+                        relaxed_cost_increase / relaxed_storage_savings
+                    ):
+                        # set new best relaxed configuration
+                        best_relaxed = relaxed
+                        best_relaxed_size = cp_size - relaxed_considered_storage_savings
+                        lowest_relaxed_penalty = (
+                            relaxed_cost_increase / relaxed_storage_savings
+                        )
 
             cp = best_relaxed
             cp_size = best_relaxed_size
 
         return list(cp)
+
+    def configurations_by_transformation(self, input_configuration, transformation):
+        if transformation == "removal":
+            for index in input_configuration:
+                relaxed = input_configuration.copy()
+                relaxed.remove(index)
+                yield relaxed, index.estimated_size
 
     # copied from IBMAlgorithm
     def _exploit_virtual_indexes(self, workload):
