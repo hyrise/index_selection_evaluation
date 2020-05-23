@@ -37,8 +37,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
 
         # test with no parameter
         algorithm = RelaxationAlgorithm(
-            database_connector=self.connector,
-            parameters={"budget": 1000},
+            database_connector=self.connector, parameters={"budget": 1000},
         )
         result = algorithm._possible_indexes(query_1)
         self.assertEqual(len(result), 15)
@@ -54,13 +53,21 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set([Index([column_A_0], 1000 * 1000), Index([column_A_0, column_A_1], 2000 * 1000)]),
+            set(
+                [
+                    Index([column_A_0], 1000 * 1000),
+                    Index([column_A_0, column_A_1], 2000 * 1000),
+                ]
+            ),
         )
 
         index_selection = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
-        self.assertEqual(set(index_selection), set([Index([column_A_0]), Index([column_A_0, column_A_1])]))
+        self.assertEqual(
+            set(index_selection),
+            set([Index([column_A_0]), Index([column_A_0, column_A_1])]),
+        )
 
     def test_calculate_indexes_2MB_2column(self):
         algorithm = RelaxationAlgorithm(
@@ -73,7 +80,12 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set([Index([column_A_0], 1000 * 1000), Index([column_A_0, column_A_1], 2000 * 1000)]),
+            set(
+                [
+                    Index([column_A_0], 1000 * 1000),
+                    Index([column_A_0, column_A_1], 2000 * 1000),
+                ]
+            ),
         )
 
         index_selection = algorithm.calculate_best_indexes(
@@ -92,7 +104,12 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set([Index([column_A_0], 1000 * 1000), Index([column_A_0, column_A_1], 2000 * 1000)]),
+            set(
+                [
+                    Index([column_A_0], 1000 * 1000),
+                    Index([column_A_0, column_A_1], 2000 * 1000),
+                ]
+            ),
         )
 
         index_selection = algorithm.calculate_best_indexes(
@@ -113,13 +130,19 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set([Index([column_A_0], 1000 * 1000), Index([column_A_0, column_A_1], 2000 * 1000)]),
+            set(
+                [
+                    Index([column_A_0], 1000 * 1000),
+                    Index([column_A_0, column_A_1], 2000 * 1000),
+                ]
+            ),
         )
 
         index_selection = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
         self.assertEqual(set(index_selection), set())
+
 
 if __name__ == "__main__":
     unittest.main()
