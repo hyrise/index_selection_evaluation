@@ -1,6 +1,6 @@
 from ..selection_algorithm import SelectionAlgorithm
 from ..what_if_index_creation import WhatIfIndexCreation
-from ..index import Index, index_merge
+from ..index import Index, index_merge, index_split
 
 import itertools
 import logging
@@ -43,7 +43,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             lowest_relaxed_penalty = None
 
             # removal
-            for transformation in ["merging", "prefixing", "removal"]:
+            for transformation in ["splitting", "merging", "prefixing", "removal"]:
                 for (
                     relaxed,
                     relaxed_storage_savings,
@@ -111,22 +111,32 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 relaxed = input_configuration.copy()
                 merged_index = index_merge(index1, index2)
                 relaxed -= {index1, index2}
-                if merged_index in relaxed:
-                    relaxed_storage_savings = (
-                        index1.estimated_size + index2.estimated_size
-                    )
-                else:
+                relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                if merged_index not in relaxed:
                     relaxed.add(merged_index)
                     # estimate size for merged_index
                     # TODO: fix with better approach
                     _ = self.cost_evaluation.calculate_cost(
                         workload, relaxed, store_size=True
                     )
-                    relaxed_storage_savings = (
-                        index1.estimated_size
-                        + index2.estimated_size
-                        - merged_index.estimated_size
-                    )
+                    relaxed_storage_savings -= merged_index.estimated_size
+                yield relaxed, relaxed_storage_savings
+        elif transformation == "splitting":
+            for index1, index2 in itertools.permutations(input_configuration, 2):
+                relaxed = input_configuration.copy()
+                indexes_by_splitting = index_split(index1, index2)
+                relaxed -= {index1, index2}
+                relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                indexes_to_add = indexes_by_splitting - relaxed
+                for index in indexes_to_add:
+                    relaxed.add(index)
+                # estimate size for merged_index
+                # TODO: fix with better approach
+                _ = self.cost_evaluation.calculate_cost(
+                    workload, relaxed, store_size=True
+                )
+                for index in indexes_to_add:
+                    relaxed_storage_savings -= index.estimated_size
                 yield relaxed, relaxed_storage_savings
 
     # copied from IBMAlgorithm
