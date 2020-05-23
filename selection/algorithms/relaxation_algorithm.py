@@ -43,11 +43,13 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             lowest_relaxed_penalty = None
 
             # removal
-            for transformation in ["removal"]:
+            for transformation in ["prefixing", "removal"]:
                 for (
                     relaxed,
                     relaxed_storage_savings,
-                ) in self.configurations_by_transformation(cp, transformation):
+                ) in self.configurations_by_transformation(
+                    workload, cp, transformation
+                ):
                     relaxed_cost = self.cost_evaluation.calculate_cost(
                         workload, relaxed, store_size=True
                     )
@@ -78,8 +80,22 @@ class RelaxationAlgorithm(SelectionAlgorithm):
 
         return list(cp)
 
-    def configurations_by_transformation(self, input_configuration, transformation):
-        if transformation == "removal":
+    def configurations_by_transformation(
+        self, workload, input_configuration, transformation
+    ):
+        if transformation == "prefixing":
+            for index in input_configuration:
+                for prefix in index.prefixes():
+                    relaxed = input_configuration.copy()
+                    relaxed.remove(index)
+                    relaxed.add(prefix)
+                    # ensure that estimated size for prefix is set
+                    # TODO: fix with better approach
+                    _ = self.cost_evaluation.calculate_cost(
+                        workload, {prefix}, store_size=True
+                    )
+                    yield relaxed, index.estimated_size - prefix.estimated_size
+        elif transformation == "removal":
             for index in input_configuration:
                 relaxed = input_configuration.copy()
                 relaxed.remove(index)

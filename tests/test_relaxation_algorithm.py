@@ -42,6 +42,12 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         result = algorithm._possible_indexes(query_1)
         self.assertEqual(len(result), 15)
 
+    @staticmethod
+    def set_estimated_index_sizes(indexes, store_size=True):
+        for index in indexes:
+            if index.estimated_size is None:
+                index.estimated_size = len(index.columns) * 1000 * 1000
+
     def test_calculate_indexes_3000MB_2column(self):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
@@ -49,16 +55,14 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
-            lambda indexes, store_size=True: None
+            self.set_estimated_index_sizes
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set(
-                [
-                    Index([column_A_0], 1000 * 1000),
-                    Index([column_A_0, column_A_1], 2000 * 1000),
-                ]
-            ),
+            {
+                Index([column_A_0], 1000 * 1000),
+                Index([column_A_0, column_A_1], 2000 * 1000),
+            },
         )
 
         index_selection = algorithm.calculate_best_indexes(
@@ -76,16 +80,14 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
-            lambda indexes, store_size=True: None
+            self.set_estimated_index_sizes
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set(
-                [
-                    Index([column_A_0], 1000 * 1000),
-                    Index([column_A_0, column_A_1], 2000 * 1000),
-                ]
-            ),
+            {
+                Index([column_A_0], 1000 * 1000),
+                Index([column_A_0, column_A_1], 2000 * 1000),
+            },
         )
 
         index_selection = algorithm.calculate_best_indexes(
@@ -99,25 +101,24 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             parameters={"max_index_columns": 2, "budget": 1},
         )
         algorithm.cost_evaluation.cache = mock_cache
+
         algorithm.cost_evaluation._prepare_cost_calculation = (
-            lambda indexes, store_size=True: None
+            self.set_estimated_index_sizes
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set(
-                [
-                    Index([column_A_0], 1000 * 1000),
-                    Index([column_A_0, column_A_1], 2000 * 1000),
-                ]
-            ),
+            {
+                Index([column_A_0], 1000 * 1000),
+                Index([column_A_0, column_A_1], 2000 * 1000),
+            },
         )
 
         index_selection = algorithm.calculate_best_indexes(
             Workload([query_0, query_1], self.database_name)
         )
         # The single column index is dropped first, because of the lower penalty.
-        # The multi column index is dropped second, because of space constraint.
-        self.assertEqual(set(index_selection), set())
+        # The multi column index is prefixed second.
+        self.assertEqual(set(index_selection), {Index([column_A_0])})
 
     def test_calculate_indexes_500kB_2column(self):
         algorithm = RelaxationAlgorithm(
@@ -126,16 +127,14 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
-            lambda indexes, store_size=True: None
+            self.set_estimated_index_sizes
         )
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
-            set(
-                [
-                    Index([column_A_0], 1000 * 1000),
-                    Index([column_A_0, column_A_1], 2000 * 1000),
-                ]
-            ),
+            {
+                Index([column_A_0], 1000 * 1000),
+                Index([column_A_0, column_A_1], 2000 * 1000),
+            },
         )
 
         index_selection = algorithm.calculate_best_indexes(
