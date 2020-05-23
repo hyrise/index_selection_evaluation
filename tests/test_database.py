@@ -38,6 +38,7 @@ class TestDatabase(unittest.TestCase):
 
         query = Query(17, "SELECT count(*) FROM nation;")
         db.get_cost(query)
+        self.assertEqual(db.cost_estimations, 1)
         self.assertGreater(db.cost_estimation_duration, 0)
 
         column_n_name = Column("n_name")

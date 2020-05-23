@@ -11,6 +11,7 @@ class DatabaseConnector:
         # This does not reflect the number of unique simulated indexes but
         # the number of simulate_index calls
         self.simulated_indexes = 0
+        self.cost_estimations = 0
         self.cost_estimation_duration = 0
         self.index_simulation_duration = 0
 
@@ -67,6 +68,8 @@ class DatabaseConnector:
         self.index_simulation_duration += end_time - start_time
 
     def get_cost(self, query):
+        self.cost_estimations += 1
+
         start_time = time.time()
         cost = self._get_cost(query)
         end_time = time.time()
