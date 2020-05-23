@@ -125,12 +125,20 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             for index1, index2 in itertools.permutations(input_configuration, 2):
                 relaxed = input_configuration.copy()
                 indexes_by_splitting = index_split(index1, index2)
-                relaxed -= {index1, index2}
-                relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                if indexes_by_splitting is None:
+                    # no splitting for index permutation possible
+                    continue
+                relaxed_storage_savings = 0
+                for index in {index1, index2}:
+                    if index not in indexes_by_splitting:
+                        relaxed.remove(index)
+                        relaxed_storage_savings += index.estimated_size
                 indexes_to_add = indexes_by_splitting - relaxed
-                for index in indexes_to_add:
-                    relaxed.add(index)
-                # estimate size for merged_index
+                assert indexes_to_add & relaxed == set(), "Indexes to add must not be already in the set"
+                relaxed |= indexes_to_add
+                # for index in indexes_to_add:
+                #     relaxed.add(index)
+                # estimate size for added index
                 # TODO: fix with better approach
                 _ = self.cost_evaluation.calculate_cost(
                     workload, relaxed, store_size=True
