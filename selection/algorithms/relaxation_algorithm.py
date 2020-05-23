@@ -1,6 +1,6 @@
 from ..selection_algorithm import SelectionAlgorithm
 from ..what_if_index_creation import WhatIfIndexCreation
-from ..index import Index
+from ..index import Index, index_merge
 
 import itertools
 import logging
@@ -43,7 +43,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             lowest_relaxed_penalty = None
 
             # removal
-            for transformation in ["prefixing", "removal"]:
+            for transformation in ["merging", "prefixing", "removal"]:
                 for (
                     relaxed,
                     relaxed_storage_savings,
@@ -88,18 +88,46 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 for prefix in index.prefixes():
                     relaxed = input_configuration.copy()
                     relaxed.remove(index)
-                    relaxed.add(prefix)
-                    # ensure that estimated size for prefix is set
-                    # TODO: fix with better approach
-                    _ = self.cost_evaluation.calculate_cost(
-                        workload, {prefix}, store_size=True
-                    )
-                    yield relaxed, index.estimated_size - prefix.estimated_size
+                    if prefix in relaxed:
+                        relaxed_storage_savings = index.estimated_size
+                    else:
+                        relaxed.add(prefix)
+                        # estimate size for prefix
+                        # TODO: fix with better approach
+                        _ = self.cost_evaluation.calculate_cost(
+                            workload, relaxed, store_size=True
+                        )
+                        relaxed_storage_savings = (
+                            index.estimated_size - prefix.estimated_size
+                        )
+                    yield relaxed, relaxed_storage_savings
         elif transformation == "removal":
             for index in input_configuration:
                 relaxed = input_configuration.copy()
                 relaxed.remove(index)
                 yield relaxed, index.estimated_size
+        elif transformation == "merging":
+            for index1, index2 in itertools.permutations(input_configuration, 2):
+                relaxed = input_configuration.copy()
+                merged_index = index_merge(index1, index2)
+                relaxed -= {index1, index2}
+                if merged_index in relaxed:
+                    relaxed_storage_savings = (
+                        index1.estimated_size + index2.estimated_size
+                    )
+                else:
+                    relaxed.add(merged_index)
+                    # estimate size for merged_index
+                    # TODO: fix with better approach
+                    _ = self.cost_evaluation.calculate_cost(
+                        workload, relaxed, store_size=True
+                    )
+                    relaxed_storage_savings = (
+                        index1.estimated_size
+                        + index2.estimated_size
+                        - merged_index.estimated_size
+                    )
+                yield relaxed, relaxed_storage_savings
 
     # copied from IBMAlgorithm
     def _exploit_virtual_indexes(self, workload):
