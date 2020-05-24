@@ -37,42 +37,45 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             # TODO: Currently only one is considered
 
             # Relax the configuration
-            # TODO: Currently a random index is removed
             best_relaxed = None
             best_relaxed_size = None
             lowest_relaxed_penalty = None
 
-            # removal
             for transformation in ["splitting", "merging", "prefixing", "removal"]:
                 for (
                     relaxed,
                     relaxed_storage_savings,
-                ) in self.configurations_by_transformation(
-                    workload, cp, transformation
-                ):
+                ) in self.configurations_by_transformation(cp, transformation):
                     relaxed_cost = self.cost_evaluation.calculate_cost(
                         workload, relaxed, store_size=True
                     )
                     relaxed_cost_increase = relaxed_cost - cp_cost
-                    assert (
-                        relaxed_cost_increase >= 0
-                    ), "Relaxed cost increase must be positive"
+                    # TODO: Review attention
+                    # Cost savings are even better
+                    # assert (
+                    #     relaxed_cost_increase >= 0
+                    # ), f"Relaxed cost increase must be positive {transformation} {relaxed_cost_increase}"
+
+                    # TODO: Review attention
+                    if relaxed_storage_savings <= 0:
+                        continue
+                    # assert (
+                    #     relaxed_storage_savings > 0
+                    # ), f"Relaxed storage savings must be positive, {transformation}"
                     # any storage decrease beyond the disk_constraint is not considered
                     relaxed_considered_storage_savings = min(
                         relaxed_storage_savings, cp_size - self.disk_constraint
                     )
-                    assert (
-                        relaxed_storage_savings > 0
-                    ), "Relaxed storage savings must be positive"
 
+                    # TODO: Review attention: probably we should multiply the storage savings if the cost increase is negative
                     if best_relaxed is None or lowest_relaxed_penalty > (
-                        relaxed_cost_increase / relaxed_storage_savings
+                        relaxed_cost_increase / relaxed_considered_storage_savings
                     ):
                         # set new best relaxed configuration
                         best_relaxed = relaxed
                         best_relaxed_size = cp_size - relaxed_considered_storage_savings
                         lowest_relaxed_penalty = (
-                            relaxed_cost_increase / relaxed_storage_savings
+                            relaxed_cost_increase / relaxed_considered_storage_savings
                         )
 
             cp = best_relaxed
@@ -80,9 +83,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
 
         return list(cp)
 
-    def configurations_by_transformation(
-        self, workload, input_configuration, transformation
-    ):
+    def configurations_by_transformation(self, input_configuration, transformation):
         if transformation == "prefixing":
             for index in input_configuration:
                 for prefix in index.prefixes():
@@ -92,11 +93,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                         relaxed_storage_savings = index.estimated_size
                     else:
                         relaxed.add(prefix)
-                        # estimate size for prefix
-                        # TODO: fix with better approach
-                        _ = self.cost_evaluation.calculate_cost(
-                            workload, relaxed, store_size=True
-                        )
+                        self.cost_evaluation.estimate_size(prefix)
                         relaxed_storage_savings = (
                             index.estimated_size - prefix.estimated_size
                         )
@@ -108,21 +105,21 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 yield relaxed, index.estimated_size
         elif transformation == "merging":
             for index1, index2 in itertools.permutations(input_configuration, 2):
+                if index1.table() != index2.table():
+                    continue
                 relaxed = input_configuration.copy()
                 merged_index = index_merge(index1, index2)
                 relaxed -= {index1, index2}
                 relaxed_storage_savings = index1.estimated_size + index2.estimated_size
                 if merged_index not in relaxed:
                     relaxed.add(merged_index)
-                    # estimate size for merged_index
-                    # TODO: fix with better approach
-                    _ = self.cost_evaluation.calculate_cost(
-                        workload, relaxed, store_size=True
-                    )
+                    self.cost_evaluation.estimate_size(merged_index)
                     relaxed_storage_savings -= merged_index.estimated_size
                 yield relaxed, relaxed_storage_savings
         elif transformation == "splitting":
             for index1, index2 in itertools.permutations(input_configuration, 2):
+                if index1.table() != index2.table():
+                    continue
                 relaxed = input_configuration.copy()
                 indexes_by_splitting = index_split(index1, index2)
                 if indexes_by_splitting is None:
@@ -134,16 +131,12 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                         relaxed.remove(index)
                         relaxed_storage_savings += index.estimated_size
                 indexes_to_add = indexes_by_splitting - relaxed
-                assert indexes_to_add & relaxed == set(), "Indexes to add must not be already in the set"
-                relaxed |= indexes_to_add
-                # for index in indexes_to_add:
-                #     relaxed.add(index)
-                # estimate size for added index
-                # TODO: fix with better approach
-                _ = self.cost_evaluation.calculate_cost(
-                    workload, relaxed, store_size=True
-                )
+                assert (
+                    indexes_to_add & relaxed == set()
+                ), "Indexes to add must not be already in the set"
                 for index in indexes_to_add:
+                    relaxed.add(index)
+                    self.cost_evaluation.estimate_size(index)
                     relaxed_storage_savings -= index.estimated_size
                 yield relaxed, relaxed_storage_savings
 

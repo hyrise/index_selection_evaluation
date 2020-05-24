@@ -38,6 +38,9 @@ class Index:
         return True if len(self.columns) == 1 else False
 
     def table(self):
+        assert (
+            self.columns[0].table is not None
+        ), "Table should not be None to avoid false positive comparisons."
         return self.columns[0].table
 
     def index_idx(self):
@@ -96,6 +99,7 @@ Returns a list of index prefixes ordered by decreasing width."""
 # If K_1 is a prefix of K_2, I_1_2 = (K2; (S_1 ∪ S_2) - K_2)).
 # Returns the merged index.
 def index_merge(index_1, index_2):
+    assert index_1.table() == index_2.table()
     merged_columns = list(index_1.columns)
     for column in index_2.columns:
         if column not in index_1.columns:
@@ -112,6 +116,7 @@ def index_merge(index_1, index_2):
 # Returns None if K_1 and K_2 have no common columns or a set: {I_C, I_R_1, I_R_2} where
 # both I_R_1 are I_R_2 optional.
 def index_split(index_1, index_2):
+    assert index_1.table() == index_2.table()
     common_columns = []
     index_1_residual_columns = []
     for column in index_1.columns:

@@ -48,6 +48,10 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             if index.estimated_size is None:
                 index.estimated_size = len(index.columns) * 1000 * 1000
 
+    @staticmethod
+    def set_estimated_index_size(index):
+        index.estimated_size = len(index.columns) * 1000 * 1000
+
     def test_calculate_indexes_3000MB_2column(self):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
@@ -57,6 +61,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         algorithm.cost_evaluation._prepare_cost_calculation = (
             self.set_estimated_index_sizes
         )
+        algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
             {
@@ -82,6 +87,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         algorithm.cost_evaluation._prepare_cost_calculation = (
             self.set_estimated_index_sizes
         )
+        algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
             {
@@ -105,6 +111,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         algorithm.cost_evaluation._prepare_cost_calculation = (
             self.set_estimated_index_sizes
         )
+        algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
             {
@@ -129,6 +136,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         algorithm.cost_evaluation._prepare_cost_calculation = (
             self.set_estimated_index_sizes
         )
+        algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
         algorithm._exploit_virtual_indexes = lambda workload: (
             None,
             {
