@@ -20,8 +20,8 @@ class CostEvaluation:
         # These are only created per connection. Hence, non should be present.
 
     def estimate_size(self, index):
-        # TODO: Refacor: It is currently to complicated to compute
-        # We must search in current indexes to get an index object with .hypopg_oidq
+        # TODO: Refactor: It is currently too complicated to compute
+        # We must search in current indexes to get an index object with .hypopg_oid
         result = None
         for i in self.current_indexes:
             if index == i:

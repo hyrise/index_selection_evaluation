@@ -3,12 +3,12 @@ from functools import total_ordering
 
 @total_ordering
 class Index:
-    def __init__(self, columns, size=None):
+    def __init__(self, columns, estimated_size=None):
         if len(columns) == 0:
             raise ValueError("Index needs at least 1 column")
         self.columns = tuple(columns)
         # Store hypopg estimated size when `store_size=True` (whatif)
-        self.estimated_size = size
+        self.estimated_size = estimated_size
         self.hypopg_name = None
 
     # Used to sort indexes
@@ -71,7 +71,7 @@ class Index:
         return self.columns[: len(other.columns)] == other.columns
 
     def prefixes(self):
-        """"Consider I(K;S). For any prefix K' of K (including K' = K if S is not
+        """Consider I(K;S). For any prefix K' of K (including K' = K if S is not
 empty), an index I_P = (K';Ø) is obtained.
 Returns a list of index prefixes ordered by decreasing width."""
         index_prefixes = []
@@ -127,6 +127,7 @@ def index_split(index_1, index_2):
     if len(common_columns) == 0:
         return None
     result = {Index(common_columns)}
+
     if len(index_1_residual_columns) > 0:
         result.add(Index(index_1_residual_columns))
 
@@ -134,10 +135,7 @@ def index_split(index_1, index_2):
     for column in index_2.columns:
         if column not in index_1.columns:
             index_2_residual_columns.append(column)
-        else:
-            assert (
-                column in common_columns
-            ), "Column must be common, as it is not residual."
     if len(index_2_residual_columns) > 0:
         result.add(Index(index_2_residual_columns))
+
     return result
