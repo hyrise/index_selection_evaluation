@@ -15,9 +15,10 @@ styles = {
     'ibm': Style('DB2Advis', '#59a14f', '*', '*'),
     'no_index': Style('No Index', '#76b7b2', '-', 'O'),
     'cophy': Style('CoPhy', '#b07aa1', 'p', '\\'),
-    'relaxation': Style('Relaxation', '#9c755f', '8', '-')
+    'relaxation': Style('Relaxation', '#9c755f', 7, '-'),
+    'reinforcement_learning': Style('Deep RL', '#ff9da7', '1', '+')
 }
-# Colors of color palette still availableedc948, ff9da7
+# Colors of color palette still available edc948, ff9da7
 
 def b_to_gb(b):
     return b / 1000 / 1000 / 1000
