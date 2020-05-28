@@ -36,6 +36,8 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         cp_size = sum(index.estimated_size for index in cp)
         cp_cost = self.cost_evaluation.calculate_cost(workload, cp, store_size=True)
         while cp_size > self.disk_constraint:
+            print(f"Size of current configuration: {cp_size}. Budget: {self.disk_constraint}.")
+
             # Pick a configuration that can be relaxed
             # TODO: Currently only one is considered
 
@@ -44,11 +46,19 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             best_relaxed_size = None
             lowest_relaxed_penalty = None
 
+            cp_by_table = {}
+            for index in cp:
+                table = index.table()
+                if table not in cp_by_table:
+                    cp_by_table[table] = []
+
+                cp_by_table[table].append(index)
+
             for transformation in self.transformations:
                 for (
                     relaxed,
                     relaxed_storage_savings,
-                ) in self._configurations_by_transformation(cp, transformation):
+                ) in self._configurations_by_transformation(cp, transformation, cp_by_table):
                     relaxed_cost = self.cost_evaluation.calculate_cost(
                         workload, relaxed, store_size=True
                     )
@@ -77,10 +87,11 @@ class RelaxationAlgorithm(SelectionAlgorithm):
 
             cp = best_relaxed
             cp_size = best_relaxed_size
+            break
 
         return list(cp)
 
-    def _configurations_by_transformation(self, input_configuration, transformation):
+    def _configurations_by_transformation(self, input_configuration, transformation, input_configuration_by_table):
         if transformation == "prefixing":
             for index in input_configuration:
                 for prefix in index.prefixes():
@@ -98,34 +109,38 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 relaxed.remove(index)
                 yield relaxed, index.estimated_size
         elif transformation == "merging":
-            for index1, index2 in itertools.permutations(input_configuration, 2):
-                if index1.table() != index2.table():
-                    continue
-                relaxed = input_configuration.copy()
-                merged_index = index_merge(index1, index2)
-                relaxed -= {index1, index2}
-                relaxed_storage_savings = index1.estimated_size + index2.estimated_size
-                if merged_index not in relaxed:
-                    relaxed.add(merged_index)
-                    self.cost_evaluation.estimate_size(merged_index)
-                    relaxed_storage_savings -= merged_index.estimated_size
-                yield relaxed, relaxed_storage_savings
+            for table in input_configuration_by_table:
+                for index1, index2 in itertools.permutations(input_configuration_by_table[table], 2):
+                    # assert index1.table() == index2.table(), "ew"
+                    # if index1.table() != index2.table():
+                    #     continue
+                    relaxed = input_configuration.copy()
+                    merged_index = index_merge(index1, index2)
+                    relaxed -= {index1, index2}
+                    relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                    if merged_index not in relaxed:
+                        relaxed.add(merged_index)
+                        self.cost_evaluation.estimate_size(merged_index)
+                        relaxed_storage_savings -= merged_index.estimated_size
+                    yield relaxed, relaxed_storage_savings
         elif transformation == "splitting":
-            for index1, index2 in itertools.permutations(input_configuration, 2):
-                if index1.table() != index2.table():
-                    continue
-                relaxed = input_configuration.copy()
-                indexes_by_splitting = index_split(index1, index2)
-                if indexes_by_splitting is None:
-                    # no splitting for index permutation possible
-                    continue
-                relaxed -= {index1, index2}
-                relaxed_storage_savings = index1.estimated_size + index2.estimated_size
-                for index in indexes_by_splitting - relaxed:
-                    relaxed.add(index)
-                    self.cost_evaluation.estimate_size(index)
-                    relaxed_storage_savings -= index.estimated_size
-                yield relaxed, relaxed_storage_savings
+            for table in input_configuration_by_table:
+                for index1, index2 in itertools.permutations(input_configuration_by_table[table], 2):
+                    # assert index1.table() == index2.table(), "ew"
+                    # if index1.table() != index2.table():
+                    #     continue
+                    relaxed = input_configuration.copy()
+                    indexes_by_splitting = index_split(index1, index2)
+                    if indexes_by_splitting is None:
+                        # no splitting for index permutation possible
+                        continue
+                    relaxed -= {index1, index2}
+                    relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                    for index in indexes_by_splitting - relaxed:
+                        relaxed.add(index)
+                        self.cost_evaluation.estimate_size(index)
+                        relaxed_storage_savings -= index.estimated_size
+                    yield relaxed, relaxed_storage_savings
 
     # copied from IBMAlgorithm
     def _exploit_virtual_indexes(self, workload):
