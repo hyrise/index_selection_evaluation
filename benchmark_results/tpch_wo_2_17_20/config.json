@@ -22,7 +22,7 @@
         {
             "name": "cophy",
             "parameters": {
-                "max_index_columns": 3,
+                "max_index_columns": 2,
                 "max_indexes_per_query": 1
             },
             "number_of_actual_runs": 0,
