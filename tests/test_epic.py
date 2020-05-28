@@ -2,6 +2,7 @@ from selection.algorithms.epic_algorithm import EPICAlgorithm
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 
+import sys
 import unittest
 from unittest.mock import MagicMock
 
@@ -70,11 +71,11 @@ class TestEpicAlgorithm(unittest.TestCase):
         )
 
         first_new_combination = [
-            Index(index_combination[0].columns + candidate.columns),
             index_combination[1],
+            Index(index_combination[0].columns + candidate.columns),
         ]
         self.algo._evaluate_combination.assert_any_call(
-            first_new_combination, best, self.algo.initial_cost
+            first_new_combination, best, self.algo.initial_cost, 5
         )
 
         second_new_combination = [
@@ -82,11 +83,11 @@ class TestEpicAlgorithm(unittest.TestCase):
             Index(index_combination[1].columns + candidate.columns),
         ]
         self.algo._evaluate_combination.assert_any_call(
-            second_new_combination, best, self.algo.initial_cost
+            second_new_combination, best, self.algo.initial_cost, 1
         )
 
         multi_column_candidate = Index([self.column_2, self.column_3])
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             self.algo._attach_to_indexes(
                 index_combination, multi_column_candidate, best, self.algo.initial_cost
             )
@@ -153,7 +154,8 @@ class TestEpicAlgorithm(unittest.TestCase):
         assert best_old["benefit_to_size_ratio"] >= ratio
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
-        # The ratio is 2 which is worse than above's 10. Hence, best_input should not change
+        # The ratio is 2 which is worse than above's 10. Hence, best_input
+        # should not change
         self.algo._evaluate_combination(
             new_index_combination, best_input, self.algo.initial_cost
         )
@@ -185,7 +187,8 @@ class TestEpicAlgorithm(unittest.TestCase):
         assert best_old["benefit_to_size_ratio"] < ratio
 
         # Above's specification leads to a benefit of 10. The index cost is 5.
-        # The ratio is 2 which is better than above's 1. But the remaining budget is not sufficient.
+        # The ratio is 2 which is better than above's 1. But the remaining budget
+        # is not sufficient.
         self.algo._evaluate_combination(
             new_index_combination, best_input, self.algo.initial_cost
         )
@@ -236,6 +239,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_colc_colb_idx": 2,
         }
 
+        # Assume large size if index not in mocked size table
+        if index.index_idx() not in index_sizes:
+            return sys.maxsize
+
         index.estimated_size = index_sizes[index.index_idx()]
 
     def _calculate_cost_mock_1(self, workload, indexes, store_size):
@@ -254,7 +261,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_colc_idx||tablea_cola_idx": 60,
             "tablea_colc_idx||tablea_colb_idx": 50,
             "tablea_cola_idx||tablea_colb_idx||tablea_colc_idx": 40,
-            ### Below here multi, they do not result in benefit
+            # Below here multi, they do not result in benefit
             "tablea_colb_idx||tablea_colc_cola_idx": 1000,
             "tablea_colb_idx||tablea_colc_colb_idx": 1000,
             "tablea_colb_cola_idx||tablea_colc_idx": 1000,
@@ -267,6 +274,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_colc_colb_idx||tablea_colb_idx": 1000,
         }
 
+        # Assume high cost if index not in mocked cost table
+        if index_combination_str not in index_combination_cost:
+            return sys.maxsize
+
         return index_combination_cost[index_combination_str]
 
     # In this scenario, only single column indexes make sense.
@@ -276,7 +287,8 @@ class TestEpicAlgorithm(unittest.TestCase):
             side_effect=self._calculate_cost_mock_1
         )
 
-        # Each one alone of the single column indexes would fit, but the one with the best benefit/cost ratio is chosen
+        # Each one alone of the single column indexes would fit,
+        # but the one with the best benefit/cost ratio is chosen
         self.algo.budget = 1
         indexes = self.algo._calculate_best_indexes(self.workload)
         expected_indexes = [Index([self.column_3])]
@@ -328,7 +340,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_cola_idx||tablea_colc_idx": 60,
             "tablea_colb_idx||tablea_colc_idx": 50,
             "tablea_cola_idx||tablea_colb_idx||tablea_colc_idx": 40,
-            ### Below here multi, they do not result in benefit
+            # Below here multi, they do not result in benefit
             "tablea_cola_colb_idx": 1000,
             "tablea_cola_colc_idx": 1000,
             "tablea_colb_colc_idx": 1000,
@@ -340,6 +352,10 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_cola_colb_idx||tablea_colc_idx": 1000,
             "tablea_cola_colc_idx||tablea_colb_idx": 1000,
         }
+
+        # Assume high cost if index not in mocked cost table
+        if index_combination_str not in index_combination_cost:
+            return sys.maxsize
 
         return index_combination_cost[index_combination_str]
 
@@ -399,7 +415,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "tablea_cola_idx": 80,
             "tablea_colb_idx": 80,
             "tablea_cola_idx||tablea_colb_idx": 70,
-            ### Below here multi, they do not result in benefit
+            # Below here multi, they do not result in benefit
             "tablea_cola_colb_idx": 60,
             "tablea_colb_cola_idx": 60,
             "tablea_colb_cola_idx||tablea_colb_idx": 60,

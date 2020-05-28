@@ -22,12 +22,8 @@ class WhatIfIndexCreation:
 
     def drop_simulated_index(self, index):
         oid = index.hypopg_oid
+        self.db_connector.drop_simulated_index(oid)
         del self.simulated_indexes[oid]
-        self._drop_index_by_id(oid)
-
-    def _drop_index_by_id(self, oid):
-        statement = f"select * from hypopg_drop_index({oid})"
-        self.db_connector.exec_only(statement)
 
     def all_simulated_indexes(self):
         statement = "select * from hypopg_list_indexes()"
@@ -50,5 +46,5 @@ class WhatIfIndexCreation:
 
     def drop_all_simulated_indexes(self):
         for key in self.simulated_indexes:
-            self._drop_index_by_id(key)
+            self.db_connector.drop_simulated_index(key)
         self.simulated_indexes = {}

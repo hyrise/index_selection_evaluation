@@ -1,8 +1,6 @@
-from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 import unittest
-from unittest.mock import MagicMock
 from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 
 
@@ -97,21 +95,21 @@ class TestColumn(unittest.TestCase):
         column_3 = Column(name="ColB")
 
         # Column name equal but table (for both) is None
-        with self.assertRaises(Exception):
-            column1 == column_2
+        with self.assertRaises(AssertionError):
+            column_1 == column_2
 
         # Column name different but table (for both) is None
-        with self.assertRaises(Exception):
-            column1 == column_3
+        with self.assertRaises(AssertionError):
+            column_1 == column_3
 
         table_1.add_column(column_1)
 
         # Column name equal but table of column_2 is None
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             column_1 == column_2
 
         # Column name equal but table of column_2 is None
-        with self.assertRaises(Exception):
+        with self.assertRaises(AssertionError):
             column_2 == column_1
 
         table_2.add_column(column_2)
@@ -190,9 +188,7 @@ class TestWorkload(unittest.TestCase):
 
     def test_potential_indexes(self):
         index_set_1 = set([Index([column_A_0])])
-        index_set_2 = set(
-            [Index([column_A_0]), Index([column_A_1]), Index([column_A_2])]
-        )
+        index_set_2 = set([Index([column_A_0]), Index([column_A_1]), Index([column_A_2])])
 
         self.assertEqual(
             set(Workload([query_0], database_name="test_DB").potential_indexes()),
@@ -204,9 +200,7 @@ class TestWorkload(unittest.TestCase):
         )
         self.assertEqual(
             set(
-                Workload(
-                    [query_0, query_1], database_name="test_DB"
-                ).potential_indexes()
+                Workload([query_0, query_1], database_name="test_DB").potential_indexes()
             ),
             index_set_2,
         )

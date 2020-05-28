@@ -84,8 +84,10 @@ class PostgresDatabaseConnector(DatabaseConnector):
         return result[0]
 
     def drop_database(self, database_name):
-        self.exec_only("drop database {}".format(database_name))
-        logging.info("Database {} dropped".format(database_name))
+        statement = f"DROP DATABASE {database_name};"
+        self.exec_only(statement)
+
+        logging.info(f"Database {database_name} dropped")
 
     def create_statistics(self):
         logging.info("Postgres: Run `analyze`")
@@ -94,12 +96,16 @@ class PostgresDatabaseConnector(DatabaseConnector):
         self.exec_only("analyze")
         self._connection.autocommit = self.autocommit
 
+    def set_random_seed(self, value=0.17):
+        logging.info(f"Postgres: Set random seed `SELECT setseed({value})`")
+        self.exec_only(f"SELECT setseed({value})")
+
     def supports_index_simulation(self):
         if self.db_system == "postgres":
             return True
         return False
 
-    def simulate_index(self, index):
+    def _simulate_index(self, index):
         table_name = index.table()
         statement = (
             "select * from hypopg_create_index( "
@@ -109,6 +115,12 @@ class PostgresDatabaseConnector(DatabaseConnector):
         result = self.exec_fetch(statement)
         return result
 
+    def _drop_simulated_index(self, oid):
+        statement = f"select * from hypopg_drop_index({oid})"
+        result = self.exec_fetch(statement)
+
+        assert result[0] is True, f"Could not drop simulated index with oid = {oid}."
+
     def create_index(self, index):
         table_name = index.table()
         statement = (
@@ -117,8 +129,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         )
         self.exec_only(statement)
         size = self.exec_fetch(
-            f"select relpages from pg_class c "
-            f"where c.relname = '{index.index_idx()}'"
+            f"select relpages from pg_class c " f"where c.relname = '{index.index_idx()}'"
         )
         size = size[0]
         index.estimated_size = size * 8 * 1024
@@ -160,7 +171,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 self.exec_only(query_statement)
                 self.commit()
 
-    def get_cost(self, query):
+    def _get_cost(self, query):
         query_plan = self.get_plan(query)
         total_cost = query_plan["Total Cost"]
         return total_cost
@@ -193,7 +204,3 @@ class PostgresDatabaseConnector(DatabaseConnector):
             WHERE datname = '{database_name}');"""
         result = self.exec_fetch(statement)
         return result[0]
-
-    def drop_database(self, database_name):
-        statement = f"""DROP DATABASE {database_name};"""
-        self.exec_only(statement)

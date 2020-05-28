@@ -71,6 +71,9 @@ class Benchmark:
             "benchmark name",
             "db system",
             "algorithm runtime",
+            "algorithm cost time",
+            "algorithm index creation time",
+            "algorithm created #indexes",
             "#indexes",
             "index create time",
             "memory consumption",
@@ -105,6 +108,9 @@ class Benchmark:
             self.benchmark_name,
             self.db_system,
             self.calculation_time,
+            self.db_connector.cost_estimation_duration,
+            self.db_connector.index_simulation_duration,
+            self.db_connector.simulated_indexes,
             len(self.indexes),
             self.index_create_time,
             indexes_size,
@@ -183,7 +189,10 @@ class Benchmark:
         self.db_connector.commit()
 
     def _set_csv_filename(self, disable_csv):
-        name = f"results_{self.config['name']}_{self.benchmark_name}_{len(self.workload.queries)}_queries.csv"
-        self.filename = "benchmark_results/" + name
+        identifier = (
+            f"{self.config['name']}_{self.benchmark_name}"
+            f"_{len(self.workload.queries)}"
+        )
+        self.filename = f"benchmark_results/results_{identifier}_queries.csv"
         if disable_csv:
             self.filename = os.devnull

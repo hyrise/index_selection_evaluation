@@ -1,11 +1,10 @@
 from .cost_evaluation import CostEvaluation
-from .index import Index
 import logging
 
 
 class SelectionAlgorithm:
     def __init__(self, database_connector, parameters, default_parameters=None):
-        if default_parameters == None:
+        if default_parameters is None:
             default_parameters = {}
         logging.debug("Init selection algorithm")
         self.did_run = False
@@ -47,7 +46,7 @@ class SelectionAlgorithm:
 
 class NoIndexAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
-        if parameters == None:
+        if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters)
 
@@ -57,7 +56,7 @@ class NoIndexAlgorithm(SelectionAlgorithm):
 
 class AllIndexesAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
-        if parameters == None:
+        if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(self, database_connector, parameters)
 

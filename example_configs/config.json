@@ -2,6 +2,7 @@
     "database_system": "postgres",
     "benchmark_name": "tpch",
     "scale_factor": 0.1,
+    "pickle_workload": true,
     "algorithms": [
         {
             "name": "microsoft",

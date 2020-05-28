@@ -87,12 +87,13 @@ class TestCostEvaluation(unittest.TestCase):
         expected_cost_requests = len(self.workload.queries) * CALCULATE_COST_CALLS
         self.assertEqual(self.cost_evaluation.cost_requests, expected_cost_requests)
 
-        # Since we did not change the index configuration, all calls, except the first round, should be cached
+        # Since we did not change the index configuration, all calls,
+        # except the first round, should be cached
         expected_cache_hits = expected_cost_requests - len(self.workload.queries)
         self.assertEqual(self.cost_evaluation.cache_hits, expected_cache_hits)
 
-        # Therefore, actual calls to the database connector's get_cost method should be limited by the number
-        # of queries as it is not called for cached costs.
+        # Therefore, actual calls to the database connector's get_cost method should
+        # be limited by the number of queries as it is not called for cached costs.
         self.assertEqual(self.connector.get_cost.call_count, len(self.workload.queries))
 
     def test_cache_hit(self):
