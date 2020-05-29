@@ -5,6 +5,7 @@ import logging
 import datetime
 import subprocess
 import os.path
+import pickle
 
 
 class Benchmark:
@@ -15,7 +16,7 @@ class Benchmark:
         db_connector,
         config,
         calculation_time,
-        disable_csv,
+        disable_output_files,
         global_config,
         cost_requests,
         cache_hits,
@@ -28,7 +29,7 @@ class Benchmark:
         self.number_of_runs = config["number_of_actual_runs"]
         self.config = config
         self.calculation_time = calculation_time
-        self.disable_csv = disable_csv
+        self.disable_output_files = disable_output_files
         self.what_if = what_if
         self.cost_requests = cost_requests
         self.cache_hits = cache_hits
@@ -40,7 +41,7 @@ class Benchmark:
         if "seed" in global_config:
             self.seed = global_config["seed"]
 
-        self._set_csv_filename(disable_csv)
+        self._set_filenames()
 
     def benchmark(self):
         self.db_connector.drop_indexes()
@@ -92,7 +93,7 @@ class Benchmark:
     def _store_results(self, results, plans):
         config = self.config
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        if not self.disable_csv:
+        if not self.disable_output_files:
             self._write_query_plans(date, plans)
         commit_hash = self._git_hash()
         indexes_size = self.db_connector.indexes_size()
@@ -120,6 +121,9 @@ class Benchmark:
         csv_entry.extend(results)
         csv_entry.append(sorted(self.indexes))
         self._append_to_csv(";".join([str(x) for x in csv_entry]))
+
+        with open(self.picklename, "ba") as file:
+            pickle.dump(self.indexes, file)
 
     def _write_query_plans(self, date, plans):
         with open(f"benchmark_results/plans/{date}.json", "w") as f:
@@ -187,11 +191,15 @@ class Benchmark:
             self.db_connector.drop_index(index)
         self.db_connector.commit()
 
-    def _set_csv_filename(self, disable_csv):
+    def _set_filenames(self):
+        if self.disable_output_files:
+            self.filename = os.devnull
+            self.picklename = os.devnull
+            return
+
         identifier = (
             f"{self.config['name']}_{self.benchmark_name}"
             f"_{len(self.workload.queries)}"
         )
         self.filename = f"benchmark_results/results_{identifier}_queries.csv"
-        if disable_csv:
-            self.filename = os.devnull
+        self.picklename = f"benchmark_results/indexes_{identifier}_queries.pickle"
