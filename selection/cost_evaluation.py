@@ -19,6 +19,8 @@ class CostEvaluation:
         # It is not necessary to drop hypothetical indexes during __init__().
         # These are only created per connection. Hence, non should be present.
 
+        self.relevant_indexes_cache = {}
+
     def estimate_size(self, index):
         # TODO: Refactor: It is currently too complicated to compute
         # We must search in current indexes to get an index object with .hypopg_oid
@@ -90,7 +92,12 @@ class CostEvaluation:
         assert self.current_indexes == set()
 
     def _request_cache(self, query, indexes):
-        relevant_indexes = self._relevant_indexes(query, indexes)
+        q_i_hash = (query, frozenset(indexes))
+        if q_i_hash in self.relevant_indexes_cache:
+            relevant_indexes = self.relevant_indexes_cache[q_i_hash]
+        else:
+            relevant_indexes = self._relevant_indexes(query, indexes)
+            self.relevant_indexes_cache[q_i_hash] = relevant_indexes
 
         # Check if query and corresponding relevant indexes in cache
         if (query, relevant_indexes) in self.cache:
