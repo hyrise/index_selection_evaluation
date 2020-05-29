@@ -15,6 +15,8 @@ class PostgresDatabaseConnector(DatabaseConnector):
             self.db_name = "postgres"
         self.create_connection()
 
+        self.set_random_seed()
+
         logging.debug("Postgres connector created: {}".format(db_name))
 
     def create_connection(self):

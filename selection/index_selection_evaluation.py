@@ -90,7 +90,6 @@ class IndexSelection:
 
         # Set the random seed to obtain deterministic statistics (and cost estimations)
         # because ANALYZE (and alike) use sampling for large tables
-        self.db_connector.set_random_seed()
         self.db_connector.create_statistics()
         self.db_connector.commit()
 
