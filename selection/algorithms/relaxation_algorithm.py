@@ -26,6 +26,18 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         self.transformations = self.parameters["allowed_transformations"]
         assert set(self.transformations) <= {"splitting", "merging", "prefixing", "removal"}
 
+    # Util function?
+    def _indexes_by_table(self, configuration):
+        indexes_by_table = {}
+        for index in configuration:
+            table = index.table()
+            if table not in indexes_by_table:
+                indexes_by_table[table] = []
+
+            indexes_by_table[table].append(index)
+
+        return indexes_by_table
+
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes Relaxation")
         # Obtain best indexes per query
@@ -36,7 +48,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         cp_size = sum(index.estimated_size for index in cp)
         cp_cost = self.cost_evaluation.calculate_cost(workload, cp, store_size=True)
         while cp_size > self.disk_constraint:
-            print(f"Size of current configuration: {cp_size}. Budget: {self.disk_constraint}.")
+            logging.debug(f"Size of current configuration: {cp_size}. Budget: {self.disk_constraint}.")
 
             # Pick a configuration that can be relaxed
             # TODO: Currently only one is considered
@@ -46,19 +58,13 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             best_relaxed_size = None
             lowest_relaxed_penalty = None
 
-            cp_by_table = {}
-            for index in cp:
-                table = index.table()
-                if table not in cp_by_table:
-                    cp_by_table[table] = []
-
-                cp_by_table[table].append(index)
+            cp_by_table = self._indexes_by_table(cp)
 
             for transformation in self.transformations:
                 for (
                     relaxed,
                     relaxed_storage_savings,
-                ) in self._configurations_by_transformation(cp, transformation, cp_by_table):
+                ) in self._configurations_by_transformation(cp, cp_by_table, transformation):
                     relaxed_cost = self.cost_evaluation.calculate_cost(
                         workload, relaxed, store_size=True
                     )
@@ -87,11 +93,10 @@ class RelaxationAlgorithm(SelectionAlgorithm):
 
             cp = best_relaxed
             cp_size = best_relaxed_size
-            break
 
         return list(cp)
 
-    def _configurations_by_transformation(self, input_configuration, transformation, input_configuration_by_table):
+    def _configurations_by_transformation(self, input_configuration, input_configuration_by_table, transformation):
         if transformation == "prefixing":
             for index in input_configuration:
                 for prefix in index.prefixes():
