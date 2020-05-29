@@ -21,7 +21,6 @@ class CostEvaluation:
 
         self.relevant_indexes_cache = {}
 
-
     def calculate_cost(self, workload, indexes, store_size=False):
         assert (
             self.completed is False
