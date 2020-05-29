@@ -64,6 +64,7 @@ class IndexSelection:
         self.database_name = table_generator.database_name()
         self.database_system = config["database_system"]
         self.setup_db_connector(self.database_name, self.database_system)
+
         if "queries" not in config:
             config["queries"] = None
         query_generator = QueryGenerator(
