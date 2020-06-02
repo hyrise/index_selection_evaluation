@@ -24,6 +24,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         # convert MB to bytes
         self.disk_constraint = self.parameters["budget"] * 1000000
         self.transformations = self.parameters["allowed_transformations"]
+        self.max_index_columns = self.parameters["max_index_columns"]
         assert set(self.transformations) <= {"splitting", "merging", "prefixing", "removal"}
 
     # Util function?
