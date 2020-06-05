@@ -117,11 +117,12 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         elif transformation == "merging":
             for table in input_configuration_by_table:
                 for index1, index2 in itertools.permutations(input_configuration_by_table[table], 2):
-                    # assert index1.table() == index2.table(), "ew"
-                    # if index1.table() != index2.table():
-                    #     continue
                     relaxed = input_configuration.copy()
                     merged_index = index_merge(index1, index2)
+                    if len(merged_index.columns) > self.max_index_columns:
+                        new_columns = merged_index.columns[:self.max_index_columns]
+                        merged_index = Index(new_columns)
+
                     relaxed -= {index1, index2}
                     relaxed_storage_savings = index1.estimated_size + index2.estimated_size
                     if merged_index not in relaxed:
@@ -132,9 +133,6 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         elif transformation == "splitting":
             for table in input_configuration_by_table:
                 for index1, index2 in itertools.permutations(input_configuration_by_table[table], 2):
-                    # assert index1.table() == index2.table(), "ew"
-                    # if index1.table() != index2.table():
-                    #     continue
                     relaxed = input_configuration.copy()
                     indexes_by_splitting = index_split(index1, index2)
                     if indexes_by_splitting is None:
