@@ -40,7 +40,7 @@ class IndexSelection:
         logging.debug("Init IndexSelection")
         self.db_connector = None
         self.default_config_file = "example_configs/config.json"
-        self.disable_csv = False
+        self.disable_output_files = False
         self.database_name = None
         self.database_system = None
 
@@ -66,6 +66,7 @@ class IndexSelection:
         self.database_name = table_generator.database_name()
         self.database_system = config["database_system"]
         self.setup_db_connector(self.database_name, self.database_system)
+
         if "queries" not in config:
             config["queries"] = None
         query_generator = QueryGenerator(
@@ -92,7 +93,6 @@ class IndexSelection:
 
         # Set the random seed to obtain deterministic statistics (and cost estimations)
         # because ANALYZE (and alike) use sampling for large tables
-        self.db_connector.set_random_seed()
         self.db_connector.create_statistics()
         self.db_connector.commit()
 
@@ -111,7 +111,7 @@ class IndexSelection:
                     self.db_connector,
                     algorithm_config_unfolded,
                     calculation_time,
-                    self.disable_csv,
+                    self.disable_output_files,
                     config,
                     cost_requests,
                     cache_hits,
@@ -171,8 +171,8 @@ class IndexSelection:
             logging.getLogger().setLevel(logging.ERROR)
         if "INFO_LOG" in arguments:
             logging.getLogger().setLevel(logging.INFO)
-        if "DISABLE_CSV" in arguments:
-            self.disable_csv = True
+        if "DISABLE_OUTPUT_FILES" in arguments:
+            self.disable_output_files = True
         for argument in arguments:
             if ".json" in argument:
                 return argument
