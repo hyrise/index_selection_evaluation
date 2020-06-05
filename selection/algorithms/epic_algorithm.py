@@ -7,7 +7,7 @@ import logging
 DEFAULT_PARAMETERS = {
     "cost_estimation": "whatif",
     "budget": 10,
-    "min_cost_improvement": 1.01,
+    "min_cost_improvement": 1.003,
     "max_index_columns": 4,
 }
 
@@ -59,12 +59,15 @@ class EPICAlgorithm(SelectionAlgorithm):
                 self._attach_to_indexes(index_combination, attribute, best, current_cost)
             if best["benefit_to_size_ratio"] <= 0:
                 break
+
             index_combination = best["combination"]
-            best["benefit_to_size_ratio"] = 0
-            current_cost = best["cost"]
             index_combination_size = sum(
                 index.estimated_size for index in index_combination
             )
+            logging.info(f"Add index. Current cost savings {(1 - best['cost'] / current_cost) * 100:.3f}, initial {(1 - best['cost'] / self.initial_cost) * 100:.3f}. Current storage: {index_combination_size:.2f}")
+
+            best["benefit_to_size_ratio"] = 0
+            current_cost = best["cost"]
 
         return index_combination
 
