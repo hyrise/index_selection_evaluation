@@ -137,7 +137,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
 
         for index in candidate_indexes:
             cost = self._simulate_and_evaluate_cost(
-                workload, current_indexes | set([index])
+                workload, current_indexes | {index}
             )
             if not best_index[0] or cost < best_index[1]:
                 best_index = (index, cost)
