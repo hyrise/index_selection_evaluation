@@ -161,7 +161,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
         except Exception as e:
             logging.error(f"{query.nr}, {e}")
             self._connection.rollback()
-            result = None, self.get_plan(query)
+            result = None, self._get_plan(query)
         # Disable timeout
         self._cursor.execute("set statement_timeout = 0")
         self._cleanup_query(query)
@@ -174,11 +174,11 @@ class PostgresDatabaseConnector(DatabaseConnector):
                 self.commit()
 
     def _get_cost(self, query):
-        query_plan = self.get_plan(query)
+        query_plan = self._get_plan(query)
         total_cost = query_plan["Total Cost"]
         return total_cost
 
-    def get_plan(self, query):
+    def _get_plan(self, query):
         query_text = self._prepare_query(query)
         statement = f"explain (format json) {query_text}"
         query_plan = self.exec_fetch(statement)[0][0]["Plan"]
