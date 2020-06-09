@@ -29,11 +29,13 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         logging.info("Calculating best indexes Relaxation")
         # Obtain best indexes per query
         _, candidates = self._exploit_virtual_indexes(workload)
+        self._add_merged_indexes(candidates)
         seeds = [{index} for index in candidates]
         seeds.append(set())
 
         best_configuration = (None, None)
-        for seed in seeds:
+        for i, seed in enumerate(seeds):
+            logging.info(f"Seed {i + 1} from {len(seeds)}")
             candidates_copy = candidates.copy()
             candidates_copy -= seed
             current_costs = self._simulate_and_evaluate_cost(workload, seed)
@@ -44,6 +46,29 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         indexes = best_configuration[0]
         print('%%%%%%%%%%%%', indexes)
         return list(indexes)
+
+    # copied from RelaxationAlgorithm
+    def _indexes_by_table(self, configuration):
+        indexes_by_table = {}
+        for index in configuration:
+            table = index.table()
+            if table not in indexes_by_table:
+                indexes_by_table[table] = []
+
+            indexes_by_table[table].append(index)
+
+        return indexes_by_table
+
+    def _add_merged_indexes(self, indexes):
+        indexes_by_table = self._indexes_by_table(indexes)
+        for table in indexes_by_table:
+            for index1, index2 in itertools.permutations(indexes_by_table[table], 2):
+                merged_index = index_merge(index1, index2)
+                if len(merged_index.columns) > self.max_index_columns:
+                    new_columns = merged_index.columns[:self.max_index_columns]
+                    merged_index = Index(new_columns)
+                    if merged_index not in indexes:
+                        indexes.add(merged_index)
 
     # based on MicrosoftAlgorithm
     def enumerate_greedy(
