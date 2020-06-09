@@ -29,8 +29,19 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         logging.info("Calculating best indexes Relaxation")
         # Obtain best indexes per query
         _, candidates = self._exploit_virtual_indexes(workload)
-        current_costs = self._simulate_and_evaluate_cost(workload, set())
-        indexes, _ = self.enumerate_greedy(workload, set(), current_costs, candidates, math.inf)
+        seeds = [{index} for index in candidates]
+        seeds.append(set())
+
+        best_configuration = (None, None)
+        for seed in seeds:
+            candidates_copy = candidates.copy()
+            candidates_copy -= seed
+            current_costs = self._simulate_and_evaluate_cost(workload, seed)
+            indexes, costs = self.enumerate_greedy(workload, seed, current_costs, candidates_copy, math.inf)
+            if best_configuration[0] is None or costs < best_configuration[1]:
+                best_configuration = (indexes, costs)
+
+        indexes = best_configuration[0]
         print('%%%%%%%%%%%%', indexes)
         return list(indexes)
 
