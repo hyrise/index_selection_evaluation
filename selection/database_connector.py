@@ -77,6 +77,18 @@ class DatabaseConnector:
 
         return cost
 
+    # This is very similar to get_cost() above. Some algorithms need to directly access
+    # get_plan. To not exclude it from costing, we add the instrumentation here.
+    def get_plan(self, query):
+        self.cost_estimations += 1
+
+        start_time = time.time()
+        plan = self._get_plan(query)
+        end_time = time.time()
+        self.cost_estimation_duration += end_time - start_time
+
+        return plan
+
     def table_exists(self, table_name):
         raise NotImplementedError
 
@@ -93,6 +105,9 @@ class DatabaseConnector:
         raise NotImplementedError
 
     def _get_cost(self, query):
+        raise NotImplementedError
+
+    def _get_plan(self, query):
         raise NotImplementedError
 
     def _simulate_index(self, index):
