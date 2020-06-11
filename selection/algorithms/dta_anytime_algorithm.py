@@ -5,6 +5,7 @@ from ..index import Index, index_merge
 import itertools
 import logging
 import math
+import time
 
 # Maximum number of columns per index, storage budget in MB,
 DEFAULT_PARAMETERS = {
@@ -24,15 +25,26 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         # convert MB to bytes
         self.disk_constraint = self.parameters["budget"] * 1000000
         self.max_index_columns = self.parameters["max_index_columns"]
+        self.max_runtime_minutes = self.parameters['max_runtime_minutes'] if 'max_runtime_minutes' in self.parameters else 10
 
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes Relaxation")
         # Obtain best indexes per query
         _, candidates = self._exploit_virtual_indexes(workload)
         self._add_merged_indexes(candidates)
-        seeds = [{index} for index in candidates]
+
+        # Remove candidates that cannot meet budget requirements
+        seeds = []
+        filtered_candidates = set()
+        for candidate in candidates:
+            if candidate.estimated_size < self.disk_constraint:
+                seeds.append({candidate})
+                filtered_candidates.add(candidate)
         seeds.append(set())
 
+        candidates = filtered_candidates
+
+        start_time = time.time()
         best_configuration = (None, None)
         for i, seed in enumerate(seeds):
             logging.info(f"Seed {i + 1} from {len(seeds)}")
@@ -42,6 +54,11 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
             indexes, costs = self.enumerate_greedy(workload, seed, current_costs, candidates_copy, math.inf)
             if best_configuration[0] is None or costs < best_configuration[1]:
                 best_configuration = (indexes, costs)
+
+            current_time = time.time()
+            if current_time - start_time > self.max_runtime_minutes * 60:
+                print(f"Stopping after {i + 1} seeds because of timing constraints.")
+                break
 
         indexes = best_configuration[0]
         print('%%%%%%%%%%%%', indexes)
@@ -68,6 +85,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
                     new_columns = merged_index.columns[:self.max_index_columns]
                     merged_index = Index(new_columns)
                 if merged_index not in indexes:
+                    self.cost_evaluation.estimate_size(merged_index)
                     indexes.add(merged_index)
 
     # based on MicrosoftAlgorithm
@@ -86,12 +104,13 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         logging.debug(f"Searching in {len(candidate_indexes)} indexes")
 
         for index in candidate_indexes:
+            if sum(idx.estimated_size for idx in current_indexes | {index}) > self.disk_constraint:
+                # index configuration is too large
+                continue
             cost = self._simulate_and_evaluate_cost(
                 workload, current_indexes | {index}
             )
-            if sum(index.estimated_size for index in current_indexes | {index}) > self.disk_constraint:
-                # index configuration is too large
-                continue
+
             if not best_index[0] or cost < best_index[1]:
                 best_index = (index, cost)
         if best_index[0] and best_index[1] < current_costs:
@@ -126,6 +145,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
                 recommended_indexes,
                 cost_with_recommended_indexes,
             ) = self._recommended_indexes(query)
+
             query_results[query] = {
                 "cost_without_indexes": cost_without_indexes,
                 "cost_with_recommended_indexes": cost_with_recommended_indexes,
