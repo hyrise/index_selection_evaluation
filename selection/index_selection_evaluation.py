@@ -159,7 +159,7 @@ class IndexSelection:
         what_if = algorithm.cost_evaluation.what_if
 
         cost_requests = self.db_connector.cost_estimations if config["name"] == "ibm" else algorithm.cost_evaluation.cost_requests
-        cache_hits = 0 if config["name"] == "ibm" else conficost_request_information_provider.cache_hits
+        cache_hits = 0 if config["name"] == "ibm" else algorithm.cost_evaluation.cache_hits
         return indexes, what_if, cost_requests, cache_hits
 
     def create_algorithm_object(self, algorithm_name, parameters):
