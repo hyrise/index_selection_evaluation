@@ -67,8 +67,8 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
                 if len(merged_index.columns) > self.max_index_columns:
                     new_columns = merged_index.columns[:self.max_index_columns]
                     merged_index = Index(new_columns)
-                    if merged_index not in indexes:
-                        indexes.add(merged_index)
+                if merged_index not in indexes:
+                    indexes.add(merged_index)
 
     # based on MicrosoftAlgorithm
     def enumerate_greedy(
