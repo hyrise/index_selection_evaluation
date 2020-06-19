@@ -1,4 +1,5 @@
-from selection.utils import *
+from selection.utils import mb_to_b
+
 import unittest
 
 

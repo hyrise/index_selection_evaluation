@@ -1,11 +1,13 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..what_if_index_creation import WhatIfIndexCreation
-from ..index import Index, index_merge
-
 import itertools
 import logging
 import math
 import time
+
+from ..index import Index, index_merge
+from ..selection_algorithm import SelectionAlgorithm
+from ..utils import mb_to_b
+from ..what_if_index_creation import WhatIfIndexCreation
+
 
 # Maximum number of columns per index, storage budget in MB, runtime limit.
 # After n minutes the algorithm is stopped and the current best solution is returned.
@@ -20,8 +22,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
         self.what_if = WhatIfIndexCreation(database_connector)
-        # convert MB to bytes
-        self.disk_constraint = self.parameters["budget"] * 1000000
+        self.disk_constraint = mb_to_b(self.parameters["budget"])
         self.max_index_columns = self.parameters["max_index_columns"]
         self.max_runtime_minutes = self.parameters["max_runtime_minutes"]
 

@@ -1,6 +1,9 @@
+import logging
+
+
 from ..selection_algorithm import SelectionAlgorithm
 from ..index import Index
-import logging
+
 
 DEFAULT_PARAMETERS = {"example_parameter": 3}
 

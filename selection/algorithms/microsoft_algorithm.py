@@ -1,8 +1,9 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..workload import Workload
-from ..index import Index
 import itertools
 import logging
+
+from ..index import Index
+from ..selection_algorithm import SelectionAlgorithm
+from ..workload import Workload
 
 # multi column index methods: 'no', 'lead', 'all'
 # cost_estimation: 'whatif' or 'acutal_runtimes'

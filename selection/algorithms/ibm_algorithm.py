@@ -1,11 +1,13 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..what_if_index_creation import WhatIfIndexCreation
-from ..index import Index
-
 import itertools
 import logging
 import random
 import time
+
+from ..index import Index
+from ..selection_algorithm import SelectionAlgorithm
+from ..utils import mb_to_b
+from ..what_if_index_creation import WhatIfIndexCreation
+
 
 # Maximum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
@@ -50,8 +52,7 @@ class IBMAlgorithm(SelectionAlgorithm):
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
         self.what_if = WhatIfIndexCreation(database_connector)
-        # convert MB to bytes
-        self.disk_constraint = self.parameters["budget"] * 1000000
+        self.disk_constraint = mb_to_b(self.parameters["budget"])
         self.seconds_limit = self.parameters["try_variation_seconds_limit"]
         self.maximum_remove = self.parameters["try_variation_maximum_remove"]
 

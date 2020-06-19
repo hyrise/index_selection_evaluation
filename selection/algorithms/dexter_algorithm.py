@@ -1,8 +1,10 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..index import Index
-import subprocess
 import logging
 import os
+import subprocess
+
+from ..index import Index
+from ..selection_algorithm import SelectionAlgorithm
+
 
 # Parameter is passed to dexter command line tool.
 # The mimimum percentage that an index reduces the

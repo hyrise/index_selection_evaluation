@@ -1,6 +1,9 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..index import Index
 import logging
+
+from ..index import Index
+from ..selection_algorithm import SelectionAlgorithm
+from ..utils import mb_to_b
+
 
 # cost_estimation: 'whatif' or 'acutal_runtimes'
 # Index combination budget in MB
@@ -19,8 +22,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        # MB to Bytes
-        self.budget = self.parameters["budget"] * 1000000
+        self.budget = mb_to_b(self.parameters["budget"])
         self.max_index_columns = self.parameters["max_index_columns"]
         self.workload = None
         self.min_cost_improvement = self.parameters["min_cost_improvement"]

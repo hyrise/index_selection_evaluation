@@ -1,9 +1,11 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..what_if_index_creation import WhatIfIndexCreation
-from ..index import Index, index_merge, index_split
-
 import itertools
 import logging
+
+from ..index import Index, index_merge, index_split
+from ..selection_algorithm import SelectionAlgorithm
+from ..utils import mb_to_b
+from ..what_if_index_creation import WhatIfIndexCreation
+
 
 # Maximum number of columns per index, storage budget in MB,
 DEFAULT_PARAMETERS = {
@@ -21,8 +23,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
         self.what_if = WhatIfIndexCreation(database_connector)
-        # convert MB to bytes
-        self.disk_constraint = self.parameters["budget"] * 1000000
+        self.disk_constraint = mb_to_b(self.parameters["budget"])
         self.transformations = self.parameters["allowed_transformations"]
         self.max_index_columns = self.parameters["max_index_columns"]
         assert set(self.transformations) <= {
