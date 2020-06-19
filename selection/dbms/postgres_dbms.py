@@ -146,13 +146,14 @@ class PostgresDatabaseConnector(DatabaseConnector):
             logging.debug("Dropping index {}".format(index_name))
             self.exec_only(drop_stmt)
 
+    # PostgreSQL expects the timeout in milliseconds
     def exec_query(self, query, timeout=None, cost_evaluation=False):
         # Committing to not lose indexes after timeout
         if not cost_evaluation:
             self._connection.commit()
         query_text = self._prepare_query(query)
         if timeout:
-            set_timeout = "set statement_timeout={}".format(timeout * 1000)
+            set_timeout = f"set statement_timeout={timeout}"
             self.exec_only(set_timeout)
         statement = f"explain (analyze, buffers, format json) {query_text}"
         try:

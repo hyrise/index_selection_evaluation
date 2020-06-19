@@ -2,7 +2,7 @@ import logging
 
 from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
-from ..utils import mb_to_b
+from ..utils import b_to_mb, mb_to_b
 
 
 # cost_estimation: 'whatif' or 'acutal_runtimes'
@@ -129,7 +129,7 @@ class EPICAlgorithm(SelectionAlgorithm):
 
         if ratio > best["benefit_to_size_ratio"] and total_size <= self.budget:
             logging.debug(
-                f"new best cost and size: {cost}\t" f"{round(total_size / 1000000, 2)}MB"
+                f"new best cost and size: {cost}\t" f"{b_to_mb(total_size):.2f}MB"
             )
             best["combination"] = index_combination
             best["benefit_to_size_ratio"] = ratio
