@@ -57,8 +57,10 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
 
             current_time = time.time()
             if current_time - start_time > self.max_runtime_minutes * 60:
-                print(f"Stopping after {i + 1} seeds because of timing constraints.")
+                logging.info(f"Stopping after {i + 1} seeds because of timing constraints.")
                 break
+            else:
+                logging.debug(f"Current best: {best_configuration[1]} after {current_time -  start_time}s.")
 
         indexes = best_configuration[0]
         print('%%%%%%%%%%%%', indexes)
