@@ -47,6 +47,25 @@
             },
             "number_of_actual_runs": 5,
             "timeout": 30
+        },
+        {
+            "name": "relaxation",
+            "parameters": {
+                "max_index_columns": 3,
+                "budget": 1
+            },
+            "number_of_actual_runs": 5,
+            "timeout": 30
+        },
+        {
+            "name": "dta_anytime",
+            "parameters": {
+                "max_index_columns": 3,
+                "budget": 1,
+                "max_runtime_minutes": 30
+            },
+            "number_of_actual_runs": 5,
+            "timeout": 300
         }
     ],
     "queries": [

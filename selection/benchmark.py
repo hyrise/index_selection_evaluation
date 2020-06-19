@@ -169,6 +169,10 @@ class Benchmark:
                 results[query_index]["Hits"].append(self._calculate_hits(plan))
                 plans[query.nr].append(plan)
         logging.debug("Execution times: {}".format(results))
+        overall_costs = sum(
+            [results[query_id]["Cost"] for query_id in range(len(self.workload.queries))]
+        )
+        logging.debug(f"Overall Costs: {overall_costs}")
         self._store_results(results, plans)
 
     def _benchmark_query(self, query):

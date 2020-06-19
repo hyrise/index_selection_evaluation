@@ -21,6 +21,21 @@ class CostEvaluation:
 
         self.relevant_indexes_cache = {}
 
+    def estimate_size(self, index):
+        # TODO: Refactor: It is currently too complicated to compute
+        # We must search in current indexes to get an index object with .hypopg_oid
+        result = None
+        for i in self.current_indexes:
+            if index == i:
+                result = i
+                break
+        if result:
+            # Index does currently exist and size can be queried
+            if not index.estimated_size:
+                index.estimated_size = self.what_if.estimate_index_size(result.hypopg_oid)
+        else:
+            self._simulate_or_create_index(index, store_size=True)
+
     def calculate_cost(self, workload, indexes, store_size=False):
         assert (
             self.completed is False
@@ -43,19 +58,21 @@ class CostEvaluation:
         for index in self.current_indexes - set(indexes):
             self._unsimulate_or_drop_index(index)
 
-        self.current_indexes = set(indexes)
+        assert self.current_indexes == set(indexes)
 
     def _simulate_or_create_index(self, index, store_size=False):
         if self.cost_estimation == "whatif":
             self.what_if.simulate_index(index, store_size=store_size)
         elif self.cost_estimation == "actual_runtimes":
             self.db_connector.create_index(index)
+        self.current_indexes.add(index)
 
     def _unsimulate_or_drop_index(self, index):
         if self.cost_estimation == "whatif":
             self.what_if.drop_simulated_index(index)
         elif self.cost_estimation == "actual_runtimes":
             self.db_connector.drop_index(index)
+        self.current_indexes.remove(index)
 
     def _get_cost(self, query):
         if self.cost_estimation == "whatif":
@@ -67,10 +84,10 @@ class CostEvaluation:
     def complete_cost_estimation(self):
         self.completed = True
 
-        for index in self.current_indexes:
+        for index in self.current_indexes.copy():
             self._unsimulate_or_drop_index(index)
 
-        self.current_indexes = set()
+        assert self.current_indexes == set()
 
     def _request_cache(self, query, indexes):
         q_i_hash = (query, frozenset(indexes))
