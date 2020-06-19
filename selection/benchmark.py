@@ -35,6 +35,9 @@ class Benchmark:
         self.what_if = what_if
         self.cost_requests = cost_requests
         self.cache_hits = cache_hits
+        self.cost_estimation_duration = self.db_connector.cost_estimation_duration
+        self.index_simulation_duration = self.db_connector.index_simulation_duration
+        self.simulated_indexes = self.db_connector.simulated_indexes
 
         self.scale_factor = global_config["scale_factor"]
         self.benchmark_name = global_config["benchmark_name"]
@@ -111,9 +114,9 @@ class Benchmark:
             self.benchmark_name,
             self.db_system,
             self.calculation_time,
-            self.db_connector.cost_estimation_duration,
-            self.db_connector.index_simulation_duration,
-            self.db_connector.simulated_indexes,
+            self.cost_estimation_duration,
+            self.index_simulation_duration,
+            self.simulated_indexes,
             len(self.indexes),
             self.index_create_time,
             indexes_size,
