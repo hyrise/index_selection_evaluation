@@ -1,5 +1,3 @@
-from .index import Index
-
 # --- Unit conversions ---
 
 # Storage
@@ -17,6 +15,7 @@ def s_to_ms(s):
 
 
 # --- Index selection utilities
+
 
 def indexes_by_table(indexes):
     indexes_by_table = {}

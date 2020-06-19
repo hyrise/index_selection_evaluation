@@ -47,8 +47,5 @@ class TestTableGenerator(unittest.TestCase):
         index_2 = Index([self.column_a_1])
 
         index_set = [index_0, index_1, index_2]
-        expected = {
-            self.table_a: [index_0, index_2],
-            self.table_b: [index_1]
-        }
+        expected = {self.table_a: [index_0, index_2], self.table_b: [index_1]}
         self.assertEqual(indexes_by_table(index_set), expected)

@@ -27,7 +27,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         self.max_runtime_minutes = self.parameters["max_runtime_minutes"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes Relaxation")
+        logging.info("Calculating best indexes DTA Anytime")
         # Obtain best indexes per query
         _, candidates = self._exploit_virtual_indexes(workload)
         self._add_merged_indexes(candidates)
@@ -74,9 +74,9 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         return list(indexes)
 
     def _add_merged_indexes(self, indexes):
-        indexes_by_table = indexes_by_table(indexes)
-        for table in indexes_by_table:
-            for index1, index2 in itertools.permutations(indexes_by_table[table], 2):
+        index_table_dict = indexes_by_table(indexes)
+        for table in index_table_dict:
+            for index1, index2 in itertools.permutations(index_table_dict[table], 2):
                 merged_index = index_merge(index1, index2)
                 if len(merged_index.columns) > self.max_index_columns:
                     new_columns = merged_index.columns[: self.max_index_columns]
