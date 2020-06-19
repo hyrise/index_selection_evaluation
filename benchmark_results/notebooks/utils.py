@@ -18,7 +18,7 @@ styles = {
     'no_index': Style('No Index', '#76b7b2', '-', 'O'),
     'cophy': Style('CoPhy', '#b07aa1', 'p', '\\'),
     'relaxation': Style('Relaxation', '#ff9da7', '8', '-'),
-    'dta_anytime': Style('DTA Anytime', '#edc948', '1', '+'),
+    'dta_anytime': Style('Anytime', '#9c755f', 's', '+'),
     'reinforcement_learning': Style('Deep RL', '#edc948', '1', '+')
 }
 
