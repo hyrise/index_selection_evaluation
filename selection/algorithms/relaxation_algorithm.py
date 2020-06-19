@@ -3,7 +3,7 @@ import logging
 
 from ..index import Index, index_merge, index_split
 from ..selection_algorithm import SelectionAlgorithm
-from ..utils import mb_to_b
+from ..utils import mb_to_b, indexes_by_table
 from ..what_if_index_creation import WhatIfIndexCreation
 
 
@@ -33,18 +33,6 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             "removal",
         }
 
-    # Util function?
-    def _indexes_by_table(self, configuration):
-        indexes_by_table = {}
-        for index in configuration:
-            table = index.table()
-            if table not in indexes_by_table:
-                indexes_by_table[table] = []
-
-            indexes_by_table[table].append(index)
-
-        return indexes_by_table
-
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes Relaxation")
         # Obtain best indexes per query
@@ -68,7 +56,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             best_relaxed_size = None
             lowest_relaxed_penalty = None
 
-            cp_by_table = self._indexes_by_table(cp)
+            cp_by_table = indexes_by_table(cp)
 
             for transformation in self.transformations:
                 for (

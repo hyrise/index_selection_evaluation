@@ -5,7 +5,7 @@ import time
 
 from ..index import Index, index_merge
 from ..selection_algorithm import SelectionAlgorithm
-from ..utils import mb_to_b
+from ..utils import mb_to_b, indexes_by_table
 from ..what_if_index_creation import WhatIfIndexCreation
 
 
@@ -73,20 +73,8 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         indexes = best_configuration[0]
         return list(indexes)
 
-    # copied from RelaxationAlgorithm
-    def _indexes_by_table(self, configuration):
-        indexes_by_table = {}
-        for index in configuration:
-            table = index.table()
-            if table not in indexes_by_table:
-                indexes_by_table[table] = []
-
-            indexes_by_table[table].append(index)
-
-        return indexes_by_table
-
     def _add_merged_indexes(self, indexes):
-        indexes_by_table = self._indexes_by_table(indexes)
+        indexes_by_table = indexes_by_table(indexes)
         for table in indexes_by_table:
             for index1, index2 in itertools.permutations(indexes_by_table[table], 2):
                 merged_index = index_merge(index1, index2)
