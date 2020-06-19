@@ -136,9 +136,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         logging.debug(f"Searching in {len(candidate_indexes)} indexes")
 
         for index in candidate_indexes:
-            cost = self._simulate_and_evaluate_cost(
-                workload, current_indexes | {index}
-            )
+            cost = self._simulate_and_evaluate_cost(workload, current_indexes | {index})
             if not best_index[0] or cost < best_index[1]:
                 best_index = (index, cost)
         if best_index[0] and best_index[1] < current_costs:
