@@ -26,6 +26,15 @@
             "timeout": 300
         },
         {
+            "name": "dta_anytime",
+            "parameters": {
+                "max_index_columns": 2,
+                "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
+                "max_runtime_minutes": 30
+            },
+            "timeout": 300
+        },
+        {
             "name": "dexter",
             "parameters": {
                 "min_saving_percentage": [10, 50, 90, 95, 99]
