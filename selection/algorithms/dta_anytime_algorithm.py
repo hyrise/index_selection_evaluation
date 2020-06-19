@@ -37,9 +37,11 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         seeds = []
         filtered_candidates = set()
         for candidate in candidates:
-            if candidate.estimated_size < self.disk_constraint:
-                seeds.append({candidate})
-                filtered_candidates.add(candidate)
+            if candidate.estimated_size > self.disk_constraint:
+                continue
+
+            seeds.append({candidate})
+            filtered_candidates.add(candidate)
         seeds.append(set())
 
         candidates = filtered_candidates
