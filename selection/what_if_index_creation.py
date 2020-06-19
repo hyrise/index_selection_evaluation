@@ -18,22 +18,23 @@ class WhatIfIndexCreation:
         potential_index.hypopg_oid = index_oid
 
         if store_size:
-            self.store_estimated_size(potential_index, index_oid)
+            potential_index.estimated_size = self.estimate_index_size(index_oid)
 
     def drop_simulated_index(self, index):
         oid = index.hypopg_oid
         self.db_connector.drop_simulated_index(oid)
         del self.simulated_indexes[oid]
 
-    def store_estimated_size(self, index, index_oid):
-        statement = f"select hypopg_relation_size({index_oid})"
-        result = self.db_connector.exec_fetch(statement)
-        index.estimated_size = result[0]
-
     def all_simulated_indexes(self):
         statement = "select * from hypopg_list_indexes()"
         indexes = self.db_connector.exec_fetch(statement, one=False)
         return indexes
+
+    def estimate_index_size(self, index_oid):
+        statement = f"select hypopg_relation_size({index_oid})"
+        result = self.db_connector.exec_fetch(statement)[0]
+        assert result > 0, "Hypothetical index does not exist."
+        return result
 
     # TODO: refactoring
     # This is never used, we keep it for debugging reasons.

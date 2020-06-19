@@ -7,7 +7,7 @@ import logging
 import random
 import time
 
-# Maxiumum number of columns per index, storage budget in MB,
+# Maximum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations
 DEFAULT_PARAMETERS = {
