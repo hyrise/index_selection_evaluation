@@ -7,10 +7,12 @@ import logging
 import math
 import time
 
-# Maximum number of columns per index, storage budget in MB,
+# Maximum number of columns per index, storage budget in MB, runtime limit.
+# After n minutes the algorithm is stopped and the current best solution is returned.
 DEFAULT_PARAMETERS = {
     "max_index_columns": 3,
-    "budget": 500
+    "budget": 500,
+    "max_runtime_minutes": 10
 }
 
 
@@ -25,7 +27,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         # convert MB to bytes
         self.disk_constraint = self.parameters["budget"] * 1000000
         self.max_index_columns = self.parameters["max_index_columns"]
-        self.max_runtime_minutes = self.parameters['max_runtime_minutes'] if 'max_runtime_minutes' in self.parameters else 10
+        self.max_runtime_minutes = self.parameters['max_runtime_minutes']
 
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes Relaxation")
@@ -65,7 +67,6 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
                 logging.debug(f"Current best: {best_configuration[1]} after {current_time -  start_time}s.")
 
         indexes = best_configuration[0]
-        print('%%%%%%%%%%%%', indexes)
         return list(indexes)
 
     # copied from RelaxationAlgorithm
