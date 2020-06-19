@@ -248,7 +248,8 @@ class TestIndex(unittest.TestCase):
         self.assertEqual(result, expected)
 
         result = index_split(index_1, index_3)
-        # expected is different from the paper, because all columns are part of the key (there is no suffix)
+        # expected is different from the paper,
+        # because all columns are part of the key (there is no suffix)
         expected = {
             Index([column_a, column_b, column_d]),
             Index([column_c, column_e, column_f]),

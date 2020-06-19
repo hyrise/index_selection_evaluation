@@ -9,7 +9,7 @@ import logging
 DEFAULT_PARAMETERS = {
     "max_index_columns": 3,
     "budget": 500,
-    "allowed_transformations": ["splitting", "merging", "prefixing", "removal"]
+    "allowed_transformations": ["splitting", "merging", "prefixing", "removal"],
 }
 
 
@@ -25,7 +25,12 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         self.disk_constraint = self.parameters["budget"] * 1000000
         self.transformations = self.parameters["allowed_transformations"]
         self.max_index_columns = self.parameters["max_index_columns"]
-        assert set(self.transformations) <= {"splitting", "merging", "prefixing", "removal"}
+        assert set(self.transformations) <= {
+            "splitting",
+            "merging",
+            "prefixing",
+            "removal",
+        }
 
     # Util function?
     def _indexes_by_table(self, configuration):
@@ -49,7 +54,10 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         cp_size = sum(index.estimated_size for index in cp)
         cp_cost = self.cost_evaluation.calculate_cost(workload, cp, store_size=True)
         while cp_size > self.disk_constraint:
-            logging.debug(f"Size of current configuration: {cp_size}. Budget: {self.disk_constraint}.")
+            logging.debug(
+                f"Size of current configuration: {cp_size}. "
+                f"Budget: {self.disk_constraint}."
+            )
 
             # Pick a configuration that can be relaxed
             # TODO: Currently only one is considered
@@ -65,27 +73,34 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 for (
                     relaxed,
                     relaxed_storage_savings,
-                ) in self._configurations_by_transformation(cp, cp_by_table, transformation):
+                ) in self._configurations_by_transformation(
+                    cp, cp_by_table, transformation
+                ):
                     relaxed_cost = self.cost_evaluation.calculate_cost(
                         workload, relaxed, store_size=True
                     )
-                    # Note, some transformations could also decrease the cost, indicated by a negative value
+                    # Note, some transformations could also decrease the cost,
+                    # indicated by a negative value
                     relaxed_cost_increase = relaxed_cost - cp_cost
 
                     if relaxed_storage_savings <= 0:
-                        # Some transformations could increase or keep the storage
-                        # For termination of the algorithm, the storage saving must be positive
+                        # Some transformations could increase or not affect the storage
+                        # consumption. For termination of the algorithm, the storage
+                        # savings must be positive
                         continue
                     relaxed_considered_storage_savings = min(
                         relaxed_storage_savings, cp_size - self.disk_constraint
                     )
 
                     if relaxed_cost_increase < 0:
-                        # For a (fixed) cost decrease (indicated by a negative value for relaxed_cost_increase),
-                        # higher storage savings produce a lower penalty
+                        # For a (fixed) cost decrease (indicated by a negative value
+                        # for relaxed_cost_increase), higher storage savings produce
+                        # a lower penalty
                         relaxed_penalty = relaxed_cost_increase * relaxed_storage_savings
                     else:
-                        relaxed_penalty = relaxed_cost_increase / relaxed_considered_storage_savings
+                        relaxed_penalty = (
+                            relaxed_cost_increase / relaxed_considered_storage_savings
+                        )
                     if best_relaxed is None or relaxed_penalty < lowest_relaxed_penalty:
                         # set new best relaxed configuration
                         best_relaxed = relaxed
@@ -97,7 +112,9 @@ class RelaxationAlgorithm(SelectionAlgorithm):
 
         return list(cp)
 
-    def _configurations_by_transformation(self, input_configuration, input_configuration_by_table, transformation):
+    def _configurations_by_transformation(
+        self, input_configuration, input_configuration_by_table, transformation
+    ):
         if transformation == "prefixing":
             for index in input_configuration:
                 for prefix in index.prefixes():
@@ -116,15 +133,19 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 yield relaxed, index.estimated_size
         elif transformation == "merging":
             for table in input_configuration_by_table:
-                for index1, index2 in itertools.permutations(input_configuration_by_table[table], 2):
+                for index1, index2 in itertools.permutations(
+                    input_configuration_by_table[table], 2
+                ):
                     relaxed = input_configuration.copy()
                     merged_index = index_merge(index1, index2)
                     if len(merged_index.columns) > self.max_index_columns:
-                        new_columns = merged_index.columns[:self.max_index_columns]
+                        new_columns = merged_index.columns[: self.max_index_columns]
                         merged_index = Index(new_columns)
 
                     relaxed -= {index1, index2}
-                    relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                    relaxed_storage_savings = (
+                        index1.estimated_size + index2.estimated_size
+                    )
                     if merged_index not in relaxed:
                         relaxed.add(merged_index)
                         self.cost_evaluation.estimate_size(merged_index)
@@ -132,14 +153,18 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                     yield relaxed, relaxed_storage_savings
         elif transformation == "splitting":
             for table in input_configuration_by_table:
-                for index1, index2 in itertools.permutations(input_configuration_by_table[table], 2):
+                for index1, index2 in itertools.permutations(
+                    input_configuration_by_table[table], 2
+                ):
                     relaxed = input_configuration.copy()
                     indexes_by_splitting = index_split(index1, index2)
                     if indexes_by_splitting is None:
                         # no splitting for index permutation possible
                         continue
                     relaxed -= {index1, index2}
-                    relaxed_storage_savings = index1.estimated_size + index2.estimated_size
+                    relaxed_storage_savings = (
+                        index1.estimated_size + index2.estimated_size
+                    )
                     for index in indexes_by_splitting - relaxed:
                         relaxed.add(index)
                         self.cost_evaluation.estimate_size(index)

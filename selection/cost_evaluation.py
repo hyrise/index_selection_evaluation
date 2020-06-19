@@ -32,9 +32,7 @@ class CostEvaluation:
         if result:
             # Index does currently exist and size can be queried
             if not index.estimated_size:
-                index.estimated_size = self.what_if.estimate_index_size(
-                    result.hypopg_oid
-                )
+                index.estimated_size = self.what_if.estimate_index_size(result.hypopg_oid)
         else:
             self._simulate_or_create_index(index, store_size=True)
 
