@@ -155,7 +155,7 @@ class IndexSelection:
         algorithm = self.create_algorithm_object(config["name"], config["parameters"])
         logging.info(f"Running algorithm {config}")
         indexes = algorithm.calculate_best_indexes(self.workload)
-        logging.info("Indexes found: {}".format(indexes))
+        logging.info(f"Indexes found: {indexes}")
         what_if = algorithm.cost_evaluation.what_if
 
         cost_requests = (
