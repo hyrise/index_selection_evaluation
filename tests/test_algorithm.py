@@ -30,12 +30,12 @@ class TestAlgorithm(unittest.TestCase):
         self.assertEqual(params, {"test": 24})
 
     def test_calculate_best(self):
-        workload = Workload([], self.db_name)
+        workload = Workload([])
         with self.assertRaises(NotImplementedError):
             self.selection_algorithm.calculate_best_indexes(workload)
 
     def test_calculate_best_only_executable_once(self):
-        workload = Workload([], self.db_name)
+        workload = Workload([])
         selection_algorithm = NoIndexAlgorithm(
             PostgresDatabaseConnector(None, autocommit=True)
         )
@@ -52,7 +52,7 @@ class TestAlgorithm(unittest.TestCase):
         self.assertEqual(db_conn, self.db_connector)
 
     def test_cost_eval_cost_empty_workload(self):
-        workload = Workload([], self.db_name)
+        workload = Workload([])
         cost_eval = self.selection_algorithm.cost_evaluation
         cost = cost_eval.calculate_cost(workload, [])
         self.assertEqual(cost, 0)

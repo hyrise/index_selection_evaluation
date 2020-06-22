@@ -40,7 +40,7 @@ class TestDropHeuristicAlgorithm(unittest.TestCase):
         )
         self.database_name = "test_DB"
 
-        self.workload = Workload([query_0, query_1], self.database_name)
+        self.workload = Workload([query_0, query_1])
         self.algo.workload = self.workload
         self.algo.cost_evaluation.calculate_cost = MagicMock(
             side_effect=self._calculate_cost_mock

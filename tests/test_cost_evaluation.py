@@ -41,7 +41,7 @@ class TestCostEvaluation(unittest.TestCase):
             ),
         ]
 
-        cls.workload = Workload(cls.queries, cls.db_name)
+        cls.workload = Workload(cls.queries)
 
     def setUp(self):
         # We mock the connector because it is needed by the cost evaluation.
@@ -101,7 +101,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
@@ -117,7 +117,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
 
         self.cost_evaluation.calculate_cost(workload, set([Index([self.columns[0]])]))
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
@@ -133,7 +133,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
         index_0 = Index([self.columns[0]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
@@ -151,7 +151,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
         index_1 = Index([self.columns[1]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())

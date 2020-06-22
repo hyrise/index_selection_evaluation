@@ -78,7 +78,7 @@ class IndexSelection:
             config["queries"],
             table_generator.columns,
         )
-        self.workload = Workload(query_generator.queries, self.database_name)
+        self.workload = Workload(query_generator.queries)
 
         if "pickle_workload" in config and config["pickle_workload"] is True:
             pickle_filename = (

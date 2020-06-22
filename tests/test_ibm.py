@@ -35,7 +35,7 @@ class TestIBMAlgorithmIntegration(unittest.TestCase):
 
         cls.db = PostgresDatabaseConnector(cls.db_name)
         query_generator = QueryGenerator("tpch", cls.scale_factor, cls.db, [5, 6], table_generator.columns)
-        cls.workload = Workload(query_generator.queries, cls.db_name)
+        cls.workload = Workload(query_generator.queries)
 
         generating_connector.close()
 

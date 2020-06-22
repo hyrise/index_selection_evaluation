@@ -29,7 +29,7 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
         )
 
         index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1], self.database_name)
+            Workload([query_0, query_1])
         )
         self.assertEqual(
             set(index_selection), set([Index([column_A_0, column_A_1, column_A_2])])
@@ -46,7 +46,7 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
         )
 
         index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1], self.database_name)
+            Workload([query_0, query_1])
         )
         self.assertEqual(set(index_selection), set([Index([column_A_0, column_A_1])]))
 

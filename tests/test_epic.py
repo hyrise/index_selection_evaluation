@@ -57,7 +57,7 @@ class TestEpicAlgorithm(unittest.TestCase):
         )
         self.database_name = "test_DB"
 
-        self.workload = Workload([query_1, query_2], self.database_name)
+        self.workload = Workload([query_1, query_2])
         self.algo.workload = self.workload
 
     def test_attach_to_indexes(self):
@@ -430,7 +430,7 @@ class TestEpicAlgorithm(unittest.TestCase):
             "SELECT * FROM TableA WHERE ColA = 1 AND ColB = 2;",
             [self.column_1, self.column_2],
         )
-        workload = Workload([query_1], self.database_name)
+        workload = Workload([query_1])
         self.algo.cost_evaluation.calculate_cost = MagicMock(
             side_effect=self._calculate_cost_mock_3
         )

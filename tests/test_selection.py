@@ -23,7 +23,7 @@ class TestIndexSelection(unittest.TestCase):
         query_gen = QueryGenerator(
             "tpch", 0.001, cls.index_selection.db_connector, [3, 14], table_gen.columns
         )
-        cls.small_tpch = Workload(query_gen.queries, "tpch")
+        cls.small_tpch = Workload(query_gen.queries)
 
     @classmethod
     def tearDownClass(cls):

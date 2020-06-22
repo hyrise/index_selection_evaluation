@@ -71,7 +71,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
 
         index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1], self.database_name)
+            Workload([query_0, query_1])
         )
         self.assertEqual(
             set(index_selection),
@@ -97,7 +97,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
 
         index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1], self.database_name)
+            Workload([query_0, query_1])
         )
         self.assertEqual(set(index_selection), set([Index([column_A_0, column_A_1])]))
 
@@ -121,7 +121,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
 
         index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1], self.database_name)
+            Workload([query_0, query_1])
         )
         # The single column index is dropped first, because of the lower penalty.
         # The multi column index is prefixed second.
@@ -146,7 +146,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         )
 
         index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1], self.database_name)
+            Workload([query_0, query_1])
         )
         self.assertEqual(set(index_selection), set())
 

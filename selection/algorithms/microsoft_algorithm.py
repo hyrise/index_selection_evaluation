@@ -53,7 +53,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         for query in workload.queries:
             logging.debug(f"Find candidates for query\t{query}...")
             # Create a workload consisting of one query
-            query_workload = Workload([query], workload.database_name)
+            query_workload = Workload([query])
             indexes = self._potential_indexes_for_query(query, potential_indexes)
             candidates |= self.enumerate_combinations(query_workload, indexes)
 
