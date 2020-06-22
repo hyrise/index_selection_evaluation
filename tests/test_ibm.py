@@ -63,6 +63,21 @@ class TestIBMAlgorithm(unittest.TestCase):
         self.assertEqual(self.algo.seconds_limit, 10)
         self.assertEqual(self.algo.maximum_remove, 4)
 
+    def test_index_benefit__lt__(self):
+        index_0 = Index([self.column_0])
+        index_0.estimated_size = 1
+        index_1 = Index([self.column_1])
+        index_1.estimated_size = 2
+
+        # Due to its size, index_0 has the better ratio
+        index_benefit_0 = IndexBenefit(index_0, 10)
+        index_benefit_1 = IndexBenefit(index_1, 10)
+        self.assertTrue(index_benefit_1 < index_benefit_0)
+
+        # The ratios are equal, the columns are taken into consideration
+        index_benefit_1 = IndexBenefit(index_1, 20)
+        self.assertTrue(index_benefit_0 < index_benefit_1)
+
     def test_possible_indexes(self):
         column_0_table_1 = Column("Col0")
         table_1 = Table("Table1")

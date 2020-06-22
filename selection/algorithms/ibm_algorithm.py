@@ -31,6 +31,17 @@ class IndexBenefit:
 
         return other.index == self.index and self.benefit == other.benefit
 
+    def __lt__(self, other):
+        self_ratio  = self.benefit_size_ratio()
+        other_ratio = other.benefit_size_ratio()
+
+        # For reproducible results, we also compare the index objects if the reatios
+        # are equal
+        if self_ratio == other_ratio:
+            return self.index < other.index
+
+        return self_ratio < other_ratio
+
     def __hash__(self):
         return hash((self.index, self.benefit))
 
@@ -61,7 +72,6 @@ class IBMAlgorithm(SelectionAlgorithm):
         query_results, candidates = self._exploit_virtual_indexes(workload)
         index_benefits = self._calculate_index_benefits(candidates, query_results)
         index_benefits_subsumed = self._combine_subsumed(index_benefits)
-
         selected_index_benefits = []
         disk_usage = 0
         for index_benefit in index_benefits_subsumed:
@@ -155,7 +165,8 @@ class IBMAlgorithm(SelectionAlgorithm):
                 )
 
             indexes_benefit.append(IndexBenefit(index_candidate, benefit))
-        return sorted(indexes_benefit, reverse=True, key=lambda x: x.benefit_size_ratio())
+
+        return sorted(indexes_benefit, reverse=True)
 
     # From the paper: "Combine any index subsumed
     # by an index with a higher ratio with that index."
@@ -191,9 +202,7 @@ class IBMAlgorithm(SelectionAlgorithm):
         # Sorting of a set results in a list
         return sorted(
             result_set,
-            reverse=True,
-            key=lambda index_benefit: index_benefit.benefit_size_ratio(),
-        )
+            reverse=True)
 
     def _try_variations(self, selected_index_benefits, index_benefits, workload):
         logging.debug(f"Try variation for {self.seconds_limit} seconds")
