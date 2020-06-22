@@ -1,10 +1,13 @@
-from selection.algorithms.ibm_algorithm import IBMAlgorithm, IndexBenefit
-from selection.index import Index
-from selection.workload import Column, Query, Table, Workload
-
+import time
 import unittest
 from unittest.mock import MagicMock
-import time
+
+from selection.algorithms.ibm_algorithm import IBMAlgorithm, IndexBenefit
+from selection.dbms.postgres_dbms import PostgresDatabaseConnector
+from selection.index import Index
+from selection.query_generator import QueryGenerator
+from selection.table_generator import TableGenerator
+from selection.workload import Column, Query, Table, Workload
 
 
 class MockConnector:
@@ -19,6 +22,44 @@ class MockConnector:
 
 
 MB_TO_BYTES = 1000000
+
+
+class TestIBMAlgorithmIntegration(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.db_name = "tpch_test_db_database"
+        cls.scale_factor = 0.001
+        generating_connector = PostgresDatabaseConnector(None, autocommit=True)
+
+        table_generator = TableGenerator("tpch", cls.scale_factor, generating_connector, explicit_database_name=cls.db_name)
+
+        cls.db = PostgresDatabaseConnector(cls.db_name)
+        query_generator = QueryGenerator("tpch", cls.scale_factor, cls.db, [5, 6], table_generator.columns)
+        cls.workload = Workload(query_generator.queries, cls.db_name)
+
+        generating_connector.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.close()
+        connector = PostgresDatabaseConnector(None, autocommit=True)
+        if connector.database_exists(cls.db_name):
+            connector.drop_database(cls.db_name)
+
+    def test_ibm_algorithm_integration(self):
+        db = PostgresDatabaseConnector(self.db_name)
+
+        parameters = {'budget': 0.01, 'try_variation_seconds_limit': 0, 'max_index_columns': 1}
+        ibm_algorithm = IBMAlgorithm(self.db, parameters)
+        indexes = ibm_algorithm.calculate_best_indexes(self.workload)
+        self.assertEqual(len(indexes), 1)
+        self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
+
+        parameters = {'budget': 0.04, 'try_variation_seconds_limit': 0, 'max_index_columns': 1}
+        ibm_algorithm = IBMAlgorithm(self.db, parameters)
+        indexes = ibm_algorithm.calculate_best_indexes(self.workload)
+        self.assertEqual(len(indexes), 4)
+        self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
 
 
 class TestIBMAlgorithm(unittest.TestCase):
