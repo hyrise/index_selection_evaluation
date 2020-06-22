@@ -1,4 +1,7 @@
-from selection.candidate_generation import candidates_per_query, syntactically_relevant_indexes
+from selection.candidate_generation import (
+    candidates_per_query,
+    syntactically_relevant_indexes,
+)
 from selection.index_selection_evaluation import IndexSelection
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 from selection.table_generator import TableGenerator
@@ -65,7 +68,11 @@ class TestIndexSelection(unittest.TestCase):
         algo = self.index_selection.create_algorithm_object("ibm", parameters)
         workload = Workload([self.small_tpch.queries[0]])
 
-        possible = candidates_per_query(workload, max_index_width=3, candidate_generator=syntactically_relevant_indexes)[0]
+        possible = candidates_per_query(
+            workload,
+            max_index_width=3,
+            candidate_generator=syntactically_relevant_indexes,
+        )[0]
         indexes = algo.calculate_best_indexes(workload)
         self.assertTrue(len(possible) >= len(indexes))
 

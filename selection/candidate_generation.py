@@ -12,27 +12,28 @@ def candidates_per_query(workload, max_index_width, candidate_generator):
 
     return candidates
 
+
 def syntactically_relevant_indexes(query, max_index_width):
-        # "SAEFIS" or "BFI" see IBM paper
-        # This implementation is "BFI" and uses all syntactically relevant indexes.
-        columns = query.columns
-        logging.debug(f"{query}")
-        logging.debug(f"Indexable columns: {len(columns)}")
-        max_index_width
+    # "SAEFIS" or "BFI" see IBM paper
+    # This implementation is "BFI" and uses all syntactically relevant indexes.
+    columns = query.columns
+    logging.debug(f"{query}")
+    logging.debug(f"Indexable columns: {len(columns)}")
+    max_index_width
 
-        indexable_columns_per_table = {}
-        for column in columns:
-            if column.table not in indexable_columns_per_table:
-                indexable_columns_per_table[column.table] = set()
-            indexable_columns_per_table[column.table].add(column)
+    indexable_columns_per_table = {}
+    for column in columns:
+        if column.table not in indexable_columns_per_table:
+            indexable_columns_per_table[column.table] = set()
+        indexable_columns_per_table[column.table].add(column)
 
-        possible_column_combinations = set()
-        for table in indexable_columns_per_table:
-            columns = indexable_columns_per_table[table]
-            for index_length in range(1, max_index_width + 1):
-                possible_column_combinations |= set(
-                    itertools.permutations(columns, index_length)
-                )
+    possible_column_combinations = set()
+    for table in indexable_columns_per_table:
+        columns = indexable_columns_per_table[table]
+        for index_length in range(1, max_index_width + 1):
+            possible_column_combinations |= set(
+                itertools.permutations(columns, index_length)
+            )
 
-        logging.debug(f"Potential indexes: {len(possible_column_combinations)}")
-        return [Index(p) for p in possible_column_combinations]
+    logging.debug(f"Potential indexes: {len(possible_column_combinations)}")
+    return [Index(p) for p in possible_column_combinations]

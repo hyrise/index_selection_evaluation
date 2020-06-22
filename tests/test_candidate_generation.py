@@ -1,13 +1,11 @@
-import time
 import unittest
 from unittest.mock import MagicMock
 
-from selection.algorithms.ibm_algorithm import IBMAlgorithm, IndexBenefit
-from selection.candidate_generation import candidates_per_query, syntactically_relevant_indexes
-from selection.dbms.postgres_dbms import PostgresDatabaseConnector
+from selection.candidate_generation import (
+    candidates_per_query,
+    syntactically_relevant_indexes,
+)
 from selection.index import Index
-from selection.query_generator import QueryGenerator
-from selection.table_generator import TableGenerator
 from selection.workload import Column, Query, Table, Workload
 
 
@@ -55,14 +53,16 @@ class TestCandidateGeneration(unittest.TestCase):
         query_1 = Query(18, """SELECT * FROM 1;""")
         workload = Workload([self.query_0, query_1])
 
-        syntactically_relevant_indexes_mock = MagicMock(return_value=syntactically_relevant_indexes)
+        syntactically_relevant_indexes_mock = MagicMock(
+            return_value=syntactically_relevant_indexes
+        )
 
-        result = candidates_per_query(workload, max_index_width=MAX_INDEX_WIDTH, candidate_generator=syntactically_relevant_indexes_mock)
-        
+        result = candidates_per_query(
+            workload,
+            max_index_width=MAX_INDEX_WIDTH,
+            candidate_generator=syntactically_relevant_indexes_mock,
+        )
+
         self.assertEqual(len(result), len(workload.queries))
-        syntactically_relevant_indexes_mock.assert_called_with(
-            query_1, MAX_INDEX_WIDTH
-        )
-        syntactically_relevant_indexes_mock.assert_any_call(
-            self.query_0, MAX_INDEX_WIDTH
-        )
+        syntactically_relevant_indexes_mock.assert_called_with(query_1, MAX_INDEX_WIDTH)
+        syntactically_relevant_indexes_mock.assert_any_call(self.query_0, MAX_INDEX_WIDTH)

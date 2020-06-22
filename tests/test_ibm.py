@@ -31,10 +31,17 @@ class TestIBMAlgorithmIntegration(unittest.TestCase):
         cls.scale_factor = 0.001
         generating_connector = PostgresDatabaseConnector(None, autocommit=True)
 
-        table_generator = TableGenerator("tpch", cls.scale_factor, generating_connector, explicit_database_name=cls.db_name)
+        table_generator = TableGenerator(
+            "tpch",
+            cls.scale_factor,
+            generating_connector,
+            explicit_database_name=cls.db_name,
+        )
 
         cls.db = PostgresDatabaseConnector(cls.db_name)
-        query_generator = QueryGenerator("tpch", cls.scale_factor, cls.db, [5, 6], table_generator.columns)
+        query_generator = QueryGenerator(
+            "tpch", cls.scale_factor, cls.db, [5, 6], table_generator.columns
+        )
         cls.workload = Workload(query_generator.queries)
 
         generating_connector.close()
@@ -47,15 +54,21 @@ class TestIBMAlgorithmIntegration(unittest.TestCase):
             connector.drop_database(cls.db_name)
 
     def test_ibm_algorithm_integration(self):
-        db = PostgresDatabaseConnector(self.db_name)
-
-        parameters = {'budget': 0.01, 'try_variation_seconds_limit': 0, 'max_index_columns': 1}
+        parameters = {
+            "budget": 0.01,
+            "try_variation_seconds_limit": 0,
+            "max_index_columns": 1,
+        }
         ibm_algorithm = IBMAlgorithm(self.db, parameters)
         indexes = ibm_algorithm.calculate_best_indexes(self.workload)
         self.assertEqual(len(indexes), 1)
         self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
 
-        parameters = {'budget': 0.04, 'try_variation_seconds_limit': 0, 'max_index_columns': 1}
+        parameters = {
+            "budget": 0.04,
+            "try_variation_seconds_limit": 0,
+            "max_index_columns": 1,
+        }
         ibm_algorithm = IBMAlgorithm(self.db, parameters)
         indexes = ibm_algorithm.calculate_best_indexes(self.workload)
         self.assertEqual(len(indexes), 4)

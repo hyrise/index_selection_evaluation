@@ -70,9 +70,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             },
         )
 
-        index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1])
-        )
+        index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
         self.assertEqual(
             set(index_selection),
             set([Index([column_A_0]), Index([column_A_0, column_A_1])]),
@@ -96,9 +94,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             },
         )
 
-        index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1])
-        )
+        index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
         self.assertEqual(set(index_selection), set([Index([column_A_0, column_A_1])]))
 
     def test_calculate_indexes_1MB_2column(self):
@@ -120,9 +116,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             },
         )
 
-        index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1])
-        )
+        index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
         # The single column index is dropped first, because of the lower penalty.
         # The multi column index is prefixed second.
         self.assertEqual(set(index_selection), {Index([column_A_0])})
@@ -145,9 +139,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             },
         )
 
-        index_selection = algorithm.calculate_best_indexes(
-            Workload([query_0, query_1])
-        )
+        index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
         self.assertEqual(set(index_selection), set())
 
 

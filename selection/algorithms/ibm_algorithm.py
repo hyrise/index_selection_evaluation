@@ -3,10 +3,8 @@ import random
 import time
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
-from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
 from ..utils import get_utilized_indexes, mb_to_b
-from ..what_if_index_creation import WhatIfIndexCreation
 
 
 # Maximum number of columns per index, storage budget in MB,
@@ -32,7 +30,7 @@ class IndexBenefit:
         return other.index == self.index and self.benefit == other.benefit
 
     def __lt__(self, other):
-        self_ratio  = self.benefit_size_ratio()
+        self_ratio = self.benefit_size_ratio()
         other_ratio = other.benefit_size_ratio()
 
         # For reproducible results, we also compare the index objects if the reatios
@@ -69,9 +67,16 @@ class IBMAlgorithm(SelectionAlgorithm):
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes IBM")
 
-        # The chosen generator is similar to the original "BFI" and uses all syntactically relevant indexes.
-        candidates = candidates_per_query(workload, self.parameters['max_index_columns'], candidate_generator=syntactically_relevant_indexes)
-        utilized_indexes, query_details = get_utilized_indexes(workload, candidates, self.cost_evaluation, True)
+        # The chosen generator is similar to the original "BFI" and
+        # uses all syntactically relevant indexes.
+        candidates = candidates_per_query(
+            workload,
+            self.parameters["max_index_columns"],
+            candidate_generator=syntactically_relevant_indexes,
+        )
+        utilized_indexes, query_details = get_utilized_indexes(
+            workload, candidates, self.cost_evaluation, True
+        )
 
         index_benefits = self._calculate_index_benefits(utilized_indexes, query_details)
         index_benefits_subsumed = self._combine_subsumed(index_benefits)
@@ -98,9 +103,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                 if index_candidate not in value["utilized_indexes"]:
                     continue
                 # TODO adjust when having weights for queries
-                benefit += (
-                    value["cost_without_indexes"] - value["cost_with_indexes"]
-                )
+                benefit += value["cost_without_indexes"] - value["cost_with_indexes"]
 
             indexes_benefit.append(IndexBenefit(index_candidate, benefit))
 
@@ -138,9 +141,7 @@ class IBMAlgorithm(SelectionAlgorithm):
 
         result_set = set(index_benefits) - index_benefits_to_remove
         # Sorting of a set results in a list
-        return sorted(
-            result_set,
-            reverse=True)
+        return sorted(result_set, reverse=True)
 
     def _try_variations(self, selected_index_benefits, index_benefits, workload):
         logging.debug(f"Try variation for {self.seconds_limit} seconds")

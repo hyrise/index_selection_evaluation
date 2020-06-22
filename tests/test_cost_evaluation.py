@@ -186,15 +186,23 @@ class TestCostEvaluation(unittest.TestCase):
 
         query = self.queries[2]
 
-        self.cost_evaluation.db_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
-        self.cost_evaluation.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
+        self.cost_evaluation.db_connector.get_plan = MagicMock(
+            side_effect=_simulate_get_plan
+        )
+        self.cost_evaluation.what_if.simulate_index = MagicMock(
+            side_effect=_simulate_index_mock
+        )
 
         candidates = syntactically_relevant_indexes(query, max_index_width=2)
-        indexes, cost = self.cost_evaluation.which_indexes_utilized_and_cost(query, candidates)
+        indexes, cost = self.cost_evaluation.which_indexes_utilized_and_cost(
+            query, candidates
+        )
         self.assertEqual(cost, 17)
         self.assertEqual(indexes, {Index([self.columns[1]])})
 
-        self.assertEqual(self.cost_evaluation.what_if.simulate_index.call_count, len(candidates))
+        self.assertEqual(
+            self.cost_evaluation.what_if.simulate_index.call_count, len(candidates)
+        )
         self.cost_evaluation.db_connector.get_plan.assert_called_once_with(query)
         self.assertCountEqual(self.cost_evaluation.current_indexes, candidates)
 

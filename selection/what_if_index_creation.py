@@ -1,5 +1,6 @@
 import logging
 
+
 # Class that encapsulates simulated/WhatIf-Indexes.
 # This is usually used by the CostEvaluation class and there should be no need
 # to use it manually.
