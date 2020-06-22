@@ -1,7 +1,7 @@
 import logging
-import re
-import platform
 import os
+import platform
+import re
 import subprocess
 
 from .workload import Query

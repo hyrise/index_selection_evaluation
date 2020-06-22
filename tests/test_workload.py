@@ -1,7 +1,8 @@
+import unittest
+
+from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-import unittest
-from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 
 
 class TestTable(unittest.TestCase):

@@ -1,16 +1,17 @@
+import unittest
+
 from selection.algorithms.microsoft_algorithm import MicrosoftAlgorithm
-from selection.workload import Workload
 from selection.index import Index
+from selection.workload import Workload
 from tests.mock_connector import (
     MockConnector,
-    mock_cache,
     column_A_0,
     column_A_1,
     column_A_2,
+    mock_cache,
     query_0,
     query_1,
 )
-import unittest
 
 
 class TestMicrosoftAlgorithm(unittest.TestCase):

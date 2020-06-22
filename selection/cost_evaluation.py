@@ -1,5 +1,6 @@
-from .what_if_index_creation import WhatIfIndexCreation
 import logging
+
+from .what_if_index_creation import WhatIfIndexCreation
 
 
 class CostEvaluation:

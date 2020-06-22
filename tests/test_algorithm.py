@@ -1,9 +1,9 @@
-from selection.selection_algorithm import SelectionAlgorithm, NoIndexAlgorithm
+import unittest
+
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
+from selection.selection_algorithm import NoIndexAlgorithm, SelectionAlgorithm
 from selection.table_generator import TableGenerator
 from selection.workload import Workload
-
-import unittest
 
 
 class TestAlgorithm(unittest.TestCase):

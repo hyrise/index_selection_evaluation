@@ -1,10 +1,10 @@
-from selection.algorithms.epic_algorithm import EPICAlgorithm
-from selection.index import Index
-from selection.workload import Column, Query, Table, Workload
-
 import sys
 import unittest
 from unittest.mock import MagicMock
+
+from selection.algorithms.epic_algorithm import EPICAlgorithm
+from selection.index import Index
+from selection.workload import Column, Query, Table, Workload
 
 
 class MockConnector:

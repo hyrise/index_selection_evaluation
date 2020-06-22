@@ -1,6 +1,7 @@
-import psycopg2
-import re
 import logging
+import re
+
+import psycopg2
 
 from ..database_connector import DatabaseConnector
 

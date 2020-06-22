@@ -6,7 +6,6 @@ from ..candidate_generation import candidates_per_query, syntactically_relevant_
 from ..selection_algorithm import SelectionAlgorithm
 from ..utils import get_utilized_indexes, mb_to_b
 
-
 # Maximum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations

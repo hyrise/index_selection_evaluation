@@ -1,5 +1,6 @@
-from .cost_evaluation import CostEvaluation
 import logging
+
+from .cost_evaluation import CostEvaluation
 
 
 class SelectionAlgorithm:

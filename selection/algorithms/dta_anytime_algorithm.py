@@ -5,9 +5,8 @@ import time
 
 from ..index import Index, index_merge
 from ..selection_algorithm import SelectionAlgorithm
-from ..utils import mb_to_b, indexes_by_table
+from ..utils import indexes_by_table, mb_to_b
 from ..what_if_index_creation import WhatIfIndexCreation
-
 
 # Maximum number of columns per index, storage budget in MB, runtime limit.
 # After n minutes the algorithm is stopped and the current best solution is returned.

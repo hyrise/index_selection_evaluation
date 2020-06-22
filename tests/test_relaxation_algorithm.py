@@ -1,15 +1,16 @@
+import unittest
+
 from selection.algorithms.relaxation_algorithm import RelaxationAlgorithm
-from selection.workload import Workload
 from selection.index import Index
+from selection.workload import Workload
 from tests.mock_connector import (
     MockConnector,
-    mock_cache,
     column_A_0,
     column_A_1,
+    mock_cache,
     query_0,
     query_1,
 )
-import unittest
 
 
 class TestRelaxationAlgorithm(unittest.TestCase):

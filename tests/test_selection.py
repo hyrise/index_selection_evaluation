@@ -1,15 +1,15 @@
+import sys
+import unittest
+
 from selection.candidate_generation import (
     candidates_per_query,
     syntactically_relevant_indexes,
 )
-from selection.index_selection_evaluation import IndexSelection
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
-from selection.table_generator import TableGenerator
+from selection.index_selection_evaluation import IndexSelection
 from selection.query_generator import QueryGenerator
+from selection.table_generator import TableGenerator
 from selection.workload import Workload
-
-import unittest
-import sys
 
 
 class TestIndexSelection(unittest.TestCase):

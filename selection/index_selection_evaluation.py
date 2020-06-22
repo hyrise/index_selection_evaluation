@@ -1,26 +1,24 @@
-from .workload import Workload
-from .benchmark import Benchmark
-from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
-from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
-from .algorithms.epic_algorithm import EPICAlgorithm
-from .algorithms.dexter_algorithm import DexterAlgorithm
-from .algorithms.ibm_algorithm import IBMAlgorithm
-from .algorithms.relaxation_algorithm import RelaxationAlgorithm
-from .algorithms.dta_anytime_algorithm import DTAAnytimeAlgorithm
-from .dbms.postgres_dbms import PostgresDatabaseConnector
-from .dbms.hana_dbms import HanaDatabaseConnector
-
-#  from .index import Index
-from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
-from .table_generator import TableGenerator
-from .query_generator import QueryGenerator
-
 import copy
 import json
 import logging
 import pickle
 import sys
 import time
+
+from .algorithms.dexter_algorithm import DexterAlgorithm
+from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
+from .algorithms.dta_anytime_algorithm import DTAAnytimeAlgorithm
+from .algorithms.epic_algorithm import EPICAlgorithm
+from .algorithms.ibm_algorithm import IBMAlgorithm
+from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
+from .algorithms.relaxation_algorithm import RelaxationAlgorithm
+from .benchmark import Benchmark
+from .dbms.hana_dbms import HanaDatabaseConnector
+from .dbms.postgres_dbms import PostgresDatabaseConnector
+from .query_generator import QueryGenerator
+from .selection_algorithm import AllIndexesAlgorithm, NoIndexAlgorithm
+from .table_generator import TableGenerator
+from .workload import Workload
 
 ALGORITHMS = {
     "microsoft": MicrosoftAlgorithm,

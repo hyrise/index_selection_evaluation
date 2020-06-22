@@ -1,15 +1,18 @@
+import unittest
+
 from selection.candidate_generation import (
     candidates_per_query,
     syntactically_relevant_indexes,
 )
 from selection.index import Index
-from selection.utils import b_to_mb, mb_to_b
-from selection.utils import s_to_ms
-from selection.utils import indexes_by_table
-from selection.utils import get_utilized_indexes
+from selection.utils import (
+    b_to_mb,
+    get_utilized_indexes,
+    indexes_by_table,
+    mb_to_b,
+    s_to_ms,
+)
 from selection.workload import Column, Query, Table, Workload
-
-import unittest
 
 
 class TestSelectionUtilsGenerator(unittest.TestCase):

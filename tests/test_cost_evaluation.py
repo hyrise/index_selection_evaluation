@@ -1,9 +1,10 @@
+import unittest
+from unittest.mock import MagicMock
+
 from selection.candidate_generation import syntactically_relevant_indexes
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-import unittest
-from unittest.mock import MagicMock
 
 
 class MockConnector:

@@ -4,7 +4,6 @@ from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
 from ..utils import b_to_mb, mb_to_b
 
-
 # cost_estimation: 'whatif' or 'acutal_runtimes'
 # Index combination budget in MB
 DEFAULT_PARAMETERS = {

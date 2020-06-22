@@ -3,9 +3,8 @@ import logging
 
 from ..index import Index, index_merge, index_split
 from ..selection_algorithm import SelectionAlgorithm
-from ..utils import mb_to_b, indexes_by_table
+from ..utils import indexes_by_table, mb_to_b
 from ..what_if_index_creation import WhatIfIndexCreation
-
 
 # Maximum number of columns per index, storage budget in MB,
 DEFAULT_PARAMETERS = {

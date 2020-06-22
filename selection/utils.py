@@ -2,7 +2,6 @@ from .workload import Workload
 
 
 # --- Unit conversions ---
-
 # Storage
 def b_to_mb(b):
     return b / 1000 / 1000

@@ -1,9 +1,10 @@
-import pyhdb
-import time
-import re
-import subprocess
 import json
 import logging
+import re
+import subprocess
+import time
+
+import pyhdb
 
 from ..database_connector import DatabaseConnector
 

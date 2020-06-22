@@ -1,11 +1,11 @@
-from .utils import b_to_mb
-from .workload import Table, Column
-
 import logging
-import platform
-import subprocess
 import os
+import platform
 import re
+import subprocess
+
+from .utils import b_to_mb
+from .workload import Column, Table
 
 
 class TableGenerator:
