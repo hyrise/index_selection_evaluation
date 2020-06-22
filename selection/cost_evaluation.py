@@ -36,6 +36,21 @@ class CostEvaluation:
         else:
             self._simulate_or_create_index(index, store_size=True)
 
+    def which_indexes_utilized_and_cost(self, query, indexes):
+        self._prepare_cost_calculation(indexes, store_size=True)
+
+        plan = self.db_connector.get_plan(query)
+        cost = plan["Total Cost"]
+        plan_str = str(plan)
+
+        recommended_indexes = set()
+        for index in indexes:
+            if index.hypopg_name not in plan_str:
+                continue
+            recommended_indexes.add(index)
+
+        return recommended_indexes, cost
+
     def calculate_cost(self, workload, indexes, store_size=False):
         assert (
             self.completed is False

@@ -119,113 +119,6 @@ class TestIBMAlgorithm(unittest.TestCase):
         index_benefit_1 = IndexBenefit(index_1, 20)
         self.assertTrue(index_benefit_0 < index_benefit_1)
 
-    def test_possible_indexes(self):
-        column_0_table_1 = Column("Col0")
-        table_1 = Table("Table1")
-        table_1.add_column(column_0_table_1)
-        query = Query(
-            17,
-            """SELECT * FROM Table0 as t0, Table1 as t1 WHERE t0.Col0 = 1"
-                AND t0.Col1 = 2 AND t0.Col2 = 3 AND t1.Col0 = 17;""",
-            [self.column_0, self.column_1, self.column_2, column_0_table_1],
-        )
-        indexes = self.algo._possible_indexes(query)
-        self.assertIn(Index([column_0_table_1]), indexes)
-        self.assertIn(Index([self.column_0]), indexes)
-        self.assertIn(Index([self.column_1]), indexes)
-        self.assertIn(Index([self.column_2]), indexes)
-        self.assertIn(Index([self.column_0, self.column_1]), indexes)
-        self.assertIn(Index([self.column_0, self.column_2]), indexes)
-        self.assertIn(Index([self.column_1, self.column_0]), indexes)
-        self.assertIn(Index([self.column_1, self.column_2]), indexes)
-        self.assertIn(Index([self.column_2, self.column_0]), indexes)
-        self.assertIn(Index([self.column_2, self.column_1]), indexes)
-        self.assertIn(Index([self.column_0, self.column_1, self.column_2]), indexes)
-        self.assertIn(Index([self.column_0, self.column_2, self.column_1]), indexes)
-        self.assertIn(Index([self.column_1, self.column_0, self.column_2]), indexes)
-        self.assertIn(Index([self.column_1, self.column_2, self.column_0]), indexes)
-        self.assertIn(Index([self.column_2, self.column_0, self.column_1]), indexes)
-        self.assertIn(Index([self.column_2, self.column_1, self.column_0]), indexes)
-
-    def test_recommended_indexes(self):
-        def _simulate_index_mock(index, store_size):
-            index.hypopg_name = f"<1337>btree_{index.columns}"
-
-        # For some reason, the database decides to only use an index for one of
-        # the filters
-        def _simulate_get_plan(query):
-            plan = {
-                "Total Cost": 17,
-                "Plans": [
-                    {
-                        "Index Name": "<1337>btree_(C table0.col1,)",
-                        "Filter": "(Col0 = 1)",
-                    }
-                ],
-            }
-
-            return plan
-
-        query = Query(
-            17,
-            "SELECT * FROM Table0 WHERE Col0 = 1 AND Col1 = 2;",
-            [self.column_0, self.column_1],
-        )
-
-        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
-        self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
-        self.algo.what_if.drop_all_simulated_indexes = MagicMock()
-
-        indexes, cost = self.algo._recommended_indexes(query)
-        self.assertEqual(cost, 17)
-        self.assertEqual(indexes, {Index([self.column_1])})
-
-        self.assertEqual(self.algo.what_if.simulate_index.call_count, 4)
-        self.algo.what_if.drop_all_simulated_indexes.assert_called_once()
-        self.algo.database_connector.get_plan.assert_called_once_with(query)
-
-    def test_exploit_virtual_indexes(self):
-        def _simulate_index_mock(index, store_size):
-            index.hypopg_name = f"<1337>btree_{index.columns}"
-
-        # For some reason, the database decides to only use an index for one of
-        # the filters
-        def _simulate_get_plan(query):
-            if "Table0" in query.text:
-                return {
-                    "Total Cost": 17,
-                    "Plans": [{"Index Name": "<1337>btree_(C table0.col1,)"}],
-                }
-
-            return {"Total Cost": 5, "Plans": [{"Simple Table Retrieve": "table1"}]}
-
-        query_0 = Query(
-            0,
-            "SELECT * FROM Table0 WHERE Col0 = 1 AND Col1 = 2;",
-            [self.column_0, self.column_1],
-        )
-        query_1 = Query(1, "SELECT * FROM Table1;", [])
-        workload = Workload([query_0, query_1], "database_name")
-
-        self.algo.database_connector.get_plan = MagicMock(side_effect=_simulate_get_plan)
-        self.algo.what_if.simulate_index = MagicMock(side_effect=_simulate_index_mock)
-        self.algo.what_if.drop_all_simulated_indexes = MagicMock()
-        query_results, index_candidates = self.algo._exploit_virtual_indexes(workload)
-        self.assertEqual(len(query_results), len(workload.queries))
-        expected_first_result = {
-            "cost_without_indexes": 17,
-            "cost_with_recommended_indexes": 17,
-            "recommended_indexes": set([Index([self.column_1])]),
-        }
-        expected_second_result = {
-            "cost_without_indexes": 5,
-            "cost_with_recommended_indexes": 5,
-            "recommended_indexes": set(),
-        }
-        self.assertEqual(query_results[query_0], expected_first_result)
-        self.assertEqual(query_results[query_1], expected_second_result)
-        self.assertEqual(index_candidates, set([Index([self.column_1])]))
-
     def test_calculate_index_benefits(self):
         index_0 = Index([self.column_0])
         index_0.estimated_size = 5
@@ -236,24 +129,24 @@ class TestIBMAlgorithm(unittest.TestCase):
 
         query_result_0 = {
             "cost_without_indexes": 100,
-            "cost_with_recommended_indexes": 50,
-            "recommended_indexes": [index_0, index_1],
+            "cost_with_indexes": 50,
+            "utilized_indexes": [index_0, index_1],
         }
         # Yes, negative benefit is possible
         query_result_1 = {
             "cost_without_indexes": 50,
-            "cost_with_recommended_indexes": 60,
-            "recommended_indexes": [index_1],
+            "cost_with_indexes": 60,
+            "utilized_indexes": [index_1],
         }
         query_result_2 = {
             "cost_without_indexes": 60,
-            "cost_with_recommended_indexes": 57,
-            "recommended_indexes": [index_2],
+            "cost_with_indexes": 57,
+            "utilized_indexes": [index_2],
         }
         query_result_3 = {
             "cost_without_indexes": 60,
-            "cost_with_recommended_indexes": 60,
-            "recommended_indexes": [],
+            "cost_with_indexes": 60,
+            "utilized_indexes": [],
         }
         query_results = {
             "q0": query_result_0,
