@@ -3,10 +3,10 @@ import logging
 import math
 import time
 
+from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
 from ..index import Index, index_merge
 from ..selection_algorithm import SelectionAlgorithm
-from ..utils import indexes_by_table, mb_to_b
-from ..what_if_index_creation import WhatIfIndexCreation
+from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
 # Maximum number of columns per index, storage budget in MB, runtime limit.
 # After n minutes the algorithm is stopped and the current best solution is returned.
@@ -20,15 +20,23 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.what_if = WhatIfIndexCreation(database_connector)
         self.disk_constraint = mb_to_b(self.parameters["budget"])
         self.max_index_columns = self.parameters["max_index_columns"]
         self.max_runtime_minutes = self.parameters["max_runtime_minutes"]
 
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes DTA Anytime")
-        # Obtain best indexes per query
-        _, candidates = self._exploit_virtual_indexes(workload)
+
+        # Generate syntactically relevant candidates
+        candidates = candidates_per_query(
+            workload,
+            self.parameters["max_index_columns"],
+            candidate_generator=syntactically_relevant_indexes,
+        )
+
+        # Obtain best (utilized) indexes per query
+        candidates, _ = get_utilized_indexes(workload, candidates, self.cost_evaluation)
+
         self._add_merged_indexes(candidates)
 
         # Remove candidates that cannot meet budget requirements
@@ -134,72 +142,3 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
     def _simulate_and_evaluate_cost(self, workload, indexes):
         cost = self.cost_evaluation.calculate_cost(workload, indexes, store_size=True)
         return round(cost, 2)
-
-    # copied from IBMAlgorithm
-    def _exploit_virtual_indexes(self, workload):
-        query_results = {}
-        index_candidates = set()
-        for query in workload.queries:
-            plan = self.database_connector.get_plan(query)
-            cost_without_indexes = plan["Total Cost"]
-            (
-                recommended_indexes,
-                cost_with_recommended_indexes,
-            ) = self._recommended_indexes(query)
-
-            query_results[query] = {
-                "cost_without_indexes": cost_without_indexes,
-                "cost_with_recommended_indexes": cost_with_recommended_indexes,
-                "recommended_indexes": recommended_indexes,
-            }
-            index_candidates |= recommended_indexes
-        return query_results, index_candidates
-
-    # copied from IBMAlgorithm
-    def _recommended_indexes(self, query):
-        """Simulates all possible indexes for the query and returns the used one"""
-        logging.debug("Simulating indexes")
-
-        possible_indexes = self._possible_indexes(query)
-        for index in possible_indexes:
-            self.what_if.simulate_index(index, store_size=True)
-
-        plan = self.database_connector.get_plan(query)
-        plan_string = str(plan)
-        cost = plan["Total Cost"]
-
-        self.what_if.drop_all_simulated_indexes()
-
-        recommended_indexes = set()
-        for index in possible_indexes:
-            if index.hypopg_name in plan_string:
-                recommended_indexes.add(index)
-
-        logging.debug(f"Recommended indexes found: {len(recommended_indexes)}")
-        return recommended_indexes, cost
-
-    # copied from IBMAlgorithm
-    def _possible_indexes(self, query):
-        # "SAEFIS" or "BFI" see IBM paper
-        # This implementation is "BFI"
-        columns = query.columns
-        logging.debug(f"\n{query}")
-        logging.debug(f"indexable columns: {len(columns)}")
-        max_columns = self.parameters["max_index_columns"]
-
-        indexable_columns_per_table = {}
-        for column in columns:
-            if column.table not in indexable_columns_per_table:
-                indexable_columns_per_table[column.table] = set()
-            indexable_columns_per_table[column.table].add(column)
-
-        possible_column_combinations = set()
-        for table in indexable_columns_per_table:
-            columns = indexable_columns_per_table[table]
-            for index_length in range(1, max_columns + 1):
-                possible_column_combinations |= set(
-                    itertools.permutations(columns, index_length)
-                )
-
-        logging.debug(f"possible indexes: {len(possible_column_combinations)}")
-        return [Index(p) for p in possible_column_combinations]
