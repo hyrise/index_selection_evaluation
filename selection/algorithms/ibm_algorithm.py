@@ -32,7 +32,7 @@ class IndexBenefit:
         self_ratio = self.benefit_size_ratio()
         other_ratio = other.benefit_size_ratio()
 
-        # For reproducible results, we also compare the index objects if the reatios
+        # For reproducible results, we also compare the index objects if the ratios
         # are equal
         if self_ratio == other_ratio:
             return self.index < other.index

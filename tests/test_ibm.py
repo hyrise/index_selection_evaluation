@@ -53,27 +53,6 @@ class TestIBMAlgorithmIntegration(unittest.TestCase):
         if connector.database_exists(cls.db_name):
             connector.drop_database(cls.db_name)
 
-    def test_ibm_algorithm_integration(self):
-        parameters = {
-            "budget": 0.01,
-            "try_variation_seconds_limit": 0,
-            "max_index_columns": 1,
-        }
-        ibm_algorithm = IBMAlgorithm(self.db, parameters)
-        indexes = ibm_algorithm.calculate_best_indexes(self.workload)
-        self.assertEqual(len(indexes), 1)
-        self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
-
-        parameters = {
-            "budget": 0.04,
-            "try_variation_seconds_limit": 0,
-            "max_index_columns": 1,
-        }
-        ibm_algorithm = IBMAlgorithm(self.db, parameters)
-        indexes = ibm_algorithm.calculate_best_indexes(self.workload)
-        self.assertEqual(len(indexes), 4)
-        self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
-
 
 class TestIBMAlgorithm(unittest.TestCase):
     def setUp(self):

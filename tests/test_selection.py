@@ -18,16 +18,23 @@ class TestIndexSelection(unittest.TestCase):
         cls.db_name = "tpch_test_db_index_selection"
         cls.index_selection = IndexSelection()
         db = PostgresDatabaseConnector(None, autocommit=True)
-        table_gen = TableGenerator("tpch", 0.001, db, explicit_database_name=cls.db_name)
+
+        SCALE_FACTOR = 0.001
+        table_generator = TableGenerator("tpch", SCALE_FACTOR, db, explicit_database_name=cls.db_name)
         db.close()
 
         cls.index_selection.setup_db_connector(cls.db_name, "postgres")
 
         # Filter worklaod
-        query_gen = QueryGenerator(
-            "tpch", 0.001, cls.index_selection.db_connector, [3, 14], table_gen.columns
+        query_generator = QueryGenerator(
+            "tpch", SCALE_FACTOR, cls.index_selection.db_connector, [3, 14], table_generator.columns
         )
-        cls.small_tpch = Workload(query_gen.queries)
+        cls.small_tpch = Workload(query_generator.queries)
+
+        query_generator = QueryGenerator(
+            "tpch", SCALE_FACTOR, cls.index_selection.db_connector, [5, 6], table_generator.columns
+        )
+        cls.tpch_5_and_6 = Workload(query_generator.queries)
 
     @classmethod
     def tearDownClass(cls):
@@ -65,7 +72,7 @@ class TestIndexSelection(unittest.TestCase):
 
     def test_ibm_algorithm(self):
         parameters = {}
-        algo = self.index_selection.create_algorithm_object("ibm", parameters)
+        ibm_algorithm = self.index_selection.create_algorithm_object("ibm", parameters)
         workload = Workload([self.small_tpch.queries[0]])
 
         possible = candidates_per_query(
@@ -73,8 +80,55 @@ class TestIndexSelection(unittest.TestCase):
             max_index_width=3,
             candidate_generator=syntactically_relevant_indexes,
         )[0]
-        indexes = algo.calculate_best_indexes(workload)
+        indexes = ibm_algorithm.calculate_best_indexes(workload)
         self.assertTrue(len(possible) >= len(indexes))
+
+    def test_ibm_algorithm_integration(self):
+        parameters = {
+            "budget": 0.01,
+            "try_variation_seconds_limit": 0,
+            "max_index_columns": 1,
+        }
+        ibm_algorithm = self.index_selection.create_algorithm_object("ibm", parameters)
+        indexes = ibm_algorithm.calculate_best_indexes(self.tpch_5_and_6)
+        self.assertEqual(len(indexes), 1)
+        self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
+
+        parameters = {
+            "budget": 0.04,
+            "try_variation_seconds_limit": 0,
+            "max_index_columns": 1,
+        }
+        ibm_algorithm = self.index_selection.create_algorithm_object("ibm", parameters)
+        indexes = ibm_algorithm.calculate_best_indexes(self.tpch_5_and_6)
+        self.assertEqual(len(indexes), 4)
+        self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
+        self.assertEqual(str(indexes[1]), "I(C region.r_name)")
+        self.assertEqual(str(indexes[2]), "I(C orders.o_custkey)")
+        self.assertEqual(str(indexes[3]), "I(C nation.n_regionkey)")
+
+    def test_dta_algorithm_integration(self):
+        parameters = {
+            "budget": 0.01,
+            "max_index_columns": 1,
+        }
+        dta_algorithm = self.index_selection.create_algorithm_object("dta_anytime", parameters)
+        indexes = dta_algorithm.calculate_best_indexes(self.tpch_5_and_6)
+        self.assertEqual(len(indexes), 1)
+        self.assertEqual(str(indexes[0]), "I(C orders.o_custkey)")
+
+        parameters = {
+            "budget": 0.1,
+            "max_index_columns": 1,
+        }
+        dta_algorithm = self.index_selection.create_algorithm_object("dta_anytime", parameters)
+        indexes = dta_algorithm.calculate_best_indexes(self.tpch_5_and_6)
+        self.assertEqual(len(indexes), 4)
+        self.assertIn("I(C lineitem.l_suppkey)", str(indexes))
+        self.assertIn("I(C orders.o_custkey)", str(indexes))
+        self.assertIn("I(C supplier.s_nationkey)", str(indexes))
+        # We only test for three exact occurences because the fourth selected index
+        # is subject to random fluctuations based on database internals
 
     def test_run_cli_config(self):
         sys.argv = [sys.argv[0]]
