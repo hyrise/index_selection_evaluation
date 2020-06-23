@@ -53,7 +53,9 @@ class CostEvaluation:
         # created for an index object, there is no hypopg_name assigned to it. However,
         # all items in current_indexes must also have an equivalent in `indexes`.
         for index in self.current_indexes:
-            assert index in indexes, "Something went wrong with _prepare_cost_calculation."
+            assert (
+                index in indexes
+            ), "Something went wrong with _prepare_cost_calculation."
 
             if index.hypopg_name not in plan_str:
                 continue
