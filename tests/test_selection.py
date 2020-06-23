@@ -20,19 +20,29 @@ class TestIndexSelection(unittest.TestCase):
         db = PostgresDatabaseConnector(None, autocommit=True)
 
         SCALE_FACTOR = 0.001
-        table_generator = TableGenerator("tpch", SCALE_FACTOR, db, explicit_database_name=cls.db_name)
+        table_generator = TableGenerator(
+            "tpch", SCALE_FACTOR, db, explicit_database_name=cls.db_name
+        )
         db.close()
 
         cls.index_selection.setup_db_connector(cls.db_name, "postgres")
 
         # Filter worklaod
         query_generator = QueryGenerator(
-            "tpch", SCALE_FACTOR, cls.index_selection.db_connector, [3, 14], table_generator.columns
+            "tpch",
+            SCALE_FACTOR,
+            cls.index_selection.db_connector,
+            [3, 14],
+            table_generator.columns,
         )
         cls.small_tpch = Workload(query_generator.queries)
 
         query_generator = QueryGenerator(
-            "tpch", SCALE_FACTOR, cls.index_selection.db_connector, [5, 6], table_generator.columns
+            "tpch",
+            SCALE_FACTOR,
+            cls.index_selection.db_connector,
+            [5, 6],
+            table_generator.columns,
         )
         cls.tpch_5_and_6 = Workload(query_generator.queries)
 
@@ -112,7 +122,9 @@ class TestIndexSelection(unittest.TestCase):
             "budget": 0.01,
             "max_index_columns": 1,
         }
-        dta_algorithm = self.index_selection.create_algorithm_object("dta_anytime", parameters)
+        dta_algorithm = self.index_selection.create_algorithm_object(
+            "dta_anytime", parameters
+        )
         indexes = dta_algorithm.calculate_best_indexes(self.tpch_5_and_6)
         self.assertEqual(len(indexes), 1)
         self.assertEqual(str(indexes[0]), "I(C orders.o_custkey)")
@@ -121,7 +133,9 @@ class TestIndexSelection(unittest.TestCase):
             "budget": 0.1,
             "max_index_columns": 1,
         }
-        dta_algorithm = self.index_selection.create_algorithm_object("dta_anytime", parameters)
+        dta_algorithm = self.index_selection.create_algorithm_object(
+            "dta_anytime", parameters
+        )
         indexes = dta_algorithm.calculate_best_indexes(self.tpch_5_and_6)
         self.assertEqual(len(indexes), 4)
         self.assertIn("I(C lineitem.l_suppkey)", str(indexes))

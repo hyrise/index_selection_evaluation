@@ -51,7 +51,9 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
 
         # For reproducible results, we sort the seeds and candidates
         seeds = sorted(seeds, key=lambda candidate: candidate)
-        filtered_candidates = set(sorted(filtered_candidates, key=lambda candidate: candidate))
+        filtered_candidates = set(
+            sorted(filtered_candidates, key=lambda candidate: candidate)
+        )
 
         seeds.append(set())
         candidates = filtered_candidates
