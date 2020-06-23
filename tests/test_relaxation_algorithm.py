@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from selection.algorithms.relaxation_algorithm import RelaxationAlgorithm
 from selection.index import Index
@@ -16,32 +17,6 @@ from tests.mock_connector import (
 class TestRelaxationAlgorithm(unittest.TestCase):
     def setUp(self):
         self.connector = MockConnector()
-        self.database_name = "test_DB"
-
-    def test_possible_indexes(self):
-        algorithm = RelaxationAlgorithm(
-            database_connector=self.connector,
-            parameters={"max_index_columns": 2, "budget": 1000},
-        )
-        result = algorithm._possible_indexes(query_0)
-        self.assertEqual(len(result), 1)
-
-        result = algorithm._possible_indexes(query_1)
-        self.assertEqual(len(result), 9)
-
-        algorithm = RelaxationAlgorithm(
-            database_connector=self.connector,
-            parameters={"max_index_columns": 3, "budget": 1000},
-        )
-        result = algorithm._possible_indexes(query_1)
-        self.assertEqual(len(result), 15)
-
-        # test with no parameter
-        algorithm = RelaxationAlgorithm(
-            database_connector=self.connector, parameters={"budget": 1000},
-        )
-        result = algorithm._possible_indexes(query_1)
-        self.assertEqual(len(result), 15)
 
     @staticmethod
     def set_estimated_index_sizes(indexes, store_size=True):
@@ -53,7 +28,8 @@ class TestRelaxationAlgorithm(unittest.TestCase):
     def set_estimated_index_size(index):
         index.estimated_size = len(index.columns) * 1000 * 1000
 
-    def test_calculate_indexes_3000MB_2column(self):
+    @patch("selection.algorithms.relaxation_algorithm.get_utilized_indexes")
+    def test_calculate_indexes_3000MB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
             parameters={"max_index_columns": 2, "budget": 3},
@@ -63,12 +39,12 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             self.set_estimated_index_sizes
         )
         algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
-        algorithm._exploit_virtual_indexes = lambda workload: (
-            None,
+        get_utilized_indexes_mock.return_value = (
             {
                 Index([column_A_0], 1000 * 1000),
                 Index([column_A_0, column_A_1], 2000 * 1000),
             },
+            None,
         )
 
         index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
@@ -77,7 +53,8 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             set([Index([column_A_0]), Index([column_A_0, column_A_1])]),
         )
 
-    def test_calculate_indexes_2MB_2column(self):
+    @patch("selection.algorithms.relaxation_algorithm.get_utilized_indexes")
+    def test_calculate_indexes_2MB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
             parameters={"max_index_columns": 2, "budget": 2},
@@ -87,18 +64,19 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             self.set_estimated_index_sizes
         )
         algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
-        algorithm._exploit_virtual_indexes = lambda workload: (
-            None,
+        get_utilized_indexes_mock.return_value = (
             {
                 Index([column_A_0], 1000 * 1000),
                 Index([column_A_0, column_A_1], 2000 * 1000),
             },
+            None,
         )
 
         index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
         self.assertEqual(set(index_selection), set([Index([column_A_0, column_A_1])]))
 
-    def test_calculate_indexes_1MB_2column(self):
+    @patch("selection.algorithms.relaxation_algorithm.get_utilized_indexes")
+    def test_calculate_indexes_1MB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
             parameters={"max_index_columns": 2, "budget": 1},
@@ -109,12 +87,12 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             self.set_estimated_index_sizes
         )
         algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
-        algorithm._exploit_virtual_indexes = lambda workload: (
-            None,
+        get_utilized_indexes_mock.return_value = (
             {
                 Index([column_A_0], 1000 * 1000),
                 Index([column_A_0, column_A_1], 2000 * 1000),
             },
+            None,
         )
 
         index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
@@ -122,7 +100,8 @@ class TestRelaxationAlgorithm(unittest.TestCase):
         # The multi column index is prefixed second.
         self.assertEqual(set(index_selection), {Index([column_A_0])})
 
-    def test_calculate_indexes_500kB_2column(self):
+    @patch("selection.algorithms.relaxation_algorithm.get_utilized_indexes")
+    def test_calculate_indexes_500kB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
             parameters={"max_index_columns": 2, "budget": 0.5},
@@ -132,12 +111,12 @@ class TestRelaxationAlgorithm(unittest.TestCase):
             self.set_estimated_index_sizes
         )
         algorithm.cost_evaluation.estimate_size = self.set_estimated_index_size
-        algorithm._exploit_virtual_indexes = lambda workload: (
-            None,
+        get_utilized_indexes_mock.return_value = (
             {
                 Index([column_A_0], 1000 * 1000),
                 Index([column_A_0, column_A_1], 2000 * 1000),
             },
+            None,
         )
 
         index_selection = algorithm.calculate_best_indexes(Workload([query_0, query_1]))
