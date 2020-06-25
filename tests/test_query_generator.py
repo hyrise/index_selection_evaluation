@@ -46,6 +46,33 @@ class TestQueryGenerator(unittest.TestCase):
         self.assertEqual(len(queries), 99)
         db_connector.close()
 
+    def test_generate_job(self):
+        self.db_name = "indexselection_job___1"
+
+        # Loading the JOB tables takes some time, we skip tests if the dataset is not already loaded.
+        if self.db_name not in self.generating_connector.database_names():
+            return
+
+        TableGenerator(
+            "job", 1, self.generating_connector, explicit_database_name=self.db_name,
+        )
+
+        db_connector = PostgresDatabaseConnector(self.db_name, autocommit=True)
+
+        # JOB supports only a scale factor of 1, i.e., no scaling
+        with self.assertRaises(AssertionError):
+            query_generator = QueryGenerator("job", 0.001, db_connector, None, [])
+
+        # JOB does not support query filterting
+        with self.assertRaises(AssertionError):
+            query_generator = QueryGenerator("job", 0.001, db_connector, query_ids=[17], columns=[])
+
+        query_generator = QueryGenerator("job", 1, db_connector, None, [])
+
+        queries = query_generator.queries
+        self.assertEqual(len(queries), 113)
+        db_connector.close()
+
     def test_wrong_benchmark(self):
         with self.assertRaises(NotImplementedError):
             QueryGenerator("tpc-hallo", 1, self.generating_connector, None, [])

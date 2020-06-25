@@ -135,6 +135,10 @@ class TestTableGenerator(unittest.TestCase):
         database_connect.close()
 
     def test_generate_job(self):
+        # Loading the JOB tables takes some time, we skip tests if the dataset is not already loaded.
+        if "indexselection_job___1" not in self.generating_connector.database_names():
+            return
+
         # JOB supports only a scale factor of 1, i.e., no scaling
         with self.assertRaises(AssertionError):
             table_generator = TableGenerator("job", 0.001, self.generating_connector)
