@@ -135,7 +135,8 @@ class TestTableGenerator(unittest.TestCase):
         database_connect.close()
 
     def test_generate_job(self):
-        # Loading the JOB tables takes some time, we skip tests if the dataset is not already loaded.
+        # Loading the JOB tables takes some time,
+        # we skip these tests if the dataset is not already loaded.
         if "indexselection_job___1" not in self.generating_connector.database_names():
             return
 
@@ -168,26 +169,26 @@ class TestTableGenerator(unittest.TestCase):
 
         job_tables = [
             "aka_name",
-"aka_title",
-"cast_info",
-"char_name",
-"comp_cast_type",
-"company_name",
-"company_type",
-"complete_cast",
-"info_type",
-"keyword",
-"kind_type",
-"link_type",
-"movie_companies",
-"movie_info",
-"movie_info_idx",
-"movie_keyword",
-"movie_link",
-"name",
-"person_info",
-"role_type",
-"title",
+            "aka_title",
+            "cast_info",
+            "char_name",
+            "comp_cast_type",
+            "company_name",
+            "company_type",
+            "complete_cast",
+            "info_type",
+            "keyword",
+            "kind_type",
+            "link_type",
+            "movie_companies",
+            "movie_info",
+            "movie_info_idx",
+            "movie_keyword",
+            "movie_link",
+            "name",
+            "person_info",
+            "role_type",
+            "title",
         ]
         for job_table in job_tables:
             self.assertTrue(database_connect.table_exists(job_table))

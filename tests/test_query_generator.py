@@ -14,7 +14,11 @@ class TestQueryGenerator(unittest.TestCase):
         self.generating_connector.close()
         connector = PostgresDatabaseConnector(None, autocommit=True)
 
-        if self.db_name is not None and self.db_name != "indexselection_job___1" and connector.database_exists(self.db_name):
+        if (
+            self.db_name is not None
+            and self.db_name != "indexselection_job___1"
+            and connector.database_exists(self.db_name)
+        ):
             connector.drop_database(self.db_name)
 
     def test_generate_tpch(self):
@@ -49,7 +53,8 @@ class TestQueryGenerator(unittest.TestCase):
     def test_generate_job(self):
         self.db_name = "indexselection_job___1"
 
-        # Loading the JOB tables takes some time, we skip tests if the dataset is not already loaded.
+        # Loading the JOB tables takes some time,
+        # we skip these tests if the dataset is not already loaded.
         if self.db_name not in self.generating_connector.database_names():
             return
 
@@ -65,7 +70,9 @@ class TestQueryGenerator(unittest.TestCase):
 
         # JOB does not support query filterting
         with self.assertRaises(AssertionError):
-            query_generator = QueryGenerator("job", 0.001, db_connector, query_ids=[17], columns=[])
+            query_generator = QueryGenerator(
+                "job", 0.001, db_connector, query_ids=[17], columns=[]
+            )
 
         query_generator = QueryGenerator("job", 1, db_connector, None, [])
 

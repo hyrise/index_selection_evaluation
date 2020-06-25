@@ -4,7 +4,6 @@ import logging
 import pickle
 import sys
 import time
-import os
 
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
@@ -20,9 +19,6 @@ from .query_generator import QueryGenerator
 from .selection_algorithm import AllIndexesAlgorithm, NoIndexAlgorithm
 from .table_generator import TableGenerator
 from .workload import Workload
-from .workload import Query
-from .workload import Column
-from .workload import Table
 
 ALGORITHMS = {
     "microsoft": MicrosoftAlgorithm,
@@ -65,7 +61,9 @@ class IndexSelection:
         dbms_class = DBMSYSTEMS[config["database_system"]]
         generating_connector = dbms_class(None, autocommit=True)
         table_generator = TableGenerator(
-            config["benchmark_name"], config["scale_factor"] if "scale_factor" in config else 1, generating_connector
+            config["benchmark_name"],
+            config["scale_factor"] if "scale_factor" in config else 1,
+            generating_connector,
         )
         self.database_name = table_generator.database_name()
         self.database_system = config["database_system"]

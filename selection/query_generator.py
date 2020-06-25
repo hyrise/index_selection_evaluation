@@ -139,23 +139,26 @@ class QueryGenerator:
     def _generate_job(self):
         logging.info("Generating JOB Queries")
         for filename in os.listdir(self.directory):
-            if '.sql' not in filename or 'fkindexes' in filename or 'schema' in filename:
+            if ".sql" not in filename or "fkindexes" in filename or "schema" in filename:
                 continue
-            query_id = filename.replace('.sql', '')
+            query_id = filename.replace(".sql", "")
 
-            with open(f"{self.directory}/{filename}", 'r') as query_file:
+            with open(f"{self.directory}/{filename}", "r") as query_file:
                 query_text = query_file.read()
-                query_text = query_text.replace('\t', '')
+                query_text = query_text.replace("\t", "")
                 query = Query(query_id, query_text)
 
                 assert "WHERE" in query_text, "Query without WHERE clause encountered"
 
-                split = query_text.split('WHERE')
+                split = query_text.split("WHERE")
                 query_text_before_where = split[0]
                 query_text_after_where = split[1]
 
                 for column in self.columns:
-                    if column.name in query_text_after_where and f"{column.table.name} " in query_text_before_where:
+                    if (
+                        column.name in query_text_after_where
+                        and f"{column.table.name} " in query_text_before_where
+                    ):
                         query.columns.append(column)
                 self.queries.append(query)
                 self._validate_query(query)
@@ -185,7 +188,10 @@ class QueryGenerator:
                 "Can only handle JOB with a scale factor of 1"
                 ", i.e., no specific scaling"
             )
-            assert self.query_ids is None, "Query filtering, i.e., providing query_ids to JOB QueryGenerator is not supported."
+            assert self.query_ids is None, (
+                "Query filtering, i.e., providing query_ids to JOB QueryGenerator "
+                "is not supported."
+            )
 
             self.directory = "./join-order-benchmark"
             self._generate_job()
