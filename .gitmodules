@@ -4,6 +4,9 @@
 [submodule "tpch-kit"]
 	path = tpch-kit
 	url = https://github.com/marcelja/tpch-kit.git
+[submodule "join-order-benchmark"]
+  path = join-order-benchmark
+  url = https://github.com/gregrahn/join-order-benchmark.git
 [submodule "hypopg"]
 	path = hypopg
 	url = https://github.com/HypoPG/hypopg.git
