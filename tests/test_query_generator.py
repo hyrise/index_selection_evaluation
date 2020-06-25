@@ -14,7 +14,7 @@ class TestQueryGenerator(unittest.TestCase):
         self.generating_connector.close()
         connector = PostgresDatabaseConnector(None, autocommit=True)
 
-        if self.db_name is not None and connector.database_exists(self.db_name):
+        if self.db_name is not None and self.db_name != "indexselection_job___1" and connector.database_exists(self.db_name):
             connector.drop_database(self.db_name)
 
     def test_generate_tpch(self):
