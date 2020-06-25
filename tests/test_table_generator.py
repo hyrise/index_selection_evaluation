@@ -134,6 +134,63 @@ class TestTableGenerator(unittest.TestCase):
         self.generating_connector.close()
         database_connect.close()
 
+    def test_generate_job(self):
+        # JOB supports only a scale factor of 1, i.e., no scaling
+        with self.assertRaises(AssertionError):
+            table_generator = TableGenerator("job", 0.001, self.generating_connector)
+
+        table_generator = TableGenerator("job", 1, self.generating_connector)
+
+        # Check that correct number of columns were extracted
+        self.assertEqual(108, len(table_generator.columns))
+
+        # Check that item table exists in TableGenerator
+        title_table = None
+        for table in table_generator.tables:
+            if table.name == "title":
+                title_table = table
+                break
+        self.assertIsNotNone(title_table)
+
+        # Check that i_item_sk column exists in TableGenerator and Table object
+        imdb_index = Column("imdb_index")
+        imdb_index.table = title_table
+        self.assertIn(imdb_index, table_generator.columns)
+        self.assertIn(imdb_index, title_table.columns)
+
+        database_connect = PostgresDatabaseConnector(
+            table_generator.database_name(), autocommit=True
+        )
+
+        job_tables = [
+            "aka_name",
+"aka_title",
+"cast_info",
+"char_name",
+"comp_cast_type",
+"company_name",
+"company_type",
+"complete_cast",
+"info_type",
+"keyword",
+"kind_type",
+"link_type",
+"movie_companies",
+"movie_info",
+"movie_info_idx",
+"movie_keyword",
+"movie_link",
+"name",
+"person_info",
+"role_type",
+"title",
+        ]
+        for job_table in job_tables:
+            self.assertTrue(database_connect.table_exists(job_table))
+
+        self.generating_connector.close()
+        database_connect.close()
+
     def test_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             TableGenerator("not_tpch", 0.001, self.generating_connector)
