@@ -136,6 +136,32 @@ class QueryGenerator:
     def _files(self):
         return os.listdir(self.directory)
 
+    def _generate_job(self):
+        logging.info("Generating JOB Queries")
+        for filename in os.listdir(self.directory):
+            if '.sql' not in filename or 'fkindexes' in filename or 'schema' in filename:
+                continue
+            query_id = filename.replace('.sql', '')
+
+            with open(f"{self.directory}/{filename}", 'r') as query_file:
+                query_text = query_file.read()
+                query_text = query_text.replace('\t', '')
+                query = Query(query_id, query_text)
+
+                assert "WHERE" in query_text, "Query without WHERE clause encountered"
+
+                split = query_text.split('WHERE')
+                query_text_before_where = split[0]
+                query_text_after_where = split[1]
+
+                for column in self.columns:
+                    if column.name in query_text_after_where and f"{column.table.name} " in query_text_before_where:
+                        query.columns.append(column)
+                self.queries.append(query)
+                self._validate_query(query)
+
+        logging.info("Queries generated")
+
     def generate(self):
         if self.benchmark_name == "tpch":
             self.directory = "./tpch-kit/dbgen"
@@ -154,5 +180,14 @@ class QueryGenerator:
                 self.make_command.append("OS=MACOS")
 
             self._generate_tpcds()
+        elif self.benchmark_name == "job":
+            assert self.scale_factor == 1, (
+                "Can only handle JOB with a scale factor of 1"
+                ", i.e., no specific scaling"
+            )
+            assert self.query_ids is None, "Query filtering, i.e., providing query_ids to JOB QueryGenerator is not supported."
+
+            self.directory = "./join-order-benchmark"
+            self._generate_job()
         else:
-            raise NotImplementedError("only tpch/tpcds implemented.")
+            raise NotImplementedError("Only TPC-H/-DS and JOB implemented.")

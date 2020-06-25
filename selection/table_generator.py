@@ -36,28 +36,32 @@ class TableGenerator:
         if self.explicit_database_name:
             return self.explicit_database_name
 
-        name = "indexselection_" + self.benchmark_name + "___"
-        name += str(self.scale_factor).replace(".", "_")
+        scale_factor = str(self.scale_factor).replace(".", "_")
+        name = f"indexselection_{self.benchmark_name}___{scale_factor}"
         return name
 
     def _read_column_names(self):
         # Read table and column names from 'create table' statements
-        filename = self.directory + "/" + self.create_table_statements_file
-        with open(filename, "r") as file:
+        schema_file = f"{self.directory}/{self.create_table_statements_file}"
+        with open(schema_file, "r") as file:
             data = file.read().lower()
-        create_tables = data.split("create table ")[1:]
-        for create_table in create_tables:
-            splitted = create_table.split("(", 1)
-            table = Table(splitted[0].strip())
+        create_table_statements = data.split("create table ")[1:]
+        for create_table_statement in create_table_statements:
+            split = create_table_statement.split("(", 1)
+            table = Table(split[0].strip())
             self.tables.append(table)
-            # TODO regex split? ,[whitespace]\n
-            for column in splitted[1].split(",\n"):
-                name = column.lstrip().split(" ", 1)[0]
-                if name == "primary":
+
+            for column_declaration in split[1].split(",\n"):
+                column_name = column_declaration.lstrip().split(" ", 1)[0]
+
+                # Skip lines that start with primary and, thereby, declare previously
+                # declared columns as primary key
+                if column_name == "primary":
                     continue
-                column_object = Column(name)
-                table.add_column(column_object)
-                self.columns.append(column_object)
+
+                column = Column(column_name)
+                table.add_column(column)
+                self.columns.append(column)
 
     def _generate(self):
         logging.info("Generating {} data".format(self.benchmark_name))
@@ -150,5 +154,12 @@ class TableGenerator:
                 and self.scale_factor != 0.001
             ):
                 raise Exception("Wrong TPCDS scale factor")
+        elif self.benchmark_name == "job":
+            assert self.scale_factor == 1, (
+                "Can only handle JOB with a scale factor of 1"
+                ", i.e., no specific scaling"
+            )
+            self.directory = "./join-order-benchmark"
+            self.create_table_statements_file = "schema.sql"
         else:
-            raise NotImplementedError("only tpch/ds implemented.")
+            raise NotImplementedError("Only TPC-H/-DS and JOB implemented.")
