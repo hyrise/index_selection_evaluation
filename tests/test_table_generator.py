@@ -41,6 +41,9 @@ class TestTableGenerator(unittest.TestCase):
     def test_generate_tpch(self):
         table_generator = TableGenerator("tpch", 0.001, self.generating_connector)
 
+        # Check that correct number of columns were extracted
+        self.assertEqual(61, len(table_generator.columns))
+
         # Check that lineitem table exists in TableGenerator
         lineitem_table = None
         for table in table_generator.tables:
@@ -51,9 +54,9 @@ class TestTableGenerator(unittest.TestCase):
 
         # Check that l_receiptdate column exists in TableGenerator and Table object
         l_receiptdate = Column("l_receiptdate")
-        lineitem_table.add_column(l_receiptdate)
+        l_receiptdate.table = lineitem_table
         self.assertIn(l_receiptdate, table_generator.columns)
-        self.assertIn(l_receiptdate, table.columns)
+        self.assertIn(l_receiptdate, lineitem_table.columns)
 
         database_connect = PostgresDatabaseConnector(
             table_generator.database_name(), autocommit=True
@@ -75,10 +78,13 @@ class TestTableGenerator(unittest.TestCase):
         self.generating_connector.close()
         database_connect.close()
 
-    def test_generate_tpds(self):
+    def test_generate_tpcds(self):
         table_generator = TableGenerator("tpcds", 0.001, self.generating_connector)
 
-        # Check that lineitem table exists in TableGenerator
+        # Check that correct number of columns were extracted
+        self.assertEqual(429, len(table_generator.columns))
+
+        # Check that item table exists in TableGenerator
         item_table = None
         for table in table_generator.tables:
             if table.name == "item":
@@ -88,9 +94,9 @@ class TestTableGenerator(unittest.TestCase):
 
         # Check that i_item_sk column exists in TableGenerator and Table object
         i_item_sk = Column("i_item_sk")
-        item_table.add_column(i_item_sk)
+        i_item_sk.table = item_table
         self.assertIn(i_item_sk, table_generator.columns)
-        self.assertIn(i_item_sk, table.columns)
+        self.assertIn(i_item_sk, item_table.columns)
 
         database_connect = PostgresDatabaseConnector(
             table_generator.database_name(), autocommit=True
