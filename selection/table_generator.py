@@ -3,8 +3,9 @@ import os
 import platform
 import re
 import subprocess
+import sys
 
-from .utils import b_to_mb
+from .utils import IMDB_TABLE_DIR, b_to_mb, download_and_uncompress_imdb_data
 from .workload import Column, Table
 
 
@@ -24,9 +25,13 @@ class TableGenerator:
         self.database_names = self.db_connector.database_names()
         self.tables = []
         self.columns = []
+
         self._prepare()
         if self.database_name() not in self.database_names:
-            self._generate()
+            if self.benchmark_name != "job":
+                self._generate()
+            else:
+                self._prepare_imdb_data()
             self.create_database()
         else:
             logging.debug("Database with given scale factor already " "existing")
@@ -39,6 +44,18 @@ class TableGenerator:
         scale_factor = str(self.scale_factor).replace(".", "_")
         name = f"indexselection_{self.benchmark_name}___{scale_factor}"
         return name
+
+    def _prepare_imdb_data(self):
+        success = download_and_uncompress_imdb_data()
+        if not success:
+            logging.critical("Something went wrong during download IMDB data. Aborting.")
+            sys.exit(1)
+
+        self.table_files = [
+            filename
+            for filename in os.listdir(IMDB_TABLE_DIR)
+            if ".csv" in filename and ".json" not in filename
+        ]
 
     def _read_column_names(self):
         # Read table and column names from 'create table' statements
@@ -76,11 +93,13 @@ class TableGenerator:
 
     def create_database(self):
         self.db_connector.create_database(self.database_name())
-        filename = self.directory + "/" + self.create_table_statements_file
-        with open(filename, "r") as file:
+        schema_file = f"{self.directory}/{self.create_table_statements_file}"
+        with open(schema_file, "r") as file:
             create_statements = file.read()
+
         # Do not create primary keys
         create_statements = re.sub(r",\s*primary key (.*)", "", create_statements)
+        create_statements = create_statements.replace("PRIMARY KEY", "")
         self.db_connector.db_name = self.database_name()
         self.db_connector.create_connection()
         self.create_tables(create_statements)
@@ -95,16 +114,29 @@ class TableGenerator:
 
     def _load_table_data(self, database_connector):
         logging.info("Loading data into the tables")
-        for filename in self.table_files:
-            logging.debug("    Loading file {}".format(filename))
 
-            table = filename.replace(".tbl", "").replace(".dat", "")
-            path = self.directory + "/" + filename
+        for filename in self.table_files:
+            logging.debug(f"    Loading file {filename}")
+
+            table = filename.replace(".tbl", "").replace(".dat", "").replace(".csv", "")
+
+            if self.benchmark_name == "job":
+                path = f"{IMDB_TABLE_DIR}/{filename}"
+            else:
+                path = f"{self.directory}/{filename}"
+
             size = os.path.getsize(path)
             size_string = f"{b_to_mb(size):,.4f} MB"
             logging.debug(f"    Import data of size {size_string}")
-            database_connector.import_data(table, path)
-            os.remove(os.path.join(self.directory, filename))
+
+            if self.benchmark_name == "job":
+                database_connector.import_data(
+                    table, path, delimiter=",", encoding="Latin-1"
+                )
+            else:
+                database_connector.import_data(table, path)
+                # Remove files only if they can be easily regenerated
+                os.remove(os.path.join(self.directory, filename))
         database_connector.commit()
 
     def _run_make(self):
