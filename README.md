@@ -2,10 +2,11 @@
 
 This repository contains the source code for the evaluation platform presented in the paper *An Experimental Evaluation of Index Selection Algorithms*. As part of this paper, we re-implemented 8 index selection algorithms ([references](#references) listed below): the drop heuristic [1], an algorithm similar to the initial AutoAdmin algorithm [2], an algorithm loosely following the DB2 advisor index selection [3], the Relaxation algorithm [4], CoPhy's approach [5], Dexter [6], the Extend algorithm [7], an algorithm loosely following SQLServer's DTA Anytime index selection [8].
 
-The implementations of the algorithms can be found under `selection/algorithms`. Documentation, also of the parameters of the algorithms, is part of the source files.
+The implementations of the algorithms can be found under `selection/algorithms`. Documentation, also regarding the parameters of the algorithms, is part of the source files.
 
 While some of the chosen algorithms are related to tools employed in commercial DBMS products, the re-implemented algorithms do not fully reflect the behavior and performance of the original tools, which may be continuously enhanced and optimized.
 
+## Usage
 
 Install script:
 * `./scripts/install.sh`
@@ -24,7 +25,7 @@ coverage html
 open htmlcov/index.html
 ```
 
-# Adding a new algorithm:
+## Adding a new algorithm:
 * Create a new algorithm class, based on `selection/algorithms/example_algorithm.py`
 * Add algorithm class name in `selection/index_selection_evaluation.py` to this dictionary:
 ```
@@ -34,7 +35,7 @@ ALGORITHMS = {'microsoft': MicrosoftAlgorithm,
 * Create or adjust configuration files
 
 
-# Formatting and Linting
+## Formatting and Linting
 The code can be automatically formatted/linted by calling `./scripts/format.sh` or `./scripts/lint.sh` from the main folder.
 
 # References
