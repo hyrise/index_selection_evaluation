@@ -151,6 +151,7 @@ class QueryGenerator:
                 assert "WHERE" in query_text, "Query without WHERE clause encountered"
 
                 split = query_text.split("WHERE")
+                assert len(split) == 2, "Query split for JOB query contains subquery"
                 query_text_before_where = split[0]
                 query_text_after_where = split[1]
 
