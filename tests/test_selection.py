@@ -95,9 +95,9 @@ class TestIndexSelection(unittest.TestCase):
 
     def test_ibm_algorithm_integration(self):
         parameters = {
-            "budget": 0.01,
-            "try_variation_seconds_limit": 0,
-            "max_index_columns": 1,
+            "budget_MB": 0.01,
+            "try_variations_seconds": 0,
+            "max_index_width": 1,
         }
         ibm_algorithm = self.index_selection.create_algorithm_object("ibm", parameters)
         indexes = ibm_algorithm.calculate_best_indexes(self.tpch_5_and_6)
@@ -105,9 +105,9 @@ class TestIndexSelection(unittest.TestCase):
         self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
 
         parameters = {
-            "budget": 0.04,
-            "try_variation_seconds_limit": 0,
-            "max_index_columns": 1,
+            "budget_MB": 0.04,
+            "try_variations_seconds": 0,
+            "max_index_width": 1,
         }
         ibm_algorithm = self.index_selection.create_algorithm_object("ibm", parameters)
         indexes = ibm_algorithm.calculate_best_indexes(self.tpch_5_and_6)
@@ -119,8 +119,8 @@ class TestIndexSelection(unittest.TestCase):
 
     def test_dta_algorithm_integration(self):
         parameters = {
-            "budget": 0.01,
-            "max_index_columns": 1,
+            "budget_MB": 0.01,
+            "max_index_width": 1,
         }
         dta_algorithm = self.index_selection.create_algorithm_object(
             "dta_anytime", parameters
@@ -130,8 +130,8 @@ class TestIndexSelection(unittest.TestCase):
         self.assertEqual(str(indexes[0]), "I(C orders.o_custkey)")
 
         parameters = {
-            "budget": 0.1,
-            "max_index_columns": 1,
+            "budget_MB": 0.1,
+            "max_index_width": 1,
         }
         dta_algorithm = self.index_selection.create_algorithm_object(
             "dta_anytime", parameters

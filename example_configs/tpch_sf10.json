@@ -8,7 +8,7 @@
             "parameters": {
                 "max_indexes": [0, 1, 2, 4, 8, 16],
                 "max_indexes_naive": 2,
-                "max_index_columns": 3
+                "max_index_width": 3
             },
             "number_of_actual_runs": 5,
             "timeout": 300
@@ -24,7 +24,7 @@
         {
             "name": "epic",
             "parameters": {
-                "budget": [400, 800, 1600, 3200, 6400, 12800]
+                "budget_MB": [400, 800, 1600, 3200, 6400, 12800]
             },
             "number_of_actual_runs": 5,
             "timeout": 300
@@ -32,9 +32,9 @@
         {
             "name": "ibm",
             "parameters": {
-                "max_index_columns": 3,
-                "budget": [400, 800, 1600, 3200, 6400, 12800],
-                "try_variation_seconds_limit": 1
+                "max_index_width": 3,
+                "budget_MB": [400, 800, 1600, 3200, 6400, 12800],
+                "try_variations_seconds": 1
             },
             "number_of_actual_runs": 5,
             "timeout": 300

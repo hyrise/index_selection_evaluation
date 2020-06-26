@@ -9,7 +9,7 @@
             "parameters": {
                 "max_indexes": 10,
                 "max_indexes_naive": 2,
-                "max_index_columns": 3
+                "max_index_width": 3
             },
             "number_of_actual_runs": 5,
             "timeout": 30
@@ -25,7 +25,7 @@
         {
             "name": "epic",
             "parameters": {
-                "budget": 1
+                "budget_MB": 1
             },
             "number_of_actual_runs": 5,
             "timeout": 30
@@ -33,9 +33,9 @@
         {
             "name": "ibm",
             "parameters": {
-                "max_index_columns": 3,
-                "budget": 1,
-                "try_variation_seconds_limit": 1
+                "max_index_width": 3,
+                "budget_MB": 1,
+                "try_variations_seconds": 1
             },
             "number_of_actual_runs": 5,
             "timeout": 30
@@ -51,8 +51,8 @@
         {
             "name": "relaxation",
             "parameters": {
-                "max_index_columns": 3,
-                "budget": 1
+                "max_index_width": 3,
+                "budget_MB": 1
             },
             "number_of_actual_runs": 5,
             "timeout": 30
@@ -60,8 +60,8 @@
         {
             "name": "dta_anytime",
             "parameters": {
-                "max_index_columns": 3,
-                "budget": 1,
+                "max_index_width": 3,
+                "budget_MB": 1,
                 "max_runtime_minutes": 30
             },
             "number_of_actual_runs": 5,

@@ -32,7 +32,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
     def test_calculate_indexes_3000MB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
-            parameters={"max_index_columns": 2, "budget": 3},
+            parameters={"max_index_width": 2, "budget_MB": 3},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
@@ -57,7 +57,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
     def test_calculate_indexes_2MB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
-            parameters={"max_index_columns": 2, "budget": 2},
+            parameters={"max_index_width": 2, "budget_MB": 2},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
@@ -79,7 +79,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
     def test_calculate_indexes_1MB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
-            parameters={"max_index_columns": 2, "budget": 1},
+            parameters={"max_index_width": 2, "budget_MB": 1},
         )
         algorithm.cost_evaluation.cache = mock_cache
 
@@ -104,7 +104,7 @@ class TestRelaxationAlgorithm(unittest.TestCase):
     def test_calculate_indexes_500kB_2column(self, get_utilized_indexes_mock):
         algorithm = RelaxationAlgorithm(
             database_connector=self.connector,
-            parameters={"max_index_columns": 2, "budget": 0.5},
+            parameters={"max_index_width": 2, "budget_MB": 0.5},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (

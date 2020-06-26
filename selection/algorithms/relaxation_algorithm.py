@@ -8,8 +8,8 @@ from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
 # Maximum number of columns per index, storage budget in MB,
 DEFAULT_PARAMETERS = {
-    "max_index_columns": 3,
-    "budget": 500,
+    "max_index_width": 3,
+    "budget_MB": 500,
     "allowed_transformations": ["splitting", "merging", "prefixing", "removal"],
 }
 
@@ -21,9 +21,9 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.disk_constraint = mb_to_b(self.parameters["budget"])
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
         self.transformations = self.parameters["allowed_transformations"]
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.max_index_width = self.parameters["max_index_width"]
         assert set(self.transformations) <= {
             "splitting",
             "merging",
@@ -37,7 +37,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         # Generate syntactically relevant candidates
         candidates = candidates_per_query(
             workload,
-            self.parameters["max_index_columns"],
+            self.parameters["max_index_width"],
             candidate_generator=syntactically_relevant_indexes,
         )
 
@@ -133,8 +133,8 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 ):
                     relaxed = input_configuration.copy()
                     merged_index = index_merge(index1, index2)
-                    if len(merged_index.columns) > self.max_index_columns:
-                        new_columns = merged_index.columns[: self.max_index_columns]
+                    if len(merged_index.columns) > self.max_index_width:
+                        new_columns = merged_index.columns[: self.max_index_width]
                         merged_index = Index(new_columns)
 
                     relaxed -= {index1, index2}

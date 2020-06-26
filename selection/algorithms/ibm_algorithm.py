@@ -10,10 +10,10 @@ from ..utils import get_utilized_indexes, mb_to_b
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations
 DEFAULT_PARAMETERS = {
-    "max_index_columns": 3,
-    "budget": 500,
-    "try_variation_seconds_limit": 10,
-    "try_variation_maximum_remove": 4,
+    "max_index_width": 3,
+    "budget_MB": 500,
+    "try_variations_seconds": 10,
+    "try_variations_max_removals": 4,
 }
 
 
@@ -59,9 +59,9 @@ class IBMAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.disk_constraint = mb_to_b(self.parameters["budget"])
-        self.seconds_limit = self.parameters["try_variation_seconds_limit"]
-        self.maximum_remove = self.parameters["try_variation_maximum_remove"]
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
+        self.try_variations_seconds = self.parameters["try_variations_seconds"]
+        self.try_variations_max_removals = self.parameters["try_variations_max_removals"]
 
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes IBM")
@@ -70,7 +70,7 @@ class IBMAlgorithm(SelectionAlgorithm):
         # uses all syntactically relevant indexes.
         candidates = candidates_per_query(
             workload,
-            self.parameters["max_index_columns"],
+            self.parameters["max_index_width"],
             candidate_generator=syntactically_relevant_indexes,
         )
         utilized_indexes, query_details = get_utilized_indexes(
@@ -86,7 +86,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                 selected_index_benefits.append(index_benefit)
                 disk_usage += index_benefit.size()
 
-        if self.seconds_limit > 0:
+        if self.try_variations_seconds > 0:
             selected_index_benefits = self._try_variations(
                 selected_index_benefits, index_benefits_subsumed, workload
             )
@@ -143,25 +143,25 @@ class IBMAlgorithm(SelectionAlgorithm):
         return sorted(result_set, reverse=True)
 
     def _try_variations(self, selected_index_benefits, index_benefits, workload):
-        logging.debug(f"Try variation for {self.seconds_limit} seconds")
+        logging.debug(f"Try variation for {self.try_variations_seconds} seconds")
         start_time = time.time()
 
         not_used_index_benefits = set(index_benefits) - set(selected_index_benefits)
 
         min_length = min(len(selected_index_benefits), len(not_used_index_benefits))
-        if self.maximum_remove > min_length:
-            self.maximum_remove = min_length
+        if self.try_variations_max_removals > min_length:
+            self.try_variations_max_removals = min_length
 
-        if self.maximum_remove == 0:
+        if self.try_variations_max_removals == 0:
             return selected_index_benefits
 
         current_cost = self._evaluate_workload(selected_index_benefits, workload)
         logging.debug(f"Initial cost \t{current_cost}")
         selected_index_benefits_set = set(selected_index_benefits)
 
-        while start_time + self.seconds_limit > time.time():
+        while start_time + self.try_variations_seconds > time.time():
             number_of_exchanges = (
-                random.randrange(1, self.maximum_remove) if self.maximum_remove > 1 else 1
+                random.randrange(1, self.try_variations_max_removals) if self.try_variations_max_removals > 1 else 1
             )
             indexes_to_remove = frozenset(
                 random.sample(selected_index_benefits_set, k=number_of_exchanges)

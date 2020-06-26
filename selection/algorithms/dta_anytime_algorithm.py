@@ -10,7 +10,7 @@ from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
 # Maximum number of columns per index, storage budget in MB, runtime limit.
 # After n minutes the algorithm is stopped and the current best solution is returned.
-DEFAULT_PARAMETERS = {"max_index_columns": 3, "budget": 500, "max_runtime_minutes": 10}
+DEFAULT_PARAMETERS = {"max_index_width": 3, "budget_MB": 500, "max_runtime_minutes": 10}
 
 
 class DTAAnytimeAlgorithm(SelectionAlgorithm):
@@ -20,8 +20,8 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.disk_constraint = mb_to_b(self.parameters["budget"])
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
+        self.max_index_width = self.parameters["max_index_width"]
         self.max_runtime_minutes = self.parameters["max_runtime_minutes"]
 
     def _calculate_best_indexes(self, workload):
@@ -30,7 +30,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         # Generate syntactically relevant candidates
         candidates = candidates_per_query(
             workload,
-            self.parameters["max_index_columns"],
+            self.parameters["max_index_width"],
             candidate_generator=syntactically_relevant_indexes,
         )
 
@@ -91,8 +91,8 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         for table in index_table_dict:
             for index1, index2 in itertools.permutations(index_table_dict[table], 2):
                 merged_index = index_merge(index1, index2)
-                if len(merged_index.columns) > self.max_index_columns:
-                    new_columns = merged_index.columns[: self.max_index_columns]
+                if len(merged_index.columns) > self.max_index_width:
+                    new_columns = merged_index.columns[: self.max_index_width]
                     merged_index = Index(new_columns)
                 if merged_index not in indexes:
                     self.cost_evaluation.estimate_size(merged_index)

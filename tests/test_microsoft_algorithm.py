@@ -22,7 +22,7 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
     def test_calculate_indexes_2indexes_3columns(self):
         algorithm = MicrosoftAlgorithm(
             database_connector=self.connector,
-            parameters={"max_indexes": 2, "max_index_columns": 3},
+            parameters={"max_indexes": 2, "max_index_width": 3},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
@@ -37,7 +37,7 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
     def test_calculate_indexes_2indexes_2columns(self):
         algorithm = MicrosoftAlgorithm(
             database_connector=self.connector,
-            parameters={"max_indexes": 2, "max_index_columns": 2},
+            parameters={"max_indexes": 2, "max_index_width": 2},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (

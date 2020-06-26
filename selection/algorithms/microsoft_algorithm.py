@@ -5,13 +5,10 @@ from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
 from ..workload import Workload
 
-# multi column index methods: 'no', 'lead', 'all'
-# cost_estimation: 'whatif' or 'acutal_runtimes'
 DEFAULT_PARAMETERS = {
     "max_indexes": 15,
     "max_indexes_naive": 3,
-    "max_index_columns": 2,
-    "cost_estimation": "whatif",
+    "max_index_width": 2,
 }
 
 
@@ -24,7 +21,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         self.max_indexes_naive = min(
             self.parameters["max_indexes_naive"], self.max_indexes
         )
-        self.max_columns_per_index = self.parameters["max_index_columns"]
+        self.max_index_width = self.parameters["max_index_width"]
 
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes (microsoft)")
@@ -35,12 +32,12 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
 
         # Set potential indexes for first iteration
         potential_indexes = workload.potential_indexes()
-        for current_max_columns_per_index in range(1, self.max_columns_per_index + 1):
+        for current_max_index_width in range(1, self.max_index_width + 1):
             candidates = self.select_index_candidates(workload, potential_indexes)
             indexes = self.enumerate_combinations(workload, candidates)
             assert indexes <= candidates, "Indexes must be a subset of candidate indexes"
 
-            if current_max_columns_per_index < self.max_columns_per_index:
+            if current_max_index_width < self.max_index_width:
                 # Update potential indexes for the next iteration
                 potential_indexes = indexes | self.create_multicolumn_indexes(
                     workload, indexes

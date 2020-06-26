@@ -4,13 +4,11 @@ from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
 from ..utils import b_to_mb, mb_to_b
 
-# cost_estimation: 'whatif' or 'acutal_runtimes'
 # Index combination budget in MB
 DEFAULT_PARAMETERS = {
-    "cost_estimation": "whatif",
-    "budget": 10,
+    "budget_MB": 10,
     "min_cost_improvement": 1.003,
-    "max_index_columns": 4,
+    "max_index_width": 4,
 }
 
 
@@ -21,8 +19,8 @@ class EPICAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.budget = mb_to_b(self.parameters["budget"])
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.budget = mb_to_b(self.parameters["budget_MB"])
+        self.max_index_width = self.parameters["max_index_width"]
         self.workload = None
         self.min_cost_improvement = self.parameters["min_cost_improvement"]
 
@@ -83,7 +81,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         ), "Attach to indexes called with multi column index"
 
         for position, index in enumerate(index_combination):
-            if len(index.columns) >= self.max_index_columns:
+            if len(index.columns) >= self.max_index_width:
                 continue
             if index.appendable_by(attribute):
                 new_index = Index(index.columns + attribute.columns)
