@@ -28,10 +28,10 @@ class TableGenerator:
 
         self._prepare()
         if self.database_name() not in self.database_names:
-            if self.benchmark_name != "job":
-                self._generate()
-            else:
+            if self.benchmark_name == "job":
                 self._prepare_imdb_data()
+            else:
+                self._generate()
             self.create_database()
         else:
             logging.debug("Database with given scale factor already " "existing")
