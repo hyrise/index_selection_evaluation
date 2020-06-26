@@ -5,9 +5,13 @@ from ..index import Index
 from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..workload import Workload
 
+# max_indexes: The algorithm stops as soon as it has selected #max_indexes indexes
+# max_indexes_naive: Number of indexes selected by a naive enumeration, see
+#                    enumerate_naive() for further details.
+# max_index_width: The number of columns an index can contain at maximum.
 DEFAULT_PARAMETERS = {
     "max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"],
-    "max_indexes_naive": 3,
+    "max_indexes_naive": 2,
     "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
 }
 

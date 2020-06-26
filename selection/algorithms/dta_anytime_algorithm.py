@@ -8,11 +8,14 @@ from ..index import Index, index_merge
 from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
-# Maximum number of columns per index, storage budget in MB, runtime limit.
-# After n minutes the algorithm is stopped and the current best solution is returned.
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
+# max_runtime_minutes: The algorithm is stopped either if all seeds are evaluated or
+#                      when max_runtime_minutes is exceeded. Whatever happens first.
+#                      In case of the latter, the current best solution is returned.
 DEFAULT_PARAMETERS = {
-    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "max_runtime_minutes": 10,
 }
 

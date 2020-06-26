@@ -2,6 +2,8 @@ import logging
 
 from .cost_evaluation import CostEvaluation
 
+# If not specified by the user, algorithms should use these default parameter values to
+# avoid diverging values for different algorithms.
 DEFAULT_PARAMETER_VALUES = {
     "budget_MB": 500,
     "max_indexes": 15,

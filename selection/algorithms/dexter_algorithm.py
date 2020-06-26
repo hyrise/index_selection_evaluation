@@ -5,8 +5,9 @@ import subprocess
 from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
 
-# Parameter is passed to dexter command line tool. The mimimum percentage that an index
-# candidate must reduce the cost of a query to be selected
+# Parameter is passed to dexter command line tool.
+# min_saving_percentage: The mimimum percentage that an index candidate must reduce the
+#                        cost of a query to be selected
 DEFAULT_PARAMETERS = {"min_saving_percentage": 5}
 
 

@@ -4,7 +4,12 @@ from ..index import Index
 from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import b_to_mb, mb_to_b
 
-# Index combination budget in MB
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
+# min_cost_improvement: The value of the relative improvement that must be realized by a
+#                       new configuration to be selected.
+# The algorithm stops if either the budget is exceeded or no further beneficial
+# configurations can be found.
 DEFAULT_PARAMETERS = {
     "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
     "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],

@@ -6,9 +6,13 @@ from ..candidate_generation import candidates_per_query, syntactically_relevant_
 from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, mb_to_b
 
-# Maximum number of columns per index, storage budget in MB,
-# time to "try variations" in seconds (see IBM paper),
-# maximum index candidates removed while try_variations
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
+# try_variations_seconds: Time spent in TryVariations phase. See the original paper
+#                         for further details
+# try_variations_max_removals: Maximum number of index candidates that are remover per
+#                              TryVariations step.
+# The algorithm stops if the budget & the time for the TryVariations phase are exceeded.
 DEFAULT_PARAMETERS = {
     "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
     "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
