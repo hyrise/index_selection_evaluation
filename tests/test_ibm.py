@@ -255,7 +255,9 @@ class TestIBMAlgorithm(unittest.TestCase):
             index_benefits=frozenset([IndexBenefit(index_1, 1)]),
             workload=[],
         )
-        self.assertGreaterEqual(time.time(), time_before + self.algo.try_variations_seconds)
+        self.assertGreaterEqual(
+            time.time(), time_before + self.algo.try_variations_seconds
+        )
 
         def fake(selected, workload):
             cost = 10

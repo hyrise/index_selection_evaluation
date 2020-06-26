@@ -2,13 +2,13 @@ import itertools
 import logging
 
 from ..index import Index
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..workload import Workload
 
 DEFAULT_PARAMETERS = {
-    "max_indexes": 15,
+    "max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"],
     "max_indexes_naive": 3,
-    "max_index_width": 2,
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
 }
 
 

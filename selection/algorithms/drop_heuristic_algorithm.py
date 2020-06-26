@@ -1,9 +1,9 @@
 import logging
 
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 
 # Algorithm stops when maximum number of indexes is reached
-DEFAULT_PARAMETERS = {"max_indexes": 15}
+DEFAULT_PARAMETERS = {"max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"]}
 
 
 class DropHeuristicAlgorithm(SelectionAlgorithm):

@@ -3,15 +3,15 @@ import random
 import time
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, mb_to_b
 
 # Maximum number of columns per index, storage budget in MB,
 # time to "try variations" in seconds (see IBM paper),
 # maximum index candidates removed while try_variations
 DEFAULT_PARAMETERS = {
-    "max_index_width": 3,
-    "budget_MB": 500,
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "try_variations_seconds": 10,
     "try_variations_max_removals": 4,
 }
@@ -161,7 +161,9 @@ class IBMAlgorithm(SelectionAlgorithm):
 
         while start_time + self.try_variations_seconds > time.time():
             number_of_exchanges = (
-                random.randrange(1, self.try_variations_max_removals) if self.try_variations_max_removals > 1 else 1
+                random.randrange(1, self.try_variations_max_removals)
+                if self.try_variations_max_removals > 1
+                else 1
             )
             indexes_to_remove = frozenset(
                 random.sample(selected_index_benefits_set, k=number_of_exchanges)

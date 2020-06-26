@@ -4,6 +4,8 @@ from unittest.mock import MagicMock
 
 from selection.algorithms.epic_algorithm import EPICAlgorithm
 from selection.index import Index
+from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES
+from selection.utils import mb_to_b
 from selection.workload import Column, Query, Table, Workload
 
 
@@ -24,9 +26,6 @@ def index_combination_to_str(index_combination):
     indexes_as_str = sorted([x.index_idx() for x in index_combination])
 
     return "||".join(indexes_as_str)
-
-
-MB_TO_BYTES = 1000000
 
 
 class TestEpicAlgorithm(unittest.TestCase):
@@ -224,8 +223,7 @@ class TestEpicAlgorithm(unittest.TestCase):
 
     def test_epic_algoritm(self):
         # Should use default parameters if none are specified
-        budget_in_mb = 10
-        self.assertEqual(self.algo.budget, budget_in_mb * MB_TO_BYTES)
+        self.assertEqual(self.algo.budget, mb_to_b(DEFAULT_PARAMETER_VALUES["budget_MB"]))
         self.assertEqual(self.algo.cost_evaluation.cost_estimation, "whatif")
 
     def _assign_size_1(self, index):

@@ -2,6 +2,12 @@ import logging
 
 from .cost_evaluation import CostEvaluation
 
+DEFAULT_PARAMETER_VALUES = {
+    "budget_MB": 500,
+    "max_indexes": 15,
+    "max_index_width": 2,
+}
+
 
 class SelectionAlgorithm:
     def __init__(self, database_connector, parameters, default_parameters=None):

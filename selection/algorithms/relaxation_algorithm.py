@@ -3,13 +3,13 @@ import logging
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
 from ..index import Index, index_merge, index_split
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
 # Maximum number of columns per index, storage budget in MB,
 DEFAULT_PARAMETERS = {
-    "max_index_width": 3,
-    "budget_MB": 500,
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "allowed_transformations": ["splitting", "merging", "prefixing", "removal"],
 }
 

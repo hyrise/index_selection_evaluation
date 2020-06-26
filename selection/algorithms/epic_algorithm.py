@@ -1,14 +1,14 @@
 import logging
 
 from ..index import Index
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import b_to_mb, mb_to_b
 
 # Index combination budget in MB
 DEFAULT_PARAMETERS = {
-    "budget_MB": 10,
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "min_cost_improvement": 1.003,
-    "max_index_width": 4,
 }
 
 

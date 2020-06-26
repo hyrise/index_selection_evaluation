@@ -5,12 +5,16 @@ import time
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
 from ..index import Index, index_merge
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
 # Maximum number of columns per index, storage budget in MB, runtime limit.
 # After n minutes the algorithm is stopped and the current best solution is returned.
-DEFAULT_PARAMETERS = {"max_index_width": 3, "budget_MB": 500, "max_runtime_minutes": 10}
+DEFAULT_PARAMETERS = {
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_runtime_minutes": 10,
+}
 
 
 class DTAAnytimeAlgorithm(SelectionAlgorithm):
