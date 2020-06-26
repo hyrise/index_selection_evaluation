@@ -97,6 +97,11 @@ class IndexSelection:
         self.db_connector.commit()
 
         for algorithm_config in config["algorithms"]:
+            # CoPhy must be skipped and manually executed via AMPL because it is not
+            # integrated yet.
+            if algorithm_config["name"] == "cophy":
+                continue
+
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
             configs = self._find_parameter_list(algorithm_config)
