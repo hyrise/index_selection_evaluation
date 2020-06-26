@@ -1,6 +1,15 @@
 # Index Selection Evaluation
 
-This repository contains the source code for the evaluation platform presented in the paper *An Experimental Evaluation of Index Selection Algorithms*. As part of this paper, we re-implemented 8 index selection algorithms ([references](#references) listed below): the drop heuristic [1], an algorithm similar to the initial AutoAdmin algorithm [2], an algorithm loosely following the DB2 advisor index selection [3], the Relaxation algorithm [4], CoPhy's approach [5], Dexter [6], the Extend algorithm [7], an algorithm loosely following SQLServer's DTA Anytime index selection [8].
+This repository contains the source code for the evaluation platform presented in the paper *An Experimental Evaluation of Index Selection Algorithms*. As part of this paper, we re-implemented 8 index selection algorithms ([references](#references) listed below):
+
+- The drop heuristic [1]
+- An algorithm similar to the initial AutoAdmin algorithm [2]
+- An algorithm loosely following the DB2 advisor index selection [3]
+- The Relaxation algorithm [4]
+- CoPhy's approach [5]
+- Dexter [6]
+- The Extend algorithm [7]
+- An algorithm loosely following SQLServer's DTA Anytime index selection [8]
 
 The implementations of the algorithms can be found under `selection/algorithms`. Documentation, also regarding the parameters of the algorithms, is part of the source files.
 
