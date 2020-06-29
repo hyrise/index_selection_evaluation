@@ -16,6 +16,13 @@ DEFAULT_PARAMETERS = {
 }
 
 
+# This algorithm resembles the index selection algorithm published in 1997 by Chaudhuri
+# and Narasayya. Details can be found in the original paper:
+# Surajit Chaudhuri, Vivek R. Narasayya: An Efficient Cost-Driven Index Selection
+# Tool for Microsoft SQL Server. VLDB 1997: 146-155
+#
+# Please note, that this implementation does not reflect the behavior and performance
+# of the original algorithm, which might be continuously enhanced and optimized.
 class AutoAdminAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(

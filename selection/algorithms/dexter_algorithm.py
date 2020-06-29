@@ -11,6 +11,11 @@ from ..selection_algorithm import SelectionAlgorithm
 DEFAULT_PARAMETERS = {"min_saving_percentage": 5}
 
 
+# This algorithm implementation serves as an adapter for the Dexter index selection tool
+# developed by Andrew Kane. The adapter calls the pre-installed tool.
+# An introductory blog post can be found at:
+# https://medium.com/@ankane/introducing-dexter-the-automatic-indexer-for-postgres-5f8fa8b28f27
+# and the source code is published at: https://github.com/ankane/dexter/
 class DexterAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(

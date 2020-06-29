@@ -21,41 +21,13 @@ DEFAULT_PARAMETERS = {
 }
 
 
-class IndexBenefit:
-    def __init__(self, index, benefit):
-        self.index = index
-        self.benefit = benefit
-
-    def __eq__(self, other):
-        if not isinstance(other, IndexBenefit):
-            return False
-
-        return other.index == self.index and self.benefit == other.benefit
-
-    def __lt__(self, other):
-        self_ratio = self.benefit_size_ratio()
-        other_ratio = other.benefit_size_ratio()
-
-        # For reproducible results, we also compare the index objects if the ratios
-        # are equal
-        if self_ratio == other_ratio:
-            return self.index < other.index
-
-        return self_ratio < other_ratio
-
-    def __hash__(self):
-        return hash((self.index, self.benefit))
-
-    def __repr__(self):
-        return f"IndexBenefit({self.index}, {self.benefit})"
-
-    def size(self):
-        return self.index.estimated_size
-
-    def benefit_size_ratio(self):
-        return self.benefit / self.size()
-
-
+# This algorithm resembles the index selection algorithm published in 2000 by Valentin
+# et al. Details can be found in the original paper:
+# Gary Valentin, Michael Zuliani, Daniel C. Zilio, Guy M. Lohman, Alan Skelley:
+# DB2 Advisor: An Optimizer Smart Enough to Recommend Its Own Indexes. ICDE 2000: 101-110
+#
+# Please note, that this implementation does not reflect the behavior and performance
+# of the original algorithm, which might be continuously enhanced and optimized.
 class DB2AdvisAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
@@ -200,3 +172,38 @@ class DB2AdvisAlgorithm(SelectionAlgorithm):
     def _evaluate_workload(self, index_benefits, workload):
         index_candidates = [index_benefit.index for index_benefit in index_benefits]
         return self.cost_evaluation.calculate_cost(workload, index_candidates)
+
+
+class IndexBenefit:
+    def __init__(self, index, benefit):
+        self.index = index
+        self.benefit = benefit
+
+    def __eq__(self, other):
+        if not isinstance(other, IndexBenefit):
+            return False
+
+        return other.index == self.index and self.benefit == other.benefit
+
+    def __lt__(self, other):
+        self_ratio = self.benefit_size_ratio()
+        other_ratio = other.benefit_size_ratio()
+
+        # For reproducible results, we also compare the index objects if the ratios
+        # are equal
+        if self_ratio == other_ratio:
+            return self.index < other.index
+
+        return self_ratio < other_ratio
+
+    def __hash__(self):
+        return hash((self.index, self.benefit))
+
+    def __repr__(self):
+        return f"IndexBenefit({self.index}, {self.benefit})"
+
+    def size(self):
+        return self.index.estimated_size
+
+    def benefit_size_ratio(self):
+        return self.benefit / self.size()

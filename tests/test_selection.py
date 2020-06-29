@@ -82,7 +82,9 @@ class TestIndexSelection(unittest.TestCase):
 
     def test_db2advis_algorithm(self):
         parameters = {}
-        db2advis_algorithm = self.index_selection.create_algorithm_object("db2advis", parameters)
+        db2advis_algorithm = self.index_selection.create_algorithm_object(
+            "db2advis", parameters
+        )
         workload = Workload([self.small_tpch.queries[0]])
 
         possible = candidates_per_query(
@@ -99,7 +101,9 @@ class TestIndexSelection(unittest.TestCase):
             "try_variations_seconds": 0,
             "max_index_width": 1,
         }
-        db2advis_algorithm = self.index_selection.create_algorithm_object("db2advis", parameters)
+        db2advis_algorithm = self.index_selection.create_algorithm_object(
+            "db2advis", parameters
+        )
         indexes = db2advis_algorithm.calculate_best_indexes(self.tpch_5_and_6)
         self.assertEqual(len(indexes), 1)
         self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")
@@ -109,7 +113,9 @@ class TestIndexSelection(unittest.TestCase):
             "try_variations_seconds": 0,
             "max_index_width": 1,
         }
-        db2advis_algorithm = self.index_selection.create_algorithm_object("db2advis", parameters)
+        db2advis_algorithm = self.index_selection.create_algorithm_object(
+            "db2advis", parameters
+        )
         indexes = db2advis_algorithm.calculate_best_indexes(self.tpch_5_and_6)
         self.assertEqual(len(indexes), 4)
         self.assertEqual(str(indexes[0]), "I(C supplier.s_nationkey)")

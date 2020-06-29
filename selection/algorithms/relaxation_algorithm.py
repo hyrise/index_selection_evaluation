@@ -20,6 +20,11 @@ DEFAULT_PARAMETERS = {
 }
 
 
+# This algorithm is a reimplementation of Bruno's and Chaudhuri's relaxation-based
+# approach to physical database design.
+# Details can be found in the original paper:
+# Nicolas Bruno, Surajit Chaudhuri: Automatic Physical Database Tuning:
+# A Relaxation-based Approach. SIGMOD Conference 2005: 227-238
 class RelaxationAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:

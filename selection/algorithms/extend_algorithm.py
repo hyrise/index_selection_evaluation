@@ -17,6 +17,11 @@ DEFAULT_PARAMETERS = {
 }
 
 
+# This algorithm is a reimplementation of the Extend heuristic published by Schlosser,
+# Kossmann, and Boissier in 2019.
+# Details can be found in the original paper:
+# Rainer Schlosser, Jan Kossmann, Martin Boissier: Efficient Scalable
+# Multi-attribute Index Selection Using Recursive Strategies. ICDE 2019: 1238-1249
 class ExtendAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:

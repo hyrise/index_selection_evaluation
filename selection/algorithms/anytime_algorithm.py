@@ -20,6 +20,13 @@ DEFAULT_PARAMETERS = {
 }
 
 
+# This algorithm is related to the DTA Anytime algorithm employed in SQL server.
+# Details of the current version of the original algorithm are not published yet.
+# See the documentation for a general description:
+# https://docs.microsoft.com/de-de/sql/tools/dta/dta-utility?view=sql-server-ver15
+#
+# Please note, that this implementation does not reflect the behavior and performance
+# of the original algorithm, which might be continuously enhanced and optimized.
 class AnytimeAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:

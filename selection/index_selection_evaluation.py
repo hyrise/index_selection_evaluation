@@ -5,12 +5,12 @@ import pickle
 import sys
 import time
 
+from .algorithms.anytime_algorithm import AnytimeAlgorithm
+from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
+from .algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
-from .algorithms.anytime_algorithm import AnytimeAlgorithm
 from .algorithms.extend_algorithm import ExtendAlgorithm
-from .algorithms.db2advis_algorithm import DB2AdvisAlgorithm
-from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
 from .algorithms.relaxation_algorithm import RelaxationAlgorithm
 from .benchmark import Benchmark
 from .dbms.hana_dbms import HanaDatabaseConnector
