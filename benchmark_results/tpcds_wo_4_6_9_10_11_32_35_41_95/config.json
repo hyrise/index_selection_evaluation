@@ -17,7 +17,7 @@
             "timeout": 300
         },
         {
-            "name": "ibm",
+            "name": "db2advis",
             "parameters": {
                 "max_index_width": 2,
                 "budget_MB": [250, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4250, 5000, 5750, 6500, 8000, 10000, 12500, 15000],
@@ -26,7 +26,7 @@
             "timeout": 300
         },
         {
-            "name": "epic",
+            "name": "extend",
             "parameters": {
                 "budget_MB": [250, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4250, 5000, 5750, 6500, 8000, 10000, 12500, 15000],
                 "max_index_width": 2
@@ -34,7 +34,7 @@
             "timeout": 300
         },
         {
-            "name": "dta_anytime",
+            "name": "anytime",
             "parameters": {
                 "max_index_width": 2,
                 "budget_MB": [250, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4250, 5000, 5750, 6500, 8000, 10000, 12500, 15000],
@@ -51,7 +51,7 @@
             "timeout": 300
         },
         {
-            "name": "microsoft",
+            "name": "auto_admin",
             "parameters": {
                 "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
                 "max_indexes_naive": 1,
@@ -68,7 +68,7 @@
             "timeout": 300
         },
         {
-            "name": "drop_heuristic",
+            "name": "drop",
             "parameters": {
                 "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
             },

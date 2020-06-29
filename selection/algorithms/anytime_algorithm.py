@@ -20,7 +20,7 @@ DEFAULT_PARAMETERS = {
 }
 
 
-class DTAAnytimeAlgorithm(SelectionAlgorithm):
+class AnytimeAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
@@ -32,7 +32,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         self.max_runtime_minutes = self.parameters["max_runtime_minutes"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes DTA Anytime")
+        logging.info("Calculating best indexes Anytime")
 
         # Generate syntactically relevant candidates
         candidates = candidates_per_query(
@@ -105,7 +105,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
                     self.cost_evaluation.estimate_size(merged_index)
                     indexes.add(merged_index)
 
-    # based on MicrosoftAlgorithm
+    # based on AutoAdminAlgorithm
     def enumerate_greedy(
         self, workload, current_indexes, current_costs, candidate_indexes, number_indexes,
     ):
@@ -147,7 +147,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
             )
         return current_indexes, current_costs
 
-    # copied from MicrosoftAlgorithm
+    # copied from AutoAdminAlgorithm
     def _simulate_and_evaluate_cost(self, workload, indexes):
         cost = self.cost_evaluation.calculate_cost(workload, indexes, store_size=True)
         return round(cost, 2)

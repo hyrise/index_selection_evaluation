@@ -56,7 +56,7 @@ class IndexBenefit:
         return self.benefit / self.size()
 
 
-class IBMAlgorithm(SelectionAlgorithm):
+class DB2AdvisAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
@@ -68,7 +68,7 @@ class IBMAlgorithm(SelectionAlgorithm):
         self.try_variations_max_removals = self.parameters["try_variations_max_removals"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes IBM")
+        logging.info("Calculating best indexes DB2Advis")
 
         # The chosen generator is similar to the original "BFI" and
         # uses all syntactically relevant indexes.

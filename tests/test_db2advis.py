@@ -2,7 +2,7 @@ import time
 import unittest
 from unittest.mock import MagicMock
 
-from selection.algorithms.ibm_algorithm import IBMAlgorithm, IndexBenefit
+from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm, IndexBenefit
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 from selection.index import Index
 from selection.query_generator import QueryGenerator
@@ -24,7 +24,7 @@ class MockConnector:
 MB_TO_BYTES = 1000000
 
 
-class TestIBMAlgorithmIntegration(unittest.TestCase):
+class TestDB2AdvisAlgorithmIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.db_name = "tpch_test_db_database"
@@ -54,10 +54,10 @@ class TestIBMAlgorithmIntegration(unittest.TestCase):
             connector.drop_database(cls.db_name)
 
 
-class TestIBMAlgorithm(unittest.TestCase):
+class TestDB2AdvisAlgorithm(unittest.TestCase):
     def setUp(self):
         self.connector = MockConnector()
-        self.algo = IBMAlgorithm(database_connector=self.connector)
+        self.algo = DB2AdvisAlgorithm(database_connector=self.connector)
 
         self.column_0 = Column("Col0")
         self.column_1 = Column("Col1")
@@ -88,7 +88,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         )
         # query_1 = Query(1, 'SELECT * FROM TableA WHERE ColA = 4;', [self.column_0])
 
-    def test_ibm_algorithm(self):
+    def test_db2advis_algorithm(self):
         # Should use default parameters if none are specified
         budget_in_mb = 500
         self.assertEqual(self.algo.disk_constraint, budget_in_mb * MB_TO_BYTES)

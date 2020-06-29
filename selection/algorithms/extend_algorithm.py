@@ -17,7 +17,7 @@ DEFAULT_PARAMETERS = {
 }
 
 
-class EPICAlgorithm(SelectionAlgorithm):
+class ExtendAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
@@ -30,7 +30,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         self.min_cost_improvement = self.parameters["min_cost_improvement"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes EPIC")
+        logging.info("Calculating best indexes Extend")
         self.workload = workload
         single_attribute_index_candidates = self.workload.potential_indexes()
         extension_attribute_candidates = single_attribute_index_candidates.copy()

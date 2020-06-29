@@ -16,7 +16,7 @@ DEFAULT_PARAMETERS = {
 }
 
 
-class MicrosoftAlgorithm(SelectionAlgorithm):
+class AutoAdminAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
@@ -28,7 +28,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         self.max_index_width = self.parameters["max_index_width"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes (microsoft)")
+        logging.info("Calculating best indexes AutoAdmin")
         logging.info("Parameters: " + str(self.parameters))
 
         if self.max_indexes == 0:

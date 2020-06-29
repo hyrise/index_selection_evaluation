@@ -14,7 +14,7 @@ def candidates_per_query(workload, max_index_width, candidate_generator):
 
 
 def syntactically_relevant_indexes(query, max_index_width):
-    # "SAEFIS" or "BFI" see IBM paper
+    # "SAEFIS" or "BFI" see paper linked in DB2Advis algorithm
     # This implementation is "BFI" and uses all syntactically relevant indexes.
     columns = query.columns
     logging.debug(f"{query}")
