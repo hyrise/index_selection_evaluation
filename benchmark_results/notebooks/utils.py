@@ -9,18 +9,20 @@ class Style():
         self.index_history = None
 
 styles = {
-    'epic': Style('Extend', '#4e79a7', 'd', '/'),
-    'drop_heuristic': Style('Drop', '#f28e2b', 'P', 'o'),
-    'microsoft': Style('AutoAdmin', '#e15759', '.', '.'),
-    'microsoft_naive_2': Style('Naive 2', '#9c755f', '.', ''),
+    'extend': Style('Extend', '#4e79a7', 'd', '/'),
+    'drop': Style('Drop', '#f28e2b', 'P', 'o'),
+    'auto_admin': Style('AutoAdmin', '#e15759', '.', '.'),
+    'auto_admin_naive_2': Style('Naive 2', '#9c755f', '.', ''),
     'dexter': Style('Dexter', '#bab0ac', 'X', 'x'),
-    'ibm': Style('DB2Advis', '#59a14f', '*', '*'),
+    'db2advis': Style('DB2Advis', '#59a14f', '*', '*'),
     'no_index': Style('No Index', '#76b7b2', '-', 'O'),
     'cophy': Style('CoPhy', '#b07aa1', 'p', '\\'),
     'relaxation': Style('Relaxation', '#ff9da7', '8', '-'),
-    'dta_anytime': Style('Anytime', '#9c755f', 's', '+'),
+    'anytime': Style('Anytime', '#9c755f', 's', '+'),
     'reinforcement_learning': Style('Deep RL', '#edc948', '1', '+')
 }
+
+ALGORITHMS = sorted(['extend', 'drop', 'auto_admin', 'auto_admin_naive_2', 'dexter', 'db2advis', 'cophy', 'relaxation', 'anytime'], key=lambda x: styles[x].label)
 
 def get_costs(df):
     costs = []
