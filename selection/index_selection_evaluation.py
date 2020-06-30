@@ -39,7 +39,7 @@ class IndexSelection:
     def __init__(self):
         logging.debug("Init IndexSelection")
         self.db_connector = None
-        self.default_config_file = "example_configs/config.json"
+        self.default_config_file = "example_configs/config_tpch.json"
         self.disable_output_files = False
         self.database_name = None
         self.database_system = None

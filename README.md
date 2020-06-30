@@ -15,6 +15,11 @@ The implementations of the algorithms can be found under `selection/algorithms`.
 
 While some of the chosen algorithms are related to tools employed in commercial DBMS products, the re-implemented algorithms do not fully reflect the behavior and performance of the original tools, which may be continuously enhanced and optimized.
 
+## Cost Estimation
+The evaluation platform allows utilizing cost estimations that are either based on hypothetical (what-if) or actual indexes. By default hypothetical indexes are used. For PostgreSQL, [HypoPG](https://github.com/HypoPG/hypopg) is used to provide what-if capabilities. To assess the accuracy of HypoPG, a comparison of cost estimations based on actual and hypothetical indexes for the TPC-H and TPC-DS benchmarks is provided [in this repository](https://github.com/hyrise/index_selection_evaluation/tree/refactoring/benchmark_results/cost_estimation_actual_vs_hypo) as well.
+
+Further details regarding cost estimation will be provided by the corresponding paper as soon as it is published.
+
 ## Usage
 
 Install script:
@@ -38,14 +43,14 @@ open htmlcov/index.html
 * Create a new algorithm class, based on `selection/algorithms/example_algorithm.py`
 * Add algorithm class name in `selection/index_selection_evaluation.py` to this dictionary:
 ```
-ALGORITHMS = {'microsoft': MicrosoftAlgorithm,
-              'drop_heuristic': DropHeuristicAlgorithm}
+ALGORITHMS = {'extend': ExtendAlgorithm,
+              'drop': DropHeuristicAlgorithm}
 ```
 * Create or adjust configuration files
 
 
 ## Formatting and Linting
-The code can be automatically formatted/linted by calling `./scripts/format.sh` or `./scripts/lint.sh` from the main folder.
+The code can be automatically formatted and linted by calling `./scripts/format.sh` and `./scripts/lint.sh` from the main folder.
 
 # References
 [1] (Drop): Kyu-Young Whang: Index Selection in Relational Databases. FODO 1985: 487-500
@@ -63,3 +68,6 @@ The code can be automatically formatted/linted by calling `./scripts/format.sh` 
 [7] (Extend): Rainer Schlosser, Jan Kossmann, Martin Boissier: Efficient Scalable Multi-attribute Index Selection Using Recursive Strategies. ICDE 2019: 1238-1249
 
 [8] (Anytime): Not published yet. DTA documentation: https://docs.microsoft.com/de-de/sql/tools/dta/dta-utility?view=sql-server-ver15
+
+# Acknowledgements
+We thank S. Chaudhuri, V. Narasayya, J. Rouhaud, A. Sharma, and D. Zilio for support, detailed answers, providing source code, and bug fixes.
