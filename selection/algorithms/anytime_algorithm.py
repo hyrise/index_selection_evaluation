@@ -5,32 +5,46 @@ import time
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
 from ..index import Index, index_merge
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
-# Maximum number of columns per index, storage budget in MB, runtime limit.
-# After n minutes the algorithm is stopped and the current best solution is returned.
-DEFAULT_PARAMETERS = {"max_index_columns": 3, "budget": 500, "max_runtime_minutes": 10}
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
+# max_runtime_minutes: The algorithm is stopped either if all seeds are evaluated or
+#                      when max_runtime_minutes is exceeded. Whatever happens first.
+#                      In case of the latter, the current best solution is returned.
+DEFAULT_PARAMETERS = {
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
+    "max_runtime_minutes": 10,
+}
 
 
-class DTAAnytimeAlgorithm(SelectionAlgorithm):
+# This algorithm is related to the DTA Anytime algorithm employed in SQL server.
+# Details of the current version of the original algorithm are not published yet.
+# See the documentation for a general description:
+# https://docs.microsoft.com/de-de/sql/tools/dta/dta-utility?view=sql-server-ver15
+#
+# Please note, that this implementation does not reflect the behavior and performance
+# of the original algorithm, which might be continuously enhanced and optimized.
+class AnytimeAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.disk_constraint = mb_to_b(self.parameters["budget"])
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
+        self.max_index_width = self.parameters["max_index_width"]
         self.max_runtime_minutes = self.parameters["max_runtime_minutes"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes DTA Anytime")
+        logging.info("Calculating best indexes Anytime")
 
         # Generate syntactically relevant candidates
         candidates = candidates_per_query(
             workload,
-            self.parameters["max_index_columns"],
+            self.parameters["max_index_width"],
             candidate_generator=syntactically_relevant_indexes,
         )
 
@@ -91,14 +105,14 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
         for table in index_table_dict:
             for index1, index2 in itertools.permutations(index_table_dict[table], 2):
                 merged_index = index_merge(index1, index2)
-                if len(merged_index.columns) > self.max_index_columns:
-                    new_columns = merged_index.columns[: self.max_index_columns]
+                if len(merged_index.columns) > self.max_index_width:
+                    new_columns = merged_index.columns[: self.max_index_width]
                     merged_index = Index(new_columns)
                 if merged_index not in indexes:
                     self.cost_evaluation.estimate_size(merged_index)
                     indexes.add(merged_index)
 
-    # based on MicrosoftAlgorithm
+    # based on AutoAdminAlgorithm
     def enumerate_greedy(
         self, workload, current_indexes, current_costs, candidate_indexes, number_indexes,
     ):
@@ -140,7 +154,7 @@ class DTAAnytimeAlgorithm(SelectionAlgorithm):
             )
         return current_indexes, current_costs
 
-    # copied from MicrosoftAlgorithm
+    # copied from AutoAdminAlgorithm
     def _simulate_and_evaluate_cost(self, workload, indexes):
         cost = self.cost_evaluation.calculate_cost(workload, indexes, store_size=True)
         return round(cost, 2)

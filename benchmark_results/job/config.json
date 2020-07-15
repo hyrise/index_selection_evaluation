@@ -10,26 +10,26 @@
             "timeout": 300
         },
         {
-            "name": "epic",
+            "name": "extend",
             "parameters": {
-                "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
-                "max_index_columns": 2
+                "budget_MB": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
+                "max_index_width": 2
             },
             "timeout": 300
         },
         {
             "name": "cophy",
             "parameters": {
-                "max_index_columns": 1,
+                "max_index_width": 1,
                 "max_indexes_per_query": 2
             },
             "timeout": 300
         },
         {
-            "name": "dta_anytime",
+            "name": "anytime",
             "parameters": {
-                "max_index_columns": 2,
-                "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
+                "max_index_width": 2,
+                "budget_MB": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
                 "max_runtime_minutes": 30
             },
             "timeout": 300
@@ -42,33 +42,33 @@
             "timeout": 300
         },
         {
-            "name": "ibm",
+            "name": "db2advis",
             "parameters": {
-                "max_index_columns": 2,
-                "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
-                "try_variation_seconds_limit": 0
+                "max_index_width": 2,
+                "budget_MB": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
+                "try_variations_seconds": 0
             },
             "timeout": 300
         },
         {
-            "name": "microsoft",
+            "name": "auto_admin",
             "parameters": {
                 "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
                 "max_indexes_naive": 1,
-                "max_index_columns": 2
+                "max_index_width": 2
             },
             "timeout": 300
         },
         {
             "name": "relaxation",
             "parameters": {
-                "budget": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
-                "max_index_columns": 2
+                "budget_MB": [250, 500, 1000, 1750, 2500, 3000, 3500, 4000, 4500, 5000, 6250, 7500, 10000, 12500, 15000],
+                "max_index_width": 2
             },
             "timeout": 300
         },
         {
-            "name": "drop_heuristic",
+            "name": "drop",
             "parameters": {
                 "max_indexes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
             },

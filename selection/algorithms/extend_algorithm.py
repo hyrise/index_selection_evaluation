@@ -1,33 +1,41 @@
 import logging
 
 from ..index import Index
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import b_to_mb, mb_to_b
 
-# cost_estimation: 'whatif' or 'acutal_runtimes'
-# Index combination budget in MB
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
+# min_cost_improvement: The value of the relative improvement that must be realized by a
+#                       new configuration to be selected.
+# The algorithm stops if either the budget is exceeded or no further beneficial
+# configurations can be found.
 DEFAULT_PARAMETERS = {
-    "cost_estimation": "whatif",
-    "budget": 10,
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "min_cost_improvement": 1.003,
-    "max_index_columns": 4,
 }
 
 
-class EPICAlgorithm(SelectionAlgorithm):
+# This algorithm is a reimplementation of the Extend heuristic published by Schlosser,
+# Kossmann, and Boissier in 2019.
+# Details can be found in the original paper:
+# Rainer Schlosser, Jan Kossmann, Martin Boissier: Efficient Scalable
+# Multi-attribute Index Selection Using Recursive Strategies. ICDE 2019: 1238-1249
+class ExtendAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.budget = mb_to_b(self.parameters["budget"])
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.budget = mb_to_b(self.parameters["budget_MB"])
+        self.max_index_width = self.parameters["max_index_width"]
         self.workload = None
         self.min_cost_improvement = self.parameters["min_cost_improvement"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes EPIC")
+        logging.info("Calculating best indexes Extend")
         self.workload = workload
         single_attribute_index_candidates = self.workload.potential_indexes()
         extension_attribute_candidates = single_attribute_index_candidates.copy()
@@ -83,7 +91,7 @@ class EPICAlgorithm(SelectionAlgorithm):
         ), "Attach to indexes called with multi column index"
 
         for position, index in enumerate(index_combination):
-            if len(index.columns) >= self.max_index_columns:
+            if len(index.columns) >= self.max_index_width:
                 continue
             if index.appendable_by(attribute):
                 new_index = Index(index.columns + attribute.columns)

@@ -1,6 +1,6 @@
 import unittest
 
-from selection.algorithms.microsoft_algorithm import MicrosoftAlgorithm
+from selection.algorithms.auto_admin_algorithm import AutoAdminAlgorithm
 from selection.index import Index
 from selection.workload import Workload
 from tests.mock_connector import (
@@ -14,15 +14,15 @@ from tests.mock_connector import (
 )
 
 
-class TestMicrosoftAlgorithm(unittest.TestCase):
+class TestAutoAdminAlgorithm(unittest.TestCase):
     def setUp(self):
         self.connector = MockConnector()
         self.database_name = "test_DB"
 
     def test_calculate_indexes_2indexes_3columns(self):
-        algorithm = MicrosoftAlgorithm(
+        algorithm = AutoAdminAlgorithm(
             database_connector=self.connector,
-            parameters={"max_indexes": 2, "max_index_columns": 3},
+            parameters={"max_indexes": 2, "max_index_width": 3},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (
@@ -35,9 +35,9 @@ class TestMicrosoftAlgorithm(unittest.TestCase):
         )
 
     def test_calculate_indexes_2indexes_2columns(self):
-        algorithm = MicrosoftAlgorithm(
+        algorithm = AutoAdminAlgorithm(
             database_connector=self.connector,
-            parameters={"max_indexes": 2, "max_index_columns": 2},
+            parameters={"max_indexes": 2, "max_index_width": 2},
         )
         algorithm.cost_evaluation.cache = mock_cache
         algorithm.cost_evaluation._prepare_cost_calculation = (

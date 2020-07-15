@@ -3,17 +3,28 @@ import logging
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
 from ..index import Index, index_merge, index_split
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
-# Maximum number of columns per index, storage budget in MB,
+# allowed_transformations: The algorithm transforms index configurations. Via this
+#                          parameter, the allowed transformations can be chosen.
+#                          In the original paper, 5 transformations are documented.
+#                          Except for "Promotion to clustered" all transformations are
+#                          implemented and part of the algorithm's default configuration.
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
 DEFAULT_PARAMETERS = {
-    "max_index_columns": 3,
-    "budget": 500,
     "allowed_transformations": ["splitting", "merging", "prefixing", "removal"],
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
 }
 
 
+# This algorithm is a reimplementation of Bruno's and Chaudhuri's relaxation-based
+# approach to physical database design.
+# Details can be found in the original paper:
+# Nicolas Bruno, Surajit Chaudhuri: Automatic Physical Database Tuning:
+# A Relaxation-based Approach. SIGMOD Conference 2005: 227-238
 class RelaxationAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
@@ -21,9 +32,9 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.disk_constraint = mb_to_b(self.parameters["budget"])
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
         self.transformations = self.parameters["allowed_transformations"]
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.max_index_width = self.parameters["max_index_width"]
         assert set(self.transformations) <= {
             "splitting",
             "merging",
@@ -37,7 +48,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         # Generate syntactically relevant candidates
         candidates = candidates_per_query(
             workload,
-            self.parameters["max_index_columns"],
+            self.parameters["max_index_width"],
             candidate_generator=syntactically_relevant_indexes,
         )
 
@@ -133,8 +144,8 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 ):
                     relaxed = input_configuration.copy()
                     merged_index = index_merge(index1, index2)
-                    if len(merged_index.columns) > self.max_index_columns:
-                        new_columns = merged_index.columns[: self.max_index_columns]
+                    if len(merged_index.columns) > self.max_index_width:
+                        new_columns = merged_index.columns[: self.max_index_width]
                         merged_index = Index(new_columns)
 
                     relaxed -= {index1, index2}

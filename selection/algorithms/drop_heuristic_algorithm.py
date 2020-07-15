@@ -1,11 +1,14 @@
 import logging
 
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 
-# Algorithm stops when maximum number of indexes is reached
-DEFAULT_PARAMETERS = {"max_indexes": 15, "cost_estimation": "whatif"}
+# max_indexes: The algorithm stops as soon as it has selected #max_indexes indexes
+DEFAULT_PARAMETERS = {"max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"]}
 
 
+# This algorithm is a reimplementation of the Drop heuristic proposed by Whang in 1985.
+# Details can be found in the original paper:
+# Kyu-Young Whang: Index Selection in Relational Databases. FODO 1985: 487-500
 class DropHeuristicAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:

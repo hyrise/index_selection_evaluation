@@ -2,7 +2,7 @@ import time
 import unittest
 from unittest.mock import MagicMock
 
-from selection.algorithms.ibm_algorithm import IBMAlgorithm, IndexBenefit
+from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm, IndexBenefit
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 from selection.index import Index
 from selection.query_generator import QueryGenerator
@@ -24,7 +24,7 @@ class MockConnector:
 MB_TO_BYTES = 1000000
 
 
-class TestIBMAlgorithmIntegration(unittest.TestCase):
+class TestDB2AdvisAlgorithmIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.db_name = "tpch_test_db_database"
@@ -54,10 +54,10 @@ class TestIBMAlgorithmIntegration(unittest.TestCase):
             connector.drop_database(cls.db_name)
 
 
-class TestIBMAlgorithm(unittest.TestCase):
+class TestDB2AdvisAlgorithm(unittest.TestCase):
     def setUp(self):
         self.connector = MockConnector()
-        self.algo = IBMAlgorithm(database_connector=self.connector)
+        self.algo = DB2AdvisAlgorithm(database_connector=self.connector)
 
         self.column_0 = Column("Col0")
         self.column_1 = Column("Col1")
@@ -88,13 +88,13 @@ class TestIBMAlgorithm(unittest.TestCase):
         )
         # query_1 = Query(1, 'SELECT * FROM TableA WHERE ColA = 4;', [self.column_0])
 
-    def test_ibm_algorithm(self):
+    def test_db2advis_algorithm(self):
         # Should use default parameters if none are specified
         budget_in_mb = 500
         self.assertEqual(self.algo.disk_constraint, budget_in_mb * MB_TO_BYTES)
         self.assertEqual(self.algo.cost_evaluation.cost_estimation, "whatif")
-        self.assertEqual(self.algo.seconds_limit, 10)
-        self.assertEqual(self.algo.maximum_remove, 4)
+        self.assertEqual(self.algo.try_variations_seconds, 10)
+        self.assertEqual(self.algo.try_variations_max_removals, 4)
 
     def test_index_benefit__lt__(self):
         index_0 = Index([self.column_0])
@@ -247,7 +247,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         index_7 = Index([self.column_7])
         index_7.estimated_size = 5
         self.algo.cost_evaluation.calculate_cost = MagicMock(return_value=17)
-        self.algo.seconds_limit = 0.2
+        self.algo.try_variations_seconds = 0.2
 
         time_before = time.time()
         self.algo._try_variations(
@@ -255,7 +255,9 @@ class TestIBMAlgorithm(unittest.TestCase):
             index_benefits=frozenset([IndexBenefit(index_1, 1)]),
             workload=[],
         )
-        self.assertGreaterEqual(time.time(), time_before + self.algo.seconds_limit)
+        self.assertGreaterEqual(
+            time.time(), time_before + self.algo.try_variations_seconds
+        )
 
         def fake(selected, workload):
             cost = 10
@@ -276,7 +278,7 @@ class TestIBMAlgorithm(unittest.TestCase):
         #         removed (index_1).
         # (iii) That index_4 does not get chosen even though it is better than index_1.
         self.algo._evaluate_workload = fake
-        self.algo.maximum_remove = 1
+        self.algo.try_variations_max_removals = 1
         self.algo.disk_constraint = 3
         new = self.algo._try_variations(
             selected_index_benefits=frozenset(

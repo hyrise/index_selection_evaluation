@@ -3,74 +3,50 @@ import random
 import time
 
 from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
-from ..selection_algorithm import SelectionAlgorithm
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from ..utils import get_utilized_indexes, mb_to_b
 
-# Maximum number of columns per index, storage budget in MB,
-# time to "try variations" in seconds (see IBM paper),
-# maximum index candidates removed while try_variations
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
+# try_variations_seconds: Time spent in TryVariations phase. See the original paper
+#                         for further details
+# try_variations_max_removals: Maximum number of index candidates that are remover per
+#                              TryVariations step.
+# The algorithm stops if the budget & the time for the TryVariations phase are exceeded.
 DEFAULT_PARAMETERS = {
-    "max_index_columns": 3,
-    "budget": 500,
-    "try_variation_seconds_limit": 10,
-    "try_variation_maximum_remove": 4,
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
+    "try_variations_seconds": 10,
+    "try_variations_max_removals": 4,
 }
 
 
-class IndexBenefit:
-    def __init__(self, index, benefit):
-        self.index = index
-        self.benefit = benefit
-
-    def __eq__(self, other):
-        if not isinstance(other, IndexBenefit):
-            return False
-
-        return other.index == self.index and self.benefit == other.benefit
-
-    def __lt__(self, other):
-        self_ratio = self.benefit_size_ratio()
-        other_ratio = other.benefit_size_ratio()
-
-        # For reproducible results, we also compare the index objects if the ratios
-        # are equal
-        if self_ratio == other_ratio:
-            return self.index < other.index
-
-        return self_ratio < other_ratio
-
-    def __hash__(self):
-        return hash((self.index, self.benefit))
-
-    def __repr__(self):
-        return f"IndexBenefit({self.index}, {self.benefit})"
-
-    def size(self):
-        return self.index.estimated_size
-
-    def benefit_size_ratio(self):
-        return self.benefit / self.size()
-
-
-class IBMAlgorithm(SelectionAlgorithm):
+# This algorithm resembles the index selection algorithm published in 2000 by Valentin
+# et al. Details can be found in the original paper:
+# Gary Valentin, Michael Zuliani, Daniel C. Zilio, Guy M. Lohman, Alan Skelley:
+# DB2 Advisor: An Optimizer Smart Enough to Recommend Its Own Indexes. ICDE 2000: 101-110
+#
+# Please note, that this implementation does not reflect the behavior and performance
+# of the original algorithm, which might be continuously enhanced and optimized.
+class DB2AdvisAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.disk_constraint = mb_to_b(self.parameters["budget"])
-        self.seconds_limit = self.parameters["try_variation_seconds_limit"]
-        self.maximum_remove = self.parameters["try_variation_maximum_remove"]
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
+        self.try_variations_seconds = self.parameters["try_variations_seconds"]
+        self.try_variations_max_removals = self.parameters["try_variations_max_removals"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes IBM")
+        logging.info("Calculating best indexes DB2Advis")
 
         # The chosen generator is similar to the original "BFI" and
         # uses all syntactically relevant indexes.
         candidates = candidates_per_query(
             workload,
-            self.parameters["max_index_columns"],
+            self.parameters["max_index_width"],
             candidate_generator=syntactically_relevant_indexes,
         )
         utilized_indexes, query_details = get_utilized_indexes(
@@ -86,7 +62,7 @@ class IBMAlgorithm(SelectionAlgorithm):
                 selected_index_benefits.append(index_benefit)
                 disk_usage += index_benefit.size()
 
-        if self.seconds_limit > 0:
+        if self.try_variations_seconds > 0:
             selected_index_benefits = self._try_variations(
                 selected_index_benefits, index_benefits_subsumed, workload
             )
@@ -143,25 +119,27 @@ class IBMAlgorithm(SelectionAlgorithm):
         return sorted(result_set, reverse=True)
 
     def _try_variations(self, selected_index_benefits, index_benefits, workload):
-        logging.debug(f"Try variation for {self.seconds_limit} seconds")
+        logging.debug(f"Try variation for {self.try_variations_seconds} seconds")
         start_time = time.time()
 
         not_used_index_benefits = set(index_benefits) - set(selected_index_benefits)
 
         min_length = min(len(selected_index_benefits), len(not_used_index_benefits))
-        if self.maximum_remove > min_length:
-            self.maximum_remove = min_length
+        if self.try_variations_max_removals > min_length:
+            self.try_variations_max_removals = min_length
 
-        if self.maximum_remove == 0:
+        if self.try_variations_max_removals == 0:
             return selected_index_benefits
 
         current_cost = self._evaluate_workload(selected_index_benefits, workload)
         logging.debug(f"Initial cost \t{current_cost}")
         selected_index_benefits_set = set(selected_index_benefits)
 
-        while start_time + self.seconds_limit > time.time():
+        while start_time + self.try_variations_seconds > time.time():
             number_of_exchanges = (
-                random.randrange(1, self.maximum_remove) if self.maximum_remove > 1 else 1
+                random.randrange(1, self.try_variations_max_removals)
+                if self.try_variations_max_removals > 1
+                else 1
             )
             indexes_to_remove = frozenset(
                 random.sample(selected_index_benefits_set, k=number_of_exchanges)
@@ -194,3 +172,38 @@ class IBMAlgorithm(SelectionAlgorithm):
     def _evaluate_workload(self, index_benefits, workload):
         index_candidates = [index_benefit.index for index_benefit in index_benefits]
         return self.cost_evaluation.calculate_cost(workload, index_candidates)
+
+
+class IndexBenefit:
+    def __init__(self, index, benefit):
+        self.index = index
+        self.benefit = benefit
+
+    def __eq__(self, other):
+        if not isinstance(other, IndexBenefit):
+            return False
+
+        return other.index == self.index and self.benefit == other.benefit
+
+    def __lt__(self, other):
+        self_ratio = self.benefit_size_ratio()
+        other_ratio = other.benefit_size_ratio()
+
+        # For reproducible results, we also compare the index objects if the ratios
+        # are equal
+        if self_ratio == other_ratio:
+            return self.index < other.index
+
+        return self_ratio < other_ratio
+
+    def __hash__(self):
+        return hash((self.index, self.benefit))
+
+    def __repr__(self):
+        return f"IndexBenefit({self.index}, {self.benefit})"
+
+    def size(self):
+        return self.index.estimated_size
+
+    def benefit_size_ratio(self):
+        return self.benefit / self.size()
