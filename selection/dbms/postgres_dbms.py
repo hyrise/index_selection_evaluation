@@ -73,8 +73,8 @@ class PostgresDatabaseConnector(DatabaseConnector):
         logging.info("Database {} created".format(database_name))
 
     def import_data(self, table, path, delimiter="|", encoding=None):
-        if encoding:
-            with open(path, "r", encoding=encoding) as file:
+        with open(path, encoding=encoding) as file:
+            if encoding:
                 self._cursor.copy_expert(
                     (
                         f"COPY {table} FROM STDIN WITH DELIMITER AS '{delimiter}' NULL "
@@ -82,8 +82,7 @@ class PostgresDatabaseConnector(DatabaseConnector):
                     ),
                     file,
                 )
-        else:
-            with open(path, "r") as file:
+            else:
                 self._cursor.copy_from(file, table, sep=delimiter, null="")
 
     def indexes_size(self):

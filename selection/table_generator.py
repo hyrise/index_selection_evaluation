@@ -34,7 +34,7 @@ class TableGenerator:
                 self._generate()
             self.create_database()
         else:
-            logging.debug("Database with given scale factor already " "existing")
+            logging.debug("Database with given scale factor already existing")
         self._read_column_names()
 
     def database_name(self):
@@ -60,7 +60,7 @@ class TableGenerator:
     def _read_column_names(self):
         # Read table and column names from 'create table' statements
         schema_file = f"{self.directory}/{self.create_table_statements_file}"
-        with open(schema_file, "r") as file:
+        with open(schema_file) as file:
             data = file.read().lower()
         create_table_statements = data.split("create table ")[1:]
         for create_table_statement in create_table_statements:
@@ -94,7 +94,7 @@ class TableGenerator:
     def create_database(self):
         self.db_connector.create_database(self.database_name())
         schema_file = f"{self.directory}/{self.create_table_statements_file}"
-        with open(schema_file, "r") as file:
+        with open(schema_file) as file:
             create_statements = file.read()
 
         # Do not create primary keys

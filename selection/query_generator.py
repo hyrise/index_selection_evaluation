@@ -143,7 +143,7 @@ class QueryGenerator:
                 continue
             query_id = filename.replace(".sql", "")
 
-            with open(f"{self.directory}/{filename}", "r") as query_file:
+            with open(f"{self.directory}/{filename}") as query_file:
                 query_text = query_file.read()
                 query_text = query_text.replace("\t", "")
                 query = Query(query_id, query_text)
@@ -155,6 +155,7 @@ class QueryGenerator:
                 query_text_before_where = split[0]
                 query_text_after_where = split[1]
 
+                # Add indexable columns to query
                 for column in self.columns:
                     if (
                         column.name in query_text_after_where

@@ -142,6 +142,8 @@ def download_and_uncompress_imdb_data():
             status = (
                 f"Retrieved {already_retrieved * 100.0 / file_size:3.2f}% of the data"
             )
+            # chr(8) refers to a backspace. In conjunction with end="\r", this overwrites
+            # the previous status value and achieves the right padding.
             status = f"{status}{chr(8) * (len(status) + 1)}"
             print(status, end="\r")
     except Exception:
