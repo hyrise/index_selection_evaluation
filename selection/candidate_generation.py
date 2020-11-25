@@ -19,7 +19,6 @@ def syntactically_relevant_indexes(query, max_index_width):
     columns = query.columns
     logging.debug(f"{query}")
     logging.debug(f"Indexable columns: {len(columns)}")
-    max_index_width
 
     indexable_columns_per_table = {}
     for column in columns:
