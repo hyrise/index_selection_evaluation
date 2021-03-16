@@ -1,6 +1,6 @@
 # Index Selection Evaluation
 
-This repository contains the source code for the evaluation platform presented in the paper *An Experimental Evaluation of Index Selection Algorithms*. As part of this paper, we re-implemented 8 index selection algorithms ([references](#references) listed below):
+This repository contains the source code for the evaluation platform presented in the paper [*Magic mirror in my hand, which is the best in the land? An Experimental Evaluation of Index Selection Algorithms*](http://www.vldb.org/pvldb/vol13/p2382-kossmann.pdf). As part of this paper, we re-implemented 8 index selection algorithms ([references](#references) listed below):
 
 - The drop heuristic [1]
 - An algorithm similar to the initial AutoAdmin algorithm [2]
@@ -14,6 +14,25 @@ This repository contains the source code for the evaluation platform presented i
 The implementations of the algorithms can be found under `selection/algorithms`. Documentation, also regarding the parameters of the algorithms, is part of the source files.
 
 While some of the chosen algorithms are related to tools employed in commercial DBMS products, the re-implemented algorithms do not fully reflect the behavior and performance of the original tools, which may be continuously enhanced and optimized.
+
+## Citing the project
+If you have used our evaluation platform or rely on our implementations for research on index selection, please consider citing our paper:
+```
+@article{DBLP:journals/pvldb/KossmannHJS20,
+  author    = {Jan Kossmann and
+               Stefan Halfpap and
+               Marcel Jankrift and
+               Rainer Schlosser},
+  title     = {Magic mirror in my hand, which is the best in the land? An Experimental
+               Evaluation of Index Selection Algorithms},
+  journal   = {Proc. {VLDB} Endow.},
+  volume    = {13},
+  number    = {11},
+  pages     = {2382--2395},
+  year      = {2020},
+  url       = {http://www.vldb.org/pvldb/vol13/p2382-kossmann.pdf}
+}
+```
 
 ## Cost Estimation
 The evaluation platform allows utilizing cost estimations that are either based on hypothetical (what-if) or actual indexes. By default hypothetical indexes are used. For PostgreSQL, [HypoPG](https://github.com/HypoPG/hypopg) is used to provide what-if capabilities. To assess the accuracy of HypoPG, a comparison of cost estimations based on actual and hypothetical indexes for the TPC-H and TPC-DS benchmarks is provided [in this repository](https://github.com/hyrise/index_selection_evaluation/tree/refactoring/benchmark_results/cost_estimation_actual_vs_hypo) as well.
