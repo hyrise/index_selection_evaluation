@@ -16,7 +16,7 @@ The implementations of the algorithms can be found under `selection/algorithms`.
 While some of the chosen algorithms are related to tools employed in commercial DBMS products, the re-implemented algorithms do not fully reflect the behavior and performance of the original tools, which may be continuously enhanced and optimized.
 
 ## Citing the project
-If you have used our evaluation platform or rely on our implementations for research on index selection, please consider citing our paper:
+If you use (parts of) our implementation for research on index selection, please consider citing our paper:
 ```
 @article{DBLP:journals/pvldb/KossmannHJS20,
   author    = {Jan Kossmann and
