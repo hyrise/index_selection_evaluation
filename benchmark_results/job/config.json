@@ -1,6 +1,6 @@
 {
     "database_system": "postgres",
-    "benchmark_name": "JOB",
+    "benchmark_name": "job",
     "scale_factor": 1,
     "algorithms": [
         {

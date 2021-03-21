@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock
 
 import utils
+
 from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
