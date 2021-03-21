@@ -1,4 +1,5 @@
 import json
+import seaborn as sns
 
 class Style():
     def __init__(self, label, color, marker, hatch):
@@ -8,19 +9,32 @@ class Style():
         self.hatch = hatch
         self.index_history = None
 
+# Hatches are set but overwritten by the definition in line 30ff.
 styles = {
-    'epic': Style('Extend', '#4e79a7', 'd', '/'),
-    'drop_heuristic': Style('Drop', '#f28e2b', 'P', 'o'),
-    'microsoft': Style('AutoAdmin', '#e15759', '.', '.'),
-    'microsoft_naive_2': Style('Naive 2', '#9c755f', '.', ''),
+    'extend': Style('Extend', '#4e79a7', 'd', '/'),
+    'drop': Style('Drop', '#f28e2b', 'P', 'o'),
+    'auto_admin': Style('AutoAdmin', '#e15759', '.', '.'),
+    'auto_admin_naive_2': Style('Naive 2', '#9c755f', '.', ''),
     'dexter': Style('Dexter', '#bab0ac', 'X', 'x'),
-    'ibm': Style('DB2Advis', '#59a14f', '*', '*'),
-    'no_index': Style('No Index', '#76b7b2', '-', 'O'),
+    'db2advis': Style('DB2Advis', '#59a14f', '*', '*'),
+    'no_index': Style('w/o Indexes', '#76b7b2', '-', 'O'),
     'cophy': Style('CoPhy', '#b07aa1', 'p', '\\'),
     'relaxation': Style('Relaxation', '#ff9da7', '8', '-'),
-    'dta_anytime': Style('Anytime', '#9c755f', 's', '+'),
+    'anytime': Style('DTA', '#9c755f', 's', '+'),
     'reinforcement_learning': Style('Deep RL', '#edc948', '1', '+')
 }
+
+ALGORITHMS = sorted(['extend', 'drop', 'auto_admin', 'auto_admin_naive_2', 'dexter', 'db2advis', 'cophy', 'relaxation', 'anytime'], key=lambda x: styles[x].label)
+
+colors = sns.cubehelix_palette(n_colors=len(styles), rot=2, reverse=True, light=0.9, dark=0.3, hue=1)
+hatches = ["", "", "/////", "", "\\\\\\\\\\", "", "/\\/\\/\\/\\/\\", "", "", "/////", "", "\\\\\\\\\\", "", "/\\/\\/\\/\\/\\"]
+
+for idx, algorithm in enumerate(ALGORITHMS):
+    styles[algorithm].color = colors[idx]
+    styles[algorithm].hatch = hatches[idx]
+
+styles['no_index'].color = colors[idx + 1]
+styles['no_index'].hatch = hatches[idx + 1]
 
 def get_costs(df):
     costs = []

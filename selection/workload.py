@@ -2,8 +2,7 @@ from .index import Index
 
 
 class Workload:
-    def __init__(self, queries, database_name):
-        self.database_name = database_name
+    def __init__(self, queries):
         self.queries = queries
 
     def indexable_columns(self):

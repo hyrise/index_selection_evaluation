@@ -4,12 +4,12 @@
     "scale_factor": 0.001,
     "algorithms": [
         {
-            "name": "microsoft",
+            "name": "auto_admin",
             "parameters": {
                 "cost_estimation": "actual_runtimes",
                 "max_indexes": 10,
                 "max_indexes_naive": 1,
-                "max_index_columns": 3
+                "max_index_width": 3
             },
             "number_of_actual_runs": 5,
             "timeout": 30

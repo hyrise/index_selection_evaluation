@@ -1,20 +1,29 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..workload import Workload
-from ..index import Index
 import itertools
 import logging
 
-# multi column index methods: 'no', 'lead', 'all'
-# cost_estimation: 'whatif' or 'acutal_runtimes'
+from ..index import Index
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
+from ..workload import Workload
+
+# max_indexes: The algorithm stops as soon as it has selected #max_indexes indexes
+# max_indexes_naive: Number of indexes selected by a naive enumeration, see
+#                    enumerate_naive() for further details.
+# max_index_width: The number of columns an index can contain at maximum.
 DEFAULT_PARAMETERS = {
-    "max_indexes": 15,
-    "max_indexes_naive": 3,
-    "max_index_columns": 2,
-    "cost_estimation": "whatif",
+    "max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"],
+    "max_indexes_naive": 2,
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
 }
 
 
-class MicrosoftAlgorithm(SelectionAlgorithm):
+# This algorithm resembles the index selection algorithm published in 1997 by Chaudhuri
+# and Narasayya. Details can be found in the original paper:
+# Surajit Chaudhuri, Vivek R. Narasayya: An Efficient Cost-Driven Index Selection
+# Tool for Microsoft SQL Server. VLDB 1997: 146-155
+#
+# Please note, that this implementation does not reflect the behavior and performance
+# of the original algorithm, which might be continuously enhanced and optimized.
+class AutoAdminAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
@@ -23,10 +32,10 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         self.max_indexes_naive = min(
             self.parameters["max_indexes_naive"], self.max_indexes
         )
-        self.max_columns_per_index = self.parameters["max_index_columns"]
+        self.max_index_width = self.parameters["max_index_width"]
 
     def _calculate_best_indexes(self, workload):
-        logging.info("Calculating best indexes (microsoft)")
+        logging.info("Calculating best indexes AutoAdmin")
         logging.info("Parameters: " + str(self.parameters))
 
         if self.max_indexes == 0:
@@ -34,12 +43,12 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
 
         # Set potential indexes for first iteration
         potential_indexes = workload.potential_indexes()
-        for current_max_columns_per_index in range(1, self.max_columns_per_index + 1):
+        for current_max_index_width in range(1, self.max_index_width + 1):
             candidates = self.select_index_candidates(workload, potential_indexes)
             indexes = self.enumerate_combinations(workload, candidates)
             assert indexes <= candidates, "Indexes must be a subset of candidate indexes"
 
-            if current_max_columns_per_index < self.max_columns_per_index:
+            if current_max_index_width < self.max_index_width:
                 # Update potential indexes for the next iteration
                 potential_indexes = indexes | self.create_multicolumn_indexes(
                     workload, indexes
@@ -52,7 +61,7 @@ class MicrosoftAlgorithm(SelectionAlgorithm):
         for query in workload.queries:
             logging.debug(f"Find candidates for query\t{query}...")
             # Create a workload consisting of one query
-            query_workload = Workload([query], workload.database_name)
+            query_workload = Workload([query])
             indexes = self._potential_indexes_for_query(query, potential_indexes)
             candidates |= self.enumerate_combinations(query_workload, indexes)
 

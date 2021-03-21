@@ -1,8 +1,10 @@
+import unittest
+from unittest.mock import MagicMock
+
+from selection.candidate_generation import syntactically_relevant_indexes
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-import unittest
-from unittest.mock import MagicMock
 
 
 class MockConnector:
@@ -40,7 +42,7 @@ class TestCostEvaluation(unittest.TestCase):
             ),
         ]
 
-        cls.workload = Workload(cls.queries, cls.db_name)
+        cls.workload = Workload(cls.queries)
 
     def setUp(self):
         # We mock the connector because it is needed by the cost evaluation.
@@ -100,7 +102,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
@@ -116,7 +118,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
 
         self.cost_evaluation.calculate_cost(workload, set([Index([self.columns[0]])]))
         self.assertEqual(self.cost_evaluation.cost_requests, 1)
@@ -132,7 +134,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
         index_0 = Index([self.columns[0]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
@@ -150,7 +152,7 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
         self.assertEqual(self.cost_evaluation.cache_hits, 0)
 
-        workload = Workload([self.queries[0]], self.db_name)
+        workload = Workload([self.queries[0]])
         index_1 = Index([self.columns[1]])
 
         self.cost_evaluation.calculate_cost(workload, indexes=set())
@@ -163,6 +165,47 @@ class TestCostEvaluation(unittest.TestCase):
         self.assertEqual(self.cost_evaluation.cache_hits, 1)
         self.assertEqual(self.connector.get_cost.call_count, 1)
         self.connector.simulate_index.assert_called_with(index_1)
+
+    def test_which_indexes_utilized_and_cost(self):
+        def _simulate_index_mock(index, store_size):
+            index.hypopg_name = f"<1337>btree_{index.columns}"
+
+        # For some reason, the database decides to only use an index for one of
+        # the filters
+        def _simulate_get_plan(query):
+            plan = {
+                "Total Cost": 17,
+                "Plans": [
+                    {
+                        "Index Name": "<1337>btree_(C testtablea.col1,)",
+                        "Filter": "(Col0 = 14)",
+                    }
+                ],
+            }
+
+            return plan
+
+        query = self.queries[2]
+
+        self.cost_evaluation.db_connector.get_plan = MagicMock(
+            side_effect=_simulate_get_plan
+        )
+        self.cost_evaluation.what_if.simulate_index = MagicMock(
+            side_effect=_simulate_index_mock
+        )
+
+        candidates = syntactically_relevant_indexes(query, max_index_width=2)
+        indexes, cost = self.cost_evaluation.which_indexes_utilized_and_cost(
+            query, candidates
+        )
+        self.assertEqual(cost, 17)
+        self.assertEqual(indexes, {Index([self.columns[1]])})
+
+        self.assertEqual(
+            self.cost_evaluation.what_if.simulate_index.call_count, len(candidates)
+        )
+        self.cost_evaluation.db_connector.get_plan.assert_called_once_with(query)
+        self.assertCountEqual(self.cost_evaluation.current_indexes, candidates)
 
 
 class TestPrepareCostEvaluation(unittest.TestCase):

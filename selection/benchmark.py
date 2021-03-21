@@ -1,11 +1,13 @@
-import time
-import json
-import random
-import logging
 import datetime
-import subprocess
+import json
+import logging
 import os.path
 import pickle
+import random
+import subprocess
+import time
+
+from .utils import s_to_ms
 
 
 class Benchmark:
@@ -25,7 +27,7 @@ class Benchmark:
         self.workload = workload
         self.db_connector = db_connector
         self.indexes = indexes
-        self.timeout = config["timeout"]
+        self.timeout_ms = s_to_ms(config["timeout"])
         self.number_of_runs = (
             config["number_of_actual_runs"] if "number_of_actual_runs" in config else 0
         )
@@ -176,7 +178,7 @@ class Benchmark:
         self._store_results(results, plans)
 
     def _benchmark_query(self, query):
-        exec_result = self.db_connector.exec_query(query, timeout=self.timeout)
+        exec_result = self.db_connector.exec_query(query, timeout=self.timeout_ms)
         return exec_result
 
     def _calculate_hits(self, plan):

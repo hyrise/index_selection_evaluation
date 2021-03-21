@@ -1,10 +1,11 @@
-from .workload import Table, Column
-
 import logging
-import platform
-import subprocess
 import os
+import platform
 import re
+import subprocess
+
+from .utils import b_to_mb
+from .workload import Column, Table
 
 
 class TableGenerator:
@@ -96,7 +97,7 @@ class TableGenerator:
             table = filename.replace(".tbl", "").replace(".dat", "")
             path = self.directory + "/" + filename
             size = os.path.getsize(path)
-            size_string = "{:,} MB".format(size / 1000000)
+            size_string = f"{b_to_mb(size):,.4f} MB"
             logging.debug(f"    Import data of size {size_string}")
             database_connector.import_data(table, path)
             os.remove(os.path.join(self.directory, filename))

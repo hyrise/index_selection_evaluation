@@ -1,7 +1,8 @@
+import itertools
+
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table
-import itertools
 
 table_A = Table("TableA")
 column_A_0 = Column("Col0")

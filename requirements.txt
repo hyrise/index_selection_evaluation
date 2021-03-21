@@ -3,3 +3,4 @@ coverage
 pyhdb
 black
 flake8
+isort
