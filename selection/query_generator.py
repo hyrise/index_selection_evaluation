@@ -155,7 +155,13 @@ class QueryGenerator:
                 query_text_before_where = split[0]
                 query_text_after_where = split[1]
 
-                # Add indexable columns to query
+                # Adds indexable columns to query. Parsing JOB queries is more complex
+                # than TPC-* queries as column names (in the part of the query before
+                # WHERE) are not always distinct. Also, below implementation might
+                # appear to theoratically overlook indexable columns. However, we
+                # verified this manually and did not encounter any problems. Still,
+                # this should be improved and a proper solution should be able to
+                # handle queries of all supported workloads (#44).
                 for column in self.columns:
                     if (
                         column.name in query_text_after_where
