@@ -1,5 +1,6 @@
-from .what_if_index_creation import WhatIfIndexCreation
 import logging
+
+from .what_if_index_creation import WhatIfIndexCreation
 
 
 class CostEvaluation:
@@ -35,6 +36,32 @@ class CostEvaluation:
                 index.estimated_size = self.what_if.estimate_index_size(result.hypopg_oid)
         else:
             self._simulate_or_create_index(index, store_size=True)
+
+    def which_indexes_utilized_and_cost(self, query, indexes):
+        self._prepare_cost_calculation(indexes, store_size=True)
+
+        plan = self.db_connector.get_plan(query)
+        cost = plan["Total Cost"]
+        plan_str = str(plan)
+
+        recommended_indexes = set()
+
+        # We are iterating over the CostEvalution's indexes and not over `indexes`
+        # because it is not guaranteed that hypopg_name is set for all items in
+        # `indexes`. This is caused by _prepare_cost_calculation that only creates
+        # indexes which are not yet existing. If there is no hypothetical index
+        # created for an index object, there is no hypopg_name assigned to it. However,
+        # all items in current_indexes must also have an equivalent in `indexes`.
+        for index in self.current_indexes:
+            assert (
+                index in indexes
+            ), "Something went wrong with _prepare_cost_calculation."
+
+            if index.hypopg_name not in plan_str:
+                continue
+            recommended_indexes.add(index)
+
+        return recommended_indexes, cost
 
     def calculate_cost(self, workload, indexes, store_size=False):
         assert (

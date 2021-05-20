@@ -1,11 +1,12 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..index import Index
 import logging
+
+from ..index import Index
+from ..selection_algorithm import SelectionAlgorithm
 
 DEFAULT_PARAMETERS = {"example_parameter": 3}
 
 
-class IBMAlgorithm(SelectionAlgorithm):
+class ExampleAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS

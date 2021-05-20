@@ -5,7 +5,7 @@
     "seed": 1556097050.8199081,
     "algorithms": [
         {
-            "name": "microsoft",
+            "name": "auto_admin",
             "parameters": {
                 "max_indexes": 1,
                 "max_indexes_naive": 1

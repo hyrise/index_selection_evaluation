@@ -1,7 +1,8 @@
+import unittest
+
+from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-import unittest
-from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
 
 
 class TestTable(unittest.TestCase):
@@ -153,11 +154,9 @@ class TestWorkload(unittest.TestCase):
     def test_workload(self):
         query_1 = Query(17, "SELECT * FROM TableA;")
         query_2 = Query(18, "SELECT * FROM nation;")
-        database_name = "test_DB"
 
-        workload = Workload([query_1, query_2], database_name)
+        workload = Workload([query_1, query_2])
         self.assertEqual(workload.queries, [query_1, query_2])
-        self.assertEqual(workload.database_name, database_name)
 
     def test_workload_indexable_columns(self):
         table = Table("TableA")
@@ -178,9 +177,8 @@ class TestWorkload(unittest.TestCase):
             "SELECT * FROM TableA WHERE ColA = 3 AND ColC = 2;",
             columns=[column_1, column_3],
         )
-        database_name = "test_DB"
 
-        workload = Workload([query_1, query_2], database_name)
+        workload = Workload([query_1, query_2])
         indexable_columns = workload.indexable_columns()
         self.assertEqual(
             sorted(indexable_columns), sorted([column_1, column_2, column_3])
@@ -191,18 +189,13 @@ class TestWorkload(unittest.TestCase):
         index_set_2 = set([Index([column_A_0]), Index([column_A_1]), Index([column_A_2])])
 
         self.assertEqual(
-            set(Workload([query_0], database_name="test_DB").potential_indexes()),
-            index_set_1,
+            set(Workload([query_0]).potential_indexes()), index_set_1,
         )
         self.assertEqual(
-            set(Workload([query_1], database_name="test_DB").potential_indexes()),
-            index_set_2,
+            set(Workload([query_1]).potential_indexes()), index_set_2,
         )
         self.assertEqual(
-            set(
-                Workload([query_0, query_1], database_name="test_DB").potential_indexes()
-            ),
-            index_set_2,
+            set(Workload([query_0, query_1]).potential_indexes()), index_set_2,
         )
 
 

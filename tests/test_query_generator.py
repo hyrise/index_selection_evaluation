@@ -1,7 +1,8 @@
-from selection.query_generator import QueryGenerator
-from selection.dbms.postgres_dbms import PostgresDatabaseConnector
-from selection.table_generator import TableGenerator
 import unittest
+
+from selection.dbms.postgres_dbms import PostgresDatabaseConnector
+from selection.query_generator import QueryGenerator
+from selection.table_generator import TableGenerator
 
 
 class TestQueryGenerator(unittest.TestCase):

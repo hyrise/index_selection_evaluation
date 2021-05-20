@@ -1,20 +1,3 @@
-from .workload import Workload
-from .benchmark import Benchmark
-from .algorithms.microsoft_algorithm import MicrosoftAlgorithm
-from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
-from .algorithms.epic_algorithm import EPICAlgorithm
-from .algorithms.dexter_algorithm import DexterAlgorithm
-from .algorithms.ibm_algorithm import IBMAlgorithm
-from .algorithms.relaxation_algorithm import RelaxationAlgorithm
-from .algorithms.dta_anytime_algorithm import DTAAnytimeAlgorithm
-from .dbms.postgres_dbms import PostgresDatabaseConnector
-from .dbms.hana_dbms import HanaDatabaseConnector
-
-#  from .index import Index
-from .selection_algorithm import NoIndexAlgorithm, AllIndexesAlgorithm
-from .table_generator import TableGenerator
-from .query_generator import QueryGenerator
-
 import copy
 import json
 import logging
@@ -22,16 +5,31 @@ import pickle
 import sys
 import time
 
+from .algorithms.anytime_algorithm import AnytimeAlgorithm
+from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
+from .algorithms.db2advis_algorithm import DB2AdvisAlgorithm
+from .algorithms.dexter_algorithm import DexterAlgorithm
+from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
+from .algorithms.extend_algorithm import ExtendAlgorithm
+from .algorithms.relaxation_algorithm import RelaxationAlgorithm
+from .benchmark import Benchmark
+from .dbms.hana_dbms import HanaDatabaseConnector
+from .dbms.postgres_dbms import PostgresDatabaseConnector
+from .query_generator import QueryGenerator
+from .selection_algorithm import AllIndexesAlgorithm, NoIndexAlgorithm
+from .table_generator import TableGenerator
+from .workload import Workload
+
 ALGORITHMS = {
-    "microsoft": MicrosoftAlgorithm,
-    "drop_heuristic": DropHeuristicAlgorithm,
+    "anytime": AnytimeAlgorithm,
+    "auto_admin": AutoAdminAlgorithm,
+    "db2advis": DB2AdvisAlgorithm,
+    "dexter": DexterAlgorithm,
+    "drop": DropHeuristicAlgorithm,
+    "extend": ExtendAlgorithm,
+    "relaxation": RelaxationAlgorithm,
     "no_index": NoIndexAlgorithm,
     "all_indexes": AllIndexesAlgorithm,
-    "ibm": IBMAlgorithm,
-    "epic": EPICAlgorithm,
-    "dexter": DexterAlgorithm,
-    "relaxation": RelaxationAlgorithm,
-    "dta_anytime": DTAAnytimeAlgorithm,
 }
 
 DBMSYSTEMS = {"postgres": PostgresDatabaseConnector, "hana": HanaDatabaseConnector}
@@ -41,7 +39,7 @@ class IndexSelection:
     def __init__(self):
         logging.debug("Init IndexSelection")
         self.db_connector = None
-        self.default_config_file = "example_configs/config.json"
+        self.default_config_file = "example_configs/config_tpch.json"
         self.disable_output_files = False
         self.database_name = None
         self.database_system = None
@@ -78,7 +76,7 @@ class IndexSelection:
             config["queries"],
             table_generator.columns,
         )
-        self.workload = Workload(query_generator.queries, self.database_name)
+        self.workload = Workload(query_generator.queries)
 
         if "pickle_workload" in config and config["pickle_workload"] is True:
             pickle_filename = (
@@ -99,6 +97,11 @@ class IndexSelection:
         self.db_connector.commit()
 
         for algorithm_config in config["algorithms"]:
+            # CoPhy must be skipped and manually executed via AMPL because it is not
+            # integrated yet.
+            if algorithm_config["name"] == "cophy":
+                continue
+
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
             configs = self._find_parameter_list(algorithm_config)
@@ -155,16 +158,16 @@ class IndexSelection:
         algorithm = self.create_algorithm_object(config["name"], config["parameters"])
         logging.info(f"Running algorithm {config}")
         indexes = algorithm.calculate_best_indexes(self.workload)
-        logging.info("Indexes found: {}".format(indexes))
+        logging.info(f"Indexes found: {indexes}")
         what_if = algorithm.cost_evaluation.what_if
 
         cost_requests = (
             self.db_connector.cost_estimations
-            if config["name"] == "ibm"
+            if config["name"] == "db2advis"
             else algorithm.cost_evaluation.cost_requests
         )
         cache_hits = (
-            0 if config["name"] == "ibm" else algorithm.cost_evaluation.cache_hits
+            0 if config["name"] == "db2advis" else algorithm.cost_evaluation.cache_hits
         )
         return indexes, what_if, cost_requests, cache_hits
 

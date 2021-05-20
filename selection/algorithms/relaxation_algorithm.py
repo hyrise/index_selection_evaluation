@@ -1,18 +1,30 @@
-from ..selection_algorithm import SelectionAlgorithm
-from ..what_if_index_creation import WhatIfIndexCreation
-from ..index import Index, index_merge, index_split
-
 import itertools
 import logging
 
-# Maximum number of columns per index, storage budget in MB,
+from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
+from ..index import Index, index_merge, index_split
+from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
+from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
+
+# allowed_transformations: The algorithm transforms index configurations. Via this
+#                          parameter, the allowed transformations can be chosen.
+#                          In the original paper, 5 transformations are documented.
+#                          Except for "Promotion to clustered" all transformations are
+#                          implemented and part of the algorithm's default configuration.
+# budget_MB: The algorithm can utilize the specified storage budget in MB.
+# max_index_width: The number of columns an index can contain at maximum.
 DEFAULT_PARAMETERS = {
-    "max_index_columns": 3,
-    "budget": 500,
     "allowed_transformations": ["splitting", "merging", "prefixing", "removal"],
+    "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
+    "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
 }
 
 
+# This algorithm is a reimplementation of Bruno's and Chaudhuri's relaxation-based
+# approach to physical database design.
+# Details can be found in the original paper:
+# Nicolas Bruno, Surajit Chaudhuri: Automatic Physical Database Tuning:
+# A Relaxation-based Approach. SIGMOD Conference 2005: 227-238
 class RelaxationAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
@@ -20,11 +32,9 @@ class RelaxationAlgorithm(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
-        self.what_if = WhatIfIndexCreation(database_connector)
-        # convert MB to bytes
-        self.disk_constraint = self.parameters["budget"] * 1000000
+        self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
         self.transformations = self.parameters["allowed_transformations"]
-        self.max_index_columns = self.parameters["max_index_columns"]
+        self.max_index_width = self.parameters["max_index_width"]
         assert set(self.transformations) <= {
             "splitting",
             "merging",
@@ -32,22 +42,18 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             "removal",
         }
 
-    # Util function?
-    def _indexes_by_table(self, configuration):
-        indexes_by_table = {}
-        for index in configuration:
-            table = index.table()
-            if table not in indexes_by_table:
-                indexes_by_table[table] = []
-
-            indexes_by_table[table].append(index)
-
-        return indexes_by_table
-
     def _calculate_best_indexes(self, workload):
         logging.info("Calculating best indexes Relaxation")
-        # Obtain best indexes per query
-        _, candidates = self._exploit_virtual_indexes(workload)
+
+        # Generate syntactically relevant candidates
+        candidates = candidates_per_query(
+            workload,
+            self.parameters["max_index_width"],
+            candidate_generator=syntactically_relevant_indexes,
+        )
+
+        # Obtain best (utilized) indexes per query
+        candidates, _ = get_utilized_indexes(workload, candidates, self.cost_evaluation)
 
         # CP in Figure 5
         cp = candidates.copy()
@@ -67,7 +73,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
             best_relaxed_size = None
             lowest_relaxed_penalty = None
 
-            cp_by_table = self._indexes_by_table(cp)
+            cp_by_table = indexes_by_table(cp)
 
             for transformation in self.transformations:
                 for (
@@ -138,8 +144,8 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                 ):
                     relaxed = input_configuration.copy()
                     merged_index = index_merge(index1, index2)
-                    if len(merged_index.columns) > self.max_index_columns:
-                        new_columns = merged_index.columns[: self.max_index_columns]
+                    if len(merged_index.columns) > self.max_index_width:
+                        new_columns = merged_index.columns[: self.max_index_width]
                         merged_index = Index(new_columns)
 
                     relaxed -= {index1, index2}
@@ -170,71 +176,3 @@ class RelaxationAlgorithm(SelectionAlgorithm):
                         self.cost_evaluation.estimate_size(index)
                         relaxed_storage_savings -= index.estimated_size
                     yield relaxed, relaxed_storage_savings
-
-    # copied from IBMAlgorithm
-    def _exploit_virtual_indexes(self, workload):
-        query_results = {}
-        index_candidates = set()
-        for query in workload.queries:
-            plan = self.database_connector.get_plan(query)
-            cost_without_indexes = plan["Total Cost"]
-            (
-                recommended_indexes,
-                cost_with_recommended_indexes,
-            ) = self._recommended_indexes(query)
-            query_results[query] = {
-                "cost_without_indexes": cost_without_indexes,
-                "cost_with_recommended_indexes": cost_with_recommended_indexes,
-                "recommended_indexes": recommended_indexes,
-            }
-            index_candidates |= recommended_indexes
-        return query_results, index_candidates
-
-    # copied from IBMAlgorithm
-    def _recommended_indexes(self, query):
-        """Simulates all possible indexes for the query and returns the used one"""
-        logging.debug("Simulating indexes")
-
-        possible_indexes = self._possible_indexes(query)
-        for index in possible_indexes:
-            self.what_if.simulate_index(index, store_size=True)
-
-        plan = self.database_connector.get_plan(query)
-        plan_string = str(plan)
-        cost = plan["Total Cost"]
-
-        self.what_if.drop_all_simulated_indexes()
-
-        recommended_indexes = set()
-        for index in possible_indexes:
-            if index.hypopg_name in plan_string:
-                recommended_indexes.add(index)
-
-        logging.debug(f"Recommended indexes found: {len(recommended_indexes)}")
-        return recommended_indexes, cost
-
-    # copied from IBMAlgorithm
-    def _possible_indexes(self, query):
-        # "SAEFIS" or "BFI" see IBM paper
-        # This implementation is "BFI"
-        columns = query.columns
-        logging.debug(f"\n{query}")
-        logging.debug(f"indexable columns: {len(columns)}")
-        max_columns = self.parameters["max_index_columns"]
-
-        indexable_columns_per_table = {}
-        for column in columns:
-            if column.table not in indexable_columns_per_table:
-                indexable_columns_per_table[column.table] = set()
-            indexable_columns_per_table[column.table].add(column)
-
-        possible_column_combinations = set()
-        for table in indexable_columns_per_table:
-            columns = indexable_columns_per_table[table]
-            for index_length in range(1, max_columns + 1):
-                possible_column_combinations |= set(
-                    itertools.permutations(columns, index_length)
-                )
-
-        logging.debug(f"possible indexes: {len(possible_column_combinations)}")
-        return [Index(p) for p in possible_column_combinations]

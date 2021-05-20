@@ -1,8 +1,9 @@
+import unittest
+
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 from selection.index import Index
 from selection.table_generator import TableGenerator
 from selection.workload import Column, Query, Table
-import unittest
 
 
 class TestDatabase(unittest.TestCase):

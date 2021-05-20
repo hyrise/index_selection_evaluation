@@ -1,6 +1,7 @@
+import unittest
+
 from selection.index import Index, index_merge, index_split
 from selection.workload import Column, Table
-import unittest
 
 
 class TestIndex(unittest.TestCase):
