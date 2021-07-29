@@ -111,6 +111,9 @@ class MockConnector:
     def simulate_index(self, potential_index):
         pass
 
+    def exec_fetch(self, statement, one=True):
+        return []
+
 
 class MockCostEvaluation:
     def __init__(self):
