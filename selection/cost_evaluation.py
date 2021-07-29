@@ -41,7 +41,7 @@ class CostEvaluation:
         self._prepare_cost_calculation(indexes, store_size=True)
 
         plan = self.db_connector.get_plan(query)
-        cost = plan["Total Cost"]
+        cost = plan["Total Cost"] * query.frequency
         plan_str = str(plan)
 
         recommended_indexes = set()
@@ -73,7 +73,7 @@ class CostEvaluation:
         # TODO: Make query cost higher for queries which are running often
         for query in workload.queries:
             self.cost_requests += 1
-            total_cost += self._request_cache(query, indexes)
+            total_cost += self._request_cache(query, indexes) * query.frequency
         return total_cost
 
     # Creates the current index combination by simulating/creating

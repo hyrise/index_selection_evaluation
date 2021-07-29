@@ -138,13 +138,17 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(query.nr, 17)
         self.assertEqual(query.text, "SELECT * FROM lineitem;")
         self.assertEqual(query.columns, [])
+        self.assertEqual(query.frequency, 1)
 
         column_1 = Column(name="ColA")
         column_2 = Column(name="ColB")
-        query_2 = Query(18, "SELECT * FROM nation;", columns=[column_1, column_2])
+        query_2 = Query(
+            18, "SELECT * FROM nation;", columns=[column_1, column_2], frequency=17
+        )
         self.assertEqual(query_2.nr, 18)
         self.assertEqual(query_2.text, "SELECT * FROM nation;")
         self.assertEqual(query_2.columns, [column_1, column_2])
+        self.assertEqual(query_2.frequency, 17)
 
     def test_query_repr(self):
         query = Query(17, "SELECT * FROM lineitem;")
