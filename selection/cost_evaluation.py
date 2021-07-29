@@ -11,6 +11,11 @@ class CostEvaluation:
         logging.info("Cost estimation with " + self.cost_estimation)
         self.what_if = WhatIfIndexCreation(db_connector)
         self.current_indexes = set()
+
+        assert len(self.what_if.all_simulated_indexes()) == len(
+            self.current_indexes
+        ), "Apparently, simulated indexes exist even though there should be none."
+
         self.cost_requests = 0
         self.cache_hits = 0
         # Cache structure:
