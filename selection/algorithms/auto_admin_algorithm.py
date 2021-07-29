@@ -131,7 +131,12 @@ class AutoAdminAlgorithm(SelectionAlgorithm):
         return set(lowest_cost_indexes), lowest_cost
 
     def enumerate_greedy(
-        self, workload, current_indexes, current_costs, candidate_indexes, number_indexes,
+        self,
+        workload,
+        current_indexes,
+        current_costs,
+        candidate_indexes,
+        number_indexes,
     ):
         assert (
             current_indexes & candidate_indexes == set()

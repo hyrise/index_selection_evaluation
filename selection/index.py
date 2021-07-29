@@ -72,8 +72,8 @@ class Index:
 
     def prefixes(self):
         """Consider I(K;S). For any prefix K' of K (including K' = K if S is not
-empty), an index I_P = (K';Ø) is obtained.
-Returns a list of index prefixes ordered by decreasing width."""
+        empty), an index I_P = (K';Ø) is obtained.
+        Returns a list of index prefixes ordered by decreasing width."""
         index_prefixes = []
         for prefix_width in range(len(self.columns) - 1, 0, -1):
             index_prefixes.append(Index(self.columns[:prefix_width]))
