@@ -5,11 +5,7 @@ from selection.candidate_generation import syntactically_relevant_indexes
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-
-
-class MockConnector:
-    def __init__(self):
-        pass
+from tests.mock_connector import MockConnector
 
 
 class MockWhatIf:

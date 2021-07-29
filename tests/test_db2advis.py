@@ -8,18 +8,7 @@ from selection.index import Index
 from selection.query_generator import QueryGenerator
 from selection.table_generator import TableGenerator
 from selection.workload import Column, Query, Table, Workload
-
-
-class MockConnector:
-    def __init__(self):
-        pass
-
-    def drop_indexes(self):
-        pass
-
-    def simulate_index(self, index):
-        pass
-
+from tests.mock_connector import MockConnector
 
 MB_TO_BYTES = 1000000
 
