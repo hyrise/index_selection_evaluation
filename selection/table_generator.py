@@ -3,8 +3,9 @@ import os
 import platform
 import re
 import subprocess
+import sys
 
-from .utils import b_to_mb
+from .utils import IMDB_TABLE_DIR, b_to_mb, download_and_uncompress_imdb_data
 from .workload import Column, Table
 
 
@@ -24,40 +25,60 @@ class TableGenerator:
         self.database_names = self.db_connector.database_names()
         self.tables = []
         self.columns = []
+
         self._prepare()
         if self.database_name() not in self.database_names:
-            self._generate()
+            if self.benchmark_name == "job":
+                self._prepare_imdb_data()
+            else:
+                self._generate()
             self.create_database()
         else:
-            logging.debug("Database with given scale factor already " "existing")
+            logging.debug("Database with given scale factor already existing")
         self._read_column_names()
 
     def database_name(self):
         if self.explicit_database_name:
             return self.explicit_database_name
 
-        name = "indexselection_" + self.benchmark_name + "___"
-        name += str(self.scale_factor).replace(".", "_")
+        scale_factor = str(self.scale_factor).replace(".", "_")
+        name = f"indexselection_{self.benchmark_name}___{scale_factor}"
         return name
+
+    def _prepare_imdb_data(self):
+        success = download_and_uncompress_imdb_data()
+        if not success:
+            logging.critical("Something went wrong during download IMDB data. Aborting.")
+            sys.exit(1)
+
+        self.table_files = [
+            filename
+            for filename in os.listdir(IMDB_TABLE_DIR)
+            if ".csv" in filename and ".json" not in filename
+        ]
 
     def _read_column_names(self):
         # Read table and column names from 'create table' statements
-        filename = self.directory + "/" + self.create_table_statements_file
-        with open(filename, "r") as file:
+        schema_file = f"{self.directory}/{self.create_table_statements_file}"
+        with open(schema_file) as file:
             data = file.read().lower()
-        create_tables = data.split("create table ")[1:]
-        for create_table in create_tables:
-            splitted = create_table.split("(", 1)
-            table = Table(splitted[0].strip())
+        create_table_statements = data.split("create table ")[1:]
+        for create_table_statement in create_table_statements:
+            split = create_table_statement.split("(", 1)
+            table = Table(split[0].strip())
             self.tables.append(table)
-            # TODO regex split? ,[whitespace]\n
-            for column in splitted[1].split(",\n"):
-                name = column.lstrip().split(" ", 1)[0]
-                if name == "primary":
+
+            for column_declaration in split[1].split(",\n"):
+                column_name = column_declaration.lstrip().split(" ", 1)[0]
+
+                # Skip lines that start with primary and, thereby, declare previously
+                # declared columns as primary key
+                if column_name == "primary":
                     continue
-                column_object = Column(name)
-                table.add_column(column_object)
-                self.columns.append(column_object)
+
+                column = Column(column_name)
+                table.add_column(column)
+                self.columns.append(column)
 
     def _generate(self):
         logging.info("Generating {} data".format(self.benchmark_name))
@@ -72,11 +93,13 @@ class TableGenerator:
 
     def create_database(self):
         self.db_connector.create_database(self.database_name())
-        filename = self.directory + "/" + self.create_table_statements_file
-        with open(filename, "r") as file:
+        schema_file = f"{self.directory}/{self.create_table_statements_file}"
+        with open(schema_file) as file:
             create_statements = file.read()
+
         # Do not create primary keys
         create_statements = re.sub(r",\s*primary key (.*)", "", create_statements)
+        create_statements = create_statements.replace("PRIMARY KEY", "")
         self.db_connector.db_name = self.database_name()
         self.db_connector.create_connection()
         self.create_tables(create_statements)
@@ -91,16 +114,29 @@ class TableGenerator:
 
     def _load_table_data(self, database_connector):
         logging.info("Loading data into the tables")
-        for filename in self.table_files:
-            logging.debug("    Loading file {}".format(filename))
 
-            table = filename.replace(".tbl", "").replace(".dat", "")
-            path = self.directory + "/" + filename
+        for filename in self.table_files:
+            logging.debug(f"    Loading file {filename}")
+
+            table = filename.replace(".tbl", "").replace(".dat", "").replace(".csv", "")
+
+            if self.benchmark_name == "job":
+                path = f"{IMDB_TABLE_DIR}/{filename}"
+            else:
+                path = f"{self.directory}/{filename}"
+
             size = os.path.getsize(path)
             size_string = f"{b_to_mb(size):,.4f} MB"
             logging.debug(f"    Import data of size {size_string}")
-            database_connector.import_data(table, path)
-            os.remove(os.path.join(self.directory, filename))
+
+            if self.benchmark_name == "job":
+                database_connector.import_data(
+                    table, path, delimiter=",", encoding="Latin-1"
+                )
+            else:
+                database_connector.import_data(table, path)
+                # Remove files only if they can be easily regenerated
+                os.remove(os.path.join(self.directory, filename))
         database_connector.commit()
 
     def _run_make(self):
@@ -150,5 +186,12 @@ class TableGenerator:
                 and self.scale_factor != 0.001
             ):
                 raise Exception("Wrong TPCDS scale factor")
+        elif self.benchmark_name == "job":
+            assert self.scale_factor == 1, (
+                "Can only handle JOB with a scale factor of 1"
+                ", i.e., no specific scaling"
+            )
+            self.directory = "./join-order-benchmark"
+            self.create_table_statements_file = "schema.sql"
         else:
-            raise NotImplementedError("only tpch/ds implemented.")
+            raise NotImplementedError("Only TPC-H/-DS and JOB implemented.")
