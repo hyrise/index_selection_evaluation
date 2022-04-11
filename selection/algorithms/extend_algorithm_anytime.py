@@ -17,7 +17,7 @@ DEFAULT_PARAMETERS = {
     "budget_MB": DEFAULT_PARAMETER_VALUES["budget_MB"],
     "max_index_width": DEFAULT_PARAMETER_VALUES["max_index_width"],
     "min_cost_improvement": 1.003,
-    "max_runtime_minutes": 60*24,
+    "max_runtime_minutes": 60 * 24,
 }
 
 # This algorithm is a reimplementation of the Extend heuristic published by Schlosser,
@@ -45,7 +45,9 @@ class ExtendAlgorithmAnytime(SelectionAlgorithm):
         current_time = time.time()
         consumed_time = current_time - self.start_time
         if consumed_time > self.max_runtime_minutes * 60:
-            logging.debug(f"Stopping because of timing constraints. Time: {consumed_time / 60:.2f} minutes.")
+            logging.debug(
+                f"Stopping because of timing constraints. Time: {consumed_time / 60:.2f} minutes."
+            )
 
             return True
 
@@ -55,7 +57,7 @@ class ExtendAlgorithmAnytime(SelectionAlgorithm):
         logging.info("Calculating best indexes Extend")
 
         self.start_time = time.time()
-        
+
         self.workload = workload
         single_attribute_index_candidates = self.workload.potential_indexes()
         extension_attribute_candidates = single_attribute_index_candidates.copy()

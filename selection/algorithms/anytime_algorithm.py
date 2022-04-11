@@ -114,7 +114,12 @@ class AnytimeAlgorithm(SelectionAlgorithm):
 
     # based on AutoAdminAlgorithm
     def enumerate_greedy(
-        self, workload, current_indexes, current_costs, candidate_indexes, number_indexes,
+        self,
+        workload,
+        current_indexes,
+        current_costs,
+        candidate_indexes,
+        number_indexes,
     ):
         assert (
             current_indexes & candidate_indexes == set()
