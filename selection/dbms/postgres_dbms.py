@@ -18,6 +18,9 @@ class PostgresDatabaseConnector(DatabaseConnector):
 
         self.set_random_seed()
 
+        self.exec_only("SET max_parallel_workers_per_gather = 0;")
+        self.exec_only("SET enable_bitmapscan TO off;")
+
         logging.debug("Postgres connector created: {}".format(db_name))
 
     def create_connection(self):
