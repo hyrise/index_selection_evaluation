@@ -1,4 +1,5 @@
 import logging
+import time
 
 from .cost_evaluation import CostEvaluation
 
@@ -32,12 +33,38 @@ class SelectionAlgorithm:
 
     def calculate_best_indexes(self, workload):
         assert self.did_run is False, "Selection algorithm can only run once."
+
+        start_time = time.time()
+
         self.did_run = True
         indexes = self._calculate_best_indexes(workload)
+        self.calculation_time = round(time.time() - start_time, 2)
+
         self._log_cache_hits()
+        self.final_cost_proportion = self._calculate_final_cost_proportion(workload, indexes)
         self.cost_evaluation.complete_cost_estimation()
+        
 
         return indexes
+
+    def _calculate_final_cost_proportion(self, workload, indexes):
+        start_cost = self.cost_evaluation.calculate_cost(workload, [])
+        final_cost = self.cost_evaluation.calculate_cost(workload, indexes)
+
+        index_combination_size = 0
+        for index in indexes:
+            index_combination_size += index.estimated_size
+
+        logging.info(
+            (
+                f"Initial cost: {start_cost:,.2f}, now: {final_cost:,.2f} "
+                f"({final_cost / start_cost:.2f}) {indexes} "
+                f"{index_combination_size / 1000 / 1000:.2f} MB "
+                f"(of {self.parameters['budget_MB']} MB) for workload\n{workload}"
+            )
+        )
+
+        return round(final_cost / start_cost * 100, 2)
 
     def _calculate_best_indexes(self, workload):
         raise NotImplementedError("_calculate_best_indexes(self, " "workload) missing")
