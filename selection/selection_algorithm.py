@@ -41,9 +41,10 @@ class SelectionAlgorithm:
         self.calculation_time = round(time.time() - start_time, 2)
 
         self._log_cache_hits()
-        self.final_cost_proportion = self._calculate_final_cost_proportion(workload, indexes)
+        self.final_cost_proportion = self._calculate_final_cost_proportion(
+            workload, indexes
+        )
         self.cost_evaluation.complete_cost_estimation()
-        
 
         return indexes
 
