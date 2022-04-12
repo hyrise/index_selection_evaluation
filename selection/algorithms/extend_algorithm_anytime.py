@@ -20,6 +20,7 @@ DEFAULT_PARAMETERS = {
     "max_runtime_minutes": 60 * 24,
 }
 
+
 # This algorithm is a reimplementation of the Extend heuristic published by Schlosser,
 # Kossmann, and Boissier in 2019.
 # Details can be found in the original paper:
@@ -46,7 +47,10 @@ class ExtendAlgorithmAnytime(SelectionAlgorithm):
         consumed_time = current_time - self.start_time
         if consumed_time > self.max_runtime_minutes * 60:
             logging.debug(
-                f"Stopping because of timing constraints. Time: {consumed_time / 60:.2f} minutes."
+                (
+                    "Stopping because of timing constraints. "
+                    f"Time: {consumed_time / 60:.2f} minutes."
+                )
             )
 
             return True
