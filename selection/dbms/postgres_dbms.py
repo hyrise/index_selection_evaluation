@@ -193,6 +193,13 @@ class PostgresDatabaseConnector(DatabaseConnector):
         total_cost = query_plan["Total Cost"]
         return total_cost
 
+    def get_raw_plan(self, query):
+        query_text = self._prepare_query(query)
+        statement = f"explain (format json) {query_text}"
+        query_plan = self.exec_fetch(statement)[0]
+        self._cleanup_query(query)
+        return query_plan
+
     def _get_plan(self, query):
         query_text = self._prepare_query(query)
         statement = f"explain (format json) {query_text}"
