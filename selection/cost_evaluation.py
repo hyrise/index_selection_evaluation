@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from .what_if_index_creation import WhatIfIndexCreation
@@ -11,16 +12,26 @@ class CostEvaluation:
         logging.info("Cost estimation with " + self.cost_estimation)
         self.what_if = WhatIfIndexCreation(db_connector)
         self.current_indexes = set()
+
+        assert len(self.what_if.all_simulated_indexes()) == len(self.current_indexes)
+
         self.cost_requests = 0
         self.cache_hits = 0
         # Cache structure:
         # {(query_object, relevant_indexes): cost}
         self.cache = {}
+
+        # Cache structure:
+        # {(query_object, relevant_indexes): (cost, plan)}
+        self.cache_plans = {}
+
         self.completed = False
         # It is not necessary to drop hypothetical indexes during __init__().
         # These are only created per connection. Hence, non should be present.
 
         self.relevant_indexes_cache = {}
+
+        self.costing_time = datetime.timedelta(0)
 
     def estimate_size(self, index):
         # TODO: Refactor: It is currently too complicated to compute
@@ -73,8 +84,31 @@ class CostEvaluation:
         # TODO: Make query cost higher for queries which are running often
         for query in workload.queries:
             self.cost_requests += 1
-            total_cost += self._request_cache(query, indexes)
+            total_cost += self._request_cache(query, indexes) * query.frequency
         return total_cost
+
+    def calculate_cost_and_plans(self, workload, indexes, store_size=False):
+        assert (
+            self.completed is False
+        ), "Cost Evaluation is completed and cannot be reused."
+        start_time = datetime.datetime.now()
+
+        self._prepare_cost_calculation(indexes, store_size=store_size)
+        total_cost = 0
+        plans = []
+        costs = []
+
+        for query in workload.queries:
+            self.cost_requests += 1
+            cost, plan = self._request_cache_plans(query, indexes)
+            total_cost += cost * query.frequency
+            plans.append(plan)
+            costs.append(cost)
+
+        end_time = datetime.datetime.now()
+        self.costing_time += end_time - start_time
+
+        return total_cost, plans, costs
 
     # Creates the current index combination by simulating/creating
     # missing indexes and unsimulating/dropping indexes
@@ -108,6 +142,10 @@ class CostEvaluation:
             runtime = self.db_connector.exec_query(query)[0]
             return runtime
 
+    def _get_cost_plan(self, query):
+        query_plan = self.db_connector.get_plan(query)
+        return query_plan["Total Cost"], query_plan
+
     def complete_cost_estimation(self):
         self.completed = True
 
@@ -133,6 +171,24 @@ class CostEvaluation:
             cost = self._get_cost(query)
             self.cache[(query, relevant_indexes)] = cost
             return cost
+
+    def _request_cache_plans(self, query, indexes):
+        q_i_hash = (query, frozenset(indexes))
+        if q_i_hash in self.relevant_indexes_cache:
+            relevant_indexes = self.relevant_indexes_cache[q_i_hash]
+        else:
+            relevant_indexes = self._relevant_indexes(query, indexes)
+            self.relevant_indexes_cache[q_i_hash] = relevant_indexes
+
+        # Check if query and corresponding relevant indexes in cache
+        if (query, relevant_indexes) in self.cache:
+            self.cache_hits += 1
+            return self.cache[(query, relevant_indexes)]
+        # If no cache hit request cost from database system
+        else:
+            cost, plan = self._get_cost_plan(query)
+            self.cache[(query, relevant_indexes)] = (cost, plan)
+            return cost, plan
 
     @staticmethod
     def _relevant_indexes(query, indexes):
