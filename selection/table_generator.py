@@ -135,7 +135,7 @@ class TableGenerator:
             if platform.system() == "Darwin":
                 self.make_command.append("MACHINE=MACOS")
 
-            self.directory = "./tpch-kit/dbgen"
+            self.directory = "./index_selection_evaluation/tpch-kit/dbgen"
             self.create_table_statements_file = "dss.ddl"
             self.cmd = ["./dbgen", "-s", str(self.scale_factor), "-f"]
         elif self.benchmark_name == "tpcds":
@@ -143,7 +143,7 @@ class TableGenerator:
             if platform.system() == "Darwin":
                 self.make_command.append("OS=MACOS")
 
-            self.directory = "./tpcds-kit/tools"
+            self.directory = "./index_selection_evaluation/tpcds-kit/tools"
             self.create_table_statements_file = "tpcds.sql"
             self.cmd = ["./dsdgen", "-SCALE", str(self.scale_factor), "-FORCE"]
 
