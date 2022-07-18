@@ -7,14 +7,7 @@ from selection.index import Index
 from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES
 from selection.utils import mb_to_b
 from selection.workload import Column, Query, Table, Workload
-
-
-class MockConnector:
-    def __init__(self):
-        pass
-
-    def drop_indexes(self):
-        pass
+from tests.mock_connector import MockConnector
 
 
 class MockCostEvaluation:

@@ -2,17 +2,11 @@ import unittest
 from unittest.mock import MagicMock
 
 import utils
+
 from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-
-
-class MockConnector:
-    def __init__(self):
-        pass
-
-    def drop_indexes(self):
-        pass
+from tests.mock_connector import MockConnector
 
 
 class TestDropHeuristicAlgorithm(unittest.TestCase):

@@ -37,7 +37,7 @@ class TestAlgorithm(unittest.TestCase):
     def test_calculate_best_only_executable_once(self):
         workload = Workload([])
         selection_algorithm = NoIndexAlgorithm(
-            PostgresDatabaseConnector(None, autocommit=True)
+            PostgresDatabaseConnector(self.db_name, autocommit=True)
         )
         self.assertFalse(selection_algorithm.did_run)
 

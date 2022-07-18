@@ -48,6 +48,13 @@ class DexterAlgorithm(SelectionAlgorithm):
             )
             with p.stdout:
                 output_string = p.stdout.read().decode("utf-8")
+
+            assert "dexter: not found" not in output_string, (
+                'Apparently, the index selection tool "dexter" is not installed. '
+                "Follow the instruction in install.sh or at "
+                "https://github.com/ankane/dexter/blob/master/guides/Linux.md"
+            )
+
             p.wait()
             self.database_connector._cleanup_query(query)
             self.database_connector.commit()

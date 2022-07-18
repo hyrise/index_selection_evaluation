@@ -1,7 +1,7 @@
 echo "===== Sorting imports ====="
 
-isort --recursive --trailing-comma --line-width 90 --multi-line 3 selection/
-isort --recursive --trailing-comma --line-width 90 --multi-line 3 tests/
+isort --trailing-comma --line-width 90 --multi-line 3 selection/
+isort --trailing-comma --line-width 90 --multi-line 3 tests/
 
 echo ""
 echo "===== Formatting via black ====="

@@ -11,6 +11,11 @@ class CostEvaluation:
         logging.info("Cost estimation with " + self.cost_estimation)
         self.what_if = WhatIfIndexCreation(db_connector)
         self.current_indexes = set()
+
+        assert len(self.what_if.all_simulated_indexes()) == len(
+            self.current_indexes
+        ), "Apparently, simulated indexes exist even though there should be none."
+
         self.cost_requests = 0
         self.cache_hits = 0
         # Cache structure:
@@ -41,7 +46,7 @@ class CostEvaluation:
         self._prepare_cost_calculation(indexes, store_size=True)
 
         plan = self.db_connector.get_plan(query)
-        cost = plan["Total Cost"]
+        cost = plan["Total Cost"] * query.frequency
         plan_str = str(plan)
 
         recommended_indexes = set()
@@ -73,7 +78,7 @@ class CostEvaluation:
         # TODO: Make query cost higher for queries which are running often
         for query in workload.queries:
             self.cost_requests += 1
-            total_cost += self._request_cache(query, indexes)
+            total_cost += self._request_cache(query, indexes) * query.frequency
         return total_cost
 
     # Creates the current index combination by simulating/creating

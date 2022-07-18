@@ -5,11 +5,7 @@ from selection.candidate_generation import syntactically_relevant_indexes
 from selection.cost_evaluation import CostEvaluation
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
-
-
-class MockConnector:
-    def __init__(self):
-        pass
+from tests.mock_connector import MockConnector
 
 
 class MockWhatIf:
@@ -39,16 +35,19 @@ class TestCostEvaluation(unittest.TestCase):
                 2,
                 "SELECT * FROM TestTableA WHERE Col0 = 14 AND Col1 = 13",
                 [cls.columns[0], cls.columns[1]],
+                frequency=5,
             ),
         ]
 
         cls.workload = Workload(cls.queries)
 
+        cls.COST_MOCK_VALUE = 3
+
     def setUp(self):
         # We mock the connector because it is needed by the cost evaluation.
         # By also mocking some of its methods, we can test how often these are called.
         self.connector = MockConnector()
-        self.connector.get_cost = MagicMock(return_value=3)
+        self.connector.get_cost = MagicMock(return_value=self.COST_MOCK_VALUE)
         self.connector.simulate_index = MagicMock(
             return_value=[0, "index_name"]
         )  # index_oid, index_name
@@ -97,6 +96,15 @@ class TestCostEvaluation(unittest.TestCase):
         # Therefore, actual calls to the database connector's get_cost method should
         # be limited by the number of queries as it is not called for cached costs.
         self.assertEqual(self.connector.get_cost.call_count, len(self.workload.queries))
+
+    def test_calculate_cost_considers_frequency(self):
+        workload_cost = self.cost_evaluation.calculate_cost(self.workload, indexes=set())
+
+        expected_cost = 0
+        for query in self.workload.queries:
+            expected_cost += self.COST_MOCK_VALUE * query.frequency
+
+        self.assertEqual(workload_cost, expected_cost)
 
     def test_cache_hit(self):
         self.assertEqual(self.cost_evaluation.cost_requests, 0)
@@ -198,7 +206,7 @@ class TestCostEvaluation(unittest.TestCase):
         indexes, cost = self.cost_evaluation.which_indexes_utilized_and_cost(
             query, candidates
         )
-        self.assertEqual(cost, 17)
+        self.assertEqual(cost, 17 * query.frequency)
         self.assertEqual(indexes, {Index([self.columns[1]])})
 
         self.assertEqual(

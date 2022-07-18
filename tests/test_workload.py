@@ -1,6 +1,7 @@
 import unittest
 
 from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
+
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 
@@ -137,13 +138,17 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(query.nr, 17)
         self.assertEqual(query.text, "SELECT * FROM lineitem;")
         self.assertEqual(query.columns, [])
+        self.assertEqual(query.frequency, 1)
 
         column_1 = Column(name="ColA")
         column_2 = Column(name="ColB")
-        query_2 = Query(18, "SELECT * FROM nation;", columns=[column_1, column_2])
+        query_2 = Query(
+            18, "SELECT * FROM nation;", columns=[column_1, column_2], frequency=17
+        )
         self.assertEqual(query_2.nr, 18)
         self.assertEqual(query_2.text, "SELECT * FROM nation;")
         self.assertEqual(query_2.columns, [column_1, column_2])
+        self.assertEqual(query_2.frequency, 17)
 
     def test_query_repr(self):
         query = Query(17, "SELECT * FROM lineitem;")
@@ -189,13 +194,16 @@ class TestWorkload(unittest.TestCase):
         index_set_2 = set([Index([column_A_0]), Index([column_A_1]), Index([column_A_2])])
 
         self.assertEqual(
-            set(Workload([query_0]).potential_indexes()), index_set_1,
+            set(Workload([query_0]).potential_indexes()),
+            index_set_1,
         )
         self.assertEqual(
-            set(Workload([query_1]).potential_indexes()), index_set_2,
+            set(Workload([query_1]).potential_indexes()),
+            index_set_2,
         )
         self.assertEqual(
-            set(Workload([query_0, query_1]).potential_indexes()), index_set_2,
+            set(Workload([query_0, query_1]).potential_indexes()),
+            index_set_2,
         )
 
 
