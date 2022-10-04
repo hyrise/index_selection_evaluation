@@ -1,16 +1,19 @@
 {
     "database_system": "postgres",
     "benchmark_name": "tpch",
-    "scale_factor": 1,
+    "scale_factor": 10,
     "algorithms": [
         {
-            "name": "cophy",
+            "name": "no_index",
             "parameters": {
-                "max_index_columns": 3,
-                "max_indexes_per_query": 1
             },
-            "number_of_runs": 2,
-            "timeout": 2
+            "timeout": 300
+        },
+        {
+            "name": "all_indexes",
+            "parameters": {
+            },
+            "timeout": 300
         }
     ],
     "queries": [

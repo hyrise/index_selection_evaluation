@@ -1,4 +1,6 @@
 psycopg2-binary
 coverage
 pyhdb
-yapf
+black
+flake8
+isort

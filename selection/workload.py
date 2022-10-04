@@ -2,18 +2,17 @@ from .index import Index
 
 
 class Workload:
-    def __init__(self, queries, database_name):
-        self.database_name = database_name
+    def __init__(self, queries):
         self.queries = queries
 
     def indexable_columns(self):
-        indexable_columns = []
+        indexable_columns = set()
         for query in self.queries:
-            indexable_columns.extend(query.columns)
-        return list(set(indexable_columns))
+            indexable_columns |= set(query.columns)
+        return sorted(list(indexable_columns))
 
     def potential_indexes(self):
-        return [Index([c]) for c in self.indexable_columns()]
+        return sorted([Index([c]) for c in self.indexable_columns()])
 
 
 class Column:
@@ -25,7 +24,7 @@ class Column:
         return self.name < other.name
 
     def __repr__(self):
-        return f'C {self.table}.{self.name}'
+        return f"C {self.table}.{self.name}"
 
     # We cannot check self.table == other.table here since Table.__eq__()
     # internally checks Column.__eq__. This would lead to endless recursions.
@@ -33,7 +32,9 @@ class Column:
         if not isinstance(other, Column):
             return False
 
-        assert self.table is not None and other.table is not None, 'Table objects should not be None for Column.__eq__()'
+        assert (
+            self.table is not None and other.table is not None
+        ), "Table objects should not be None for Column.__eq__()"
 
         return self.table.name == other.table.name and self.name == other.name
 
@@ -61,8 +62,7 @@ class Table:
         if not isinstance(other, Table):
             return False
 
-        return self.name == other.name and tuple(self.columns) == tuple(
-            other.columns)
+        return self.name == other.name and tuple(self.columns) == tuple(other.columns)
 
     def __hash__(self):
         return hash((self.name, tuple(self.columns)))
@@ -80,4 +80,4 @@ class Query:
             self.columns = columns
 
     def __repr__(self):
-        return f'Q{self.nr}'
+        return f"Q{self.nr}"

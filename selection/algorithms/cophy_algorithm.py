@@ -5,8 +5,8 @@ import logging
 import itertools
 import time
 
-# Algorithm stops when maximum number of indexes is reached
-DEFAULT_PARAMETERS = {'max_index_columns': 2, 'max_indexes_per_query': 1}
+# The maximum width of index candidates and the number of applicable indexes per query can be specified
+DEFAULT_PARAMETERS = {"max_index_width": 2, "max_indexes_per_query": 1}
 
 
 class CoPhyAlgorithm(SelectionAlgorithm):
@@ -23,7 +23,7 @@ class CoPhyAlgorithm(SelectionAlgorithm):
         time_start = time.time()
         COSTS_PER_QUERY_WITHOUT_INDEXES = {}
         for query in workload.queries:
-            COSTS_PER_QUERY_WITHOUT_INDEXES[query] = self.cost_evaluation.calculate_cost(Workload([query], workload.database_name), set())
+            COSTS_PER_QUERY_WITHOUT_INDEXES[query] = self.cost_evaluation.calculate_cost(Workload([query]), set())
 
         accessed_columns_per_table = {}
         for query in workload.queries:
@@ -33,7 +33,7 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                 accessed_columns_per_table[column.table].add(column)
 
         candidate_indexes = set()
-        for number_of_index_columns in range(1, self.parameters['max_index_columns'] + 1):
+        for number_of_index_columns in range(1, self.parameters['max_index_width'] + 1):
             for table in accessed_columns_per_table:
                 for index_columns in itertools.permutations(accessed_columns_per_table[table], number_of_index_columns):
                     candidate_indexes.add(Index(index_columns))
@@ -47,7 +47,7 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                 is_useful_combination = False
                 costs = []
                 for query in workload.queries:
-                    query_cost = self.cost_evaluation.calculate_cost(Workload([query], workload.database_name), set(index_combination), store_size=True)
+                    query_cost = self.cost_evaluation.calculate_cost(Workload([query]), set(index_combination), store_size=True)
                     costs.append(query_cost)
                     if query_cost < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
                         is_useful_combination = True
@@ -55,8 +55,8 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                     costs_for_index_combination[index_combination] = costs
                     for index in index_combination:
                         useful_indexes.add(index)
-        print(f'$$$what-if time: {time.time() - time_start}')
-        print(f'$$$cost_requests: {self.cost_evaluation.cost_requests}\tcache_hits: {self.cost_evaluation.cache_hits}')
+        print(f'# what-if time: {time.time() - time_start}')
+        print(f'# cost_requests: {self.cost_evaluation.cost_requests}\tcache_hits: {self.cost_evaluation.cache_hits}')
 
         # generate AMPL input
         # sorted_useful_indexes = sorted(useful_indexes)
@@ -64,11 +64,11 @@ class CoPhyAlgorithm(SelectionAlgorithm):
         # print size of index and determine index_ids, which are used in combinations
         index_ids = {}
         print('\nparam a :=')
-        # print(0, 0)     # No index, no size
         for i, index in enumerate(sorted(useful_indexes)):
             assert(index.estimated_size), "Index size must be set."
             print(i + 1, index.estimated_size, f'# {index._column_names()}')
             index_ids[index] = i + 1
+        print(';\n')
 
         # print index_ids per combination
         # combi 0 := no index
@@ -87,5 +87,6 @@ class CoPhyAlgorithm(SelectionAlgorithm):
                 # print cost if they are lower than without indexes
                 if costs[query_id] < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
                     print(query_id + 1, i + 1, costs[query_id])
+        print(';\n')
 
         return []
