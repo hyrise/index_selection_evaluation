@@ -103,6 +103,7 @@ class IndexSelection:
             if algorithm_config["name"] == "cophy_input":
                 logging.info("CoPhy input is generated; but results are not calculated.")
 
+
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
             configs = self._find_parameter_list(algorithm_config)
