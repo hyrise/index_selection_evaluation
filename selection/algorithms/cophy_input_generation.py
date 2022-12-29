@@ -44,7 +44,6 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         # Identify accessed columns per table (over all included queries),
         #   which are used to generate wider (multi-attribute) indexes next
         for query in workload.queries:
-            logging.info(f"extracting relevant columns for query {query.nr}")
             for column in query.columns:
                 if column.table not in accessed_columns_per_table:
                     accessed_columns_per_table[column.table] = set()
@@ -54,12 +53,10 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         # Generate wider indexes per table
         for number_of_index_columns in range(1, self.parameters["max_index_width"] + 1):
             for table in accessed_columns_per_table:
-                logging.info(f"combing wider index combis for table {table}")
                 for index_columns in itertools.permutations(
                     accessed_columns_per_table[table], number_of_index_columns
                 ):
                     candidate_indexes.add(Index(index_columns))
-                    logging.info(f"Combined {index_columns}")
 
         # stores indexes that have a benefit in any combination
         #   (to prune indexes with no benefit)
@@ -87,7 +84,6 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                     logging.info(f"  ... {i} / {number_of_index_combinations} done")
                 is_useful_combination = False
                 costs_per_query = {}
-                logging.info(f"checking if usefull combination {index_combination}")
                 for query in workload.queries:
                     query_cost = self.cost_evaluation.calculate_cost(
                         Workload([query]), set(index_combination), store_size=True
@@ -217,7 +213,6 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                 }
             )
             index_ids[index] = i + 1
-        logging.info("Completed index costs moving to combis")
 
         # store indexes per combination
         # combination 0 := no index
@@ -250,7 +245,6 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                             ],
                         }
                     )
-        logging.info("completed f4 moving to file writing")
 
         ampl_file_path = None
         json_file_path = None
