@@ -7,8 +7,11 @@
             "name": "cophy_expanded",
             "parameters": {
                 "max_index_width": 2,
-                "max_indexes_per_query": 1,
+                "max_indexes_per_query": 2,
                 "extra_algorithms": [
+                    {
+                        "None": {}
+                    },
                     {
                         "extend": {
                             "budget_MB": 100000,
@@ -54,7 +57,8 @@
                     }
                 ],
                 "benchmark": "tpch",
-                "overwrite": true
+                "target_path": "testificate",
+                "overwrite": false
             },
             "timeout": 300
         }
