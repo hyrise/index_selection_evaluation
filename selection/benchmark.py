@@ -153,6 +153,9 @@ class Benchmark:
         for query_id in range(len(self.workload.queries)):
             query = self.workload.queries[query_id]
             cost = self.db_connector.get_cost(query)
+            if self.number_of_runs == 0:
+                plan = self.db_connector.get_plan(query)
+                plans[query.nr].append(plan)
             results[query_id]["Cost"] = cost
         for i in range(self.number_of_runs):
             logging.debug("Benchmark Run {}".format(i))
