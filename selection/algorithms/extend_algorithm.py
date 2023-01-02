@@ -83,6 +83,8 @@ class ExtendAlgorithm(SelectionAlgorithm):
             best["benefit_to_size_ratio"] = 0
             current_cost = best["cost"]
 
+
+        self.result_indexes = set(index_combination)
         return index_combination
 
     def _attach_to_indexes(self, index_combination, attribute, best, current_cost):

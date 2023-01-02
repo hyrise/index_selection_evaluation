@@ -13,6 +13,7 @@ from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from .algorithms.extend_algorithm import ExtendAlgorithm
 from .algorithms.relaxation_algorithm import RelaxationAlgorithm
+from .algorithms.cophy_expanded import CoPhyExpandedAlgorithm
 from .benchmark import Benchmark
 from .dbms.hana_dbms import HanaDatabaseConnector
 from .dbms.postgres_dbms import PostgresDatabaseConnector
@@ -32,6 +33,7 @@ ALGORITHMS = {
     "relaxation": RelaxationAlgorithm,
     "no_index": NoIndexAlgorithm,
     "all_indexes": AllIndexesAlgorithm,
+    "cophy_expanded": CoPhyExpandedAlgorithm
 }
 
 DBMSYSTEMS = {"postgres": PostgresDatabaseConnector, "hana": HanaDatabaseConnector}

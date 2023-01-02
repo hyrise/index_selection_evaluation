@@ -66,7 +66,9 @@ class DB2AdvisAlgorithm(SelectionAlgorithm):
             selected_index_benefits = self._try_variations(
                 selected_index_benefits, index_benefits_subsumed, workload
             )
-        return [index_benefit.index for index_benefit in selected_index_benefits]
+        indexes = [index_benefit.index for index_benefit in selected_index_benefits]
+        self.result_indexes = set(indexes)
+        return indexes
 
     def _calculate_index_benefits(self, candidates, query_results):
         indexes_benefit = []

@@ -1,4 +1,7 @@
 import logging
+from typing import Optional, Set
+
+from selection.index import Index
 
 from .cost_evaluation import CostEvaluation
 
@@ -12,6 +15,9 @@ DEFAULT_PARAMETER_VALUES = {
 
 
 class SelectionAlgorithm:
+
+    result_indexes: Optional[Set[Index]]
+
     def __init__(self, database_connector, parameters, default_parameters=None):
         if default_parameters is None:
             default_parameters = {}
@@ -24,6 +30,7 @@ class SelectionAlgorithm:
                 self.parameters[key] = value
 
         self.database_connector = database_connector
+        # TODO Is this superflous usually?
         self.database_connector.drop_indexes()
         self.cost_evaluation = CostEvaluation(database_connector)
         if "cost_estimation" in self.parameters:

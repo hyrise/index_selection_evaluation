@@ -1,5 +1,15 @@
 import os
-from ..selection_algorithm import SelectionAlgorithm
+from typing import Any, Dict, Set
+from selection.algorithms.anytime_algorithm import AnytimeAlgorithm
+from selection.algorithms.auto_admin_algorithm import AutoAdminAlgorithm
+from selection.algorithms.cophy_algorithm import CoPhyAlgorithm
+from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm
+from selection.algorithms.dexter_algorithm import DexterAlgorithm
+from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
+
+from selection.algorithms.extend_algorithm import ExtendAlgorithm
+from selection.algorithms.relaxation_algorithm import RelaxationAlgorithm
+from ..selection_algorithm import AllIndexesAlgorithm, SelectionAlgorithm
 from ..workload import Workload
 from ..index import Index
 import logging
@@ -7,9 +17,9 @@ import itertools
 import time
 
 # The maximum width of index candidates and the number of applicable indexes per query can be specified
-DEFAULT_PARAMETERS = {"max_index_width": 2, "max_indexes_per_query": 1, "target_path": 'cophy_data_files', 'benchmark': '', "expand_indexes": []}
+DEFAULT_PARAMETERS = {"max_index_width": 2, "max_indexes_per_query": 1, "target_path": 'cophy_data_files', 'benchmark': '', 'extra_algorithms': 'none', 'overwrite': False}
 
-class CoPhyAlgorithmExpanded(SelectionAlgorithm):
+class CoPhyExpandedAlgorithm(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
@@ -19,6 +29,12 @@ class CoPhyAlgorithmExpanded(SelectionAlgorithm):
     def _calculate_best_indexes(self, workload: Workload):
         logging.info('Creating AMPL input for CoPhy')
         logging.info('Parameters: ' + str(self.parameters))
+        datafile_path = self.parameters['target_path'] + f'/data/{self.parameters["benchmark"]}_{self.parameters["max_index_width"]}_{self.parameters["max_indexes_per_query"]}-{convert_dict_to_filename_component(self.parameters["extra_algorithms"])}.dat'
+        if os.path.isfile(datafile_path) and not self.parameters['overwrite']:
+            logging.info(f'Datafile already exists in path {datafile_path}. If you want to overwrite it, set overwrite parameter to true.')
+            return []
+
+        heuristic_indexes = self.extra_algorithms(workload)
 
         time_start = time.time()
         COSTS_PER_QUERY_WITHOUT_INDEXES = {}
@@ -26,16 +42,11 @@ class CoPhyAlgorithmExpanded(SelectionAlgorithm):
             COSTS_PER_QUERY_WITHOUT_INDEXES[query] = self.cost_evaluation.calculate_cost(Workload([query]), set())
 
         accessed_columns_per_table = {}
-        bonus_index = []
         for query in workload.queries:
             for column in query.columns:
                 if column.table not in accessed_columns_per_table:
                     accessed_columns_per_table[column.table] = set()
                 accessed_columns_per_table[column.table].add(column)
-                if f'{column.table}.{column.name}' in ['partsupp.ps_partkey', 'partsupp.ps_supplycost', 'partsupp.ps_suppkey']:
-                    print(f'here{column}')
-                    if not (column in bonus_index):
-                        bonus_index.append(column)
 
         candidate_indexes = set()
         for number_of_index_columns in range(1, self.parameters['max_index_width'] + 1):
@@ -43,14 +54,8 @@ class CoPhyAlgorithmExpanded(SelectionAlgorithm):
                 for index_columns in itertools.permutations(accessed_columns_per_table[table], number_of_index_columns):
                     candidate_indexes.add(Index(index_columns))
 
-        candidate_indexes.add(Index(bonus_index))
-
-        #for exp_index in self.parameters['expand_indexes']:
-        #candidate_indexes.add(self.parameters['expand_indexes'])
-        # candidate_indexes.add(Index(['C partsupp.ps_partkey', 'C partsupp.ps_supplycost', 'C partsupp.ps_suppkey']))
-
         # stores indexes that have a benefit in any combination (to prune indexes with no benefit)
-        useful_indexes = set()
+        useful_indexes = set().union(heuristic_indexes)
         costs_for_index_combination = {}
 
         for number_of_indexes_per_query in range(1, self.parameters['max_indexes_per_query'] + 1):
@@ -69,7 +74,7 @@ class CoPhyAlgorithmExpanded(SelectionAlgorithm):
                         #print(f'index {index}')
 
         os.makedirs(f"{self.parameters['target_path']}/data", exist_ok=True)
-        with open(self.parameters['target_path'] + f'/data/{self.parameters["benchmark"]}_{self.parameters["max_index_width"]}_{self.parameters["max_indexes_per_query"]}.dat', 'w+') as file:
+        with open(datafile_path, 'w+') as file:
             file.write(f'#{len(useful_indexes)}\n')
             file.write(f'#{len(costs_for_index_combination)}\n')
             file.write(f'# what-if time: {time.time() - time_start}\n')
@@ -113,3 +118,33 @@ class CoPhyAlgorithmExpanded(SelectionAlgorithm):
             file.write(';\n')
 
         return []
+
+    def extra_algorithms(self, workload: Workload) -> Set[Index]:
+
+        algorithms: Dict[str, SelectionAlgorithm] = {
+            "anytime": AnytimeAlgorithm,
+            "auto_admin": AutoAdminAlgorithm,
+            "db2advis": DB2AdvisAlgorithm,
+            "dexter": DexterAlgorithm,
+            "drop": DropHeuristicAlgorithm,
+            "extend": ExtendAlgorithm,
+            "relaxation": RelaxationAlgorithm,
+        }
+
+        heuristic_indexes = set()
+
+        for extra_algorithm in self.parameters['extra_algorithms'].keys():
+            if extra_algorithm not in algorithms.keys():
+                logging.error(f'{extra_algorithm} is NOT a valid extension algorithm')
+                continue
+            logging.info(f'---running {extra_algorithm} from cophy---')
+            algorithm = algorithms[extra_algorithm](self.database_connector, parameters=self.parameters['extra_algorithms'][extra_algorithm])
+            algorithm.calculate_best_indexes(workload)
+            logging.info(f'---Completed {extra_algorithm} from cophy---')
+            heuristic_indexes = heuristic_indexes.union(algorithm.result_indexes)
+        return heuristic_indexes
+
+def convert_dict_to_filename_component(dict: Dict[str, Dict[str, Any]]) -> str:
+    names = dict.keys()
+    names = sorted(names)
+    return '-'.join(names)

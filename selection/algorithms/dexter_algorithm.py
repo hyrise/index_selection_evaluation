@@ -73,4 +73,7 @@ class DexterAlgorithm(SelectionAlgorithm):
                 # Check if the same index columns already in list
                 if columns not in index_columns:
                     index_columns.append(columns)
-        return [Index(c) for c in index_columns]
+
+        indexes = [Index(c) for c in index_columns]
+        self.result_indexes = set(indexes)
+        return

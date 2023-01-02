@@ -115,7 +115,7 @@ class RelaxationAlgorithm(SelectionAlgorithm):
 
             cp = best_relaxed
             cp_size = best_relaxed_size
-
+        self.result_indexes = set(cp)
         return list(cp)
 
     def _configurations_by_transformation(

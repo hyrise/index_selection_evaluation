@@ -98,6 +98,7 @@ class AnytimeAlgorithm(SelectionAlgorithm):
                 )
 
         indexes = best_configuration[0]
+        self.result_indexes = set(indexes)
         return list(indexes)
 
     def _add_merged_indexes(self, indexes):
