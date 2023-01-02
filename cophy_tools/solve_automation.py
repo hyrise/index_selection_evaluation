@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import subprocess
 
@@ -23,18 +24,20 @@ subject to memory_consumption: sum {i in INDEXES} x[i] * a[i] <= budget;'''
         file.write(modstring)
     return modstring
 
-datafile = "/Users/Julius/masterarbeit/J-Index-Selection/cophy_data_files/data/tpch_2_1-anytime-extend.dat"
+datafiles = "/Users/Julius/masterarbeit/J-Index-Selection/testificate/data/"
 runfile = "/Users/Julius/masterarbeit/J-Index-Selection/cophy_tools/run.run"
 amplpath = '/Users/Julius/masterarbeit/ampl_macos64/ampl'
 model_path = "temp.mod"
 budget = 1000000000
 
-with open(datafile, 'r')as file:
-    line = file.readline()
-    indexes = int(line[1:])
-    line = file.readline()
-    combis = int(line[1:])
+for item in os.listdir(datafiles):
+    path = f'{datafiles}{item}'
+    with open(path, 'r')as file:
+        line = file.readline()
+        indexes = int(line[1:])
+        line = file.readline()
+        combis = int(line[1:])
 
-model_gen(indexes, combis, budget)
-with open('out.txt', 'w+') as outfile:
-    subprocess.run([amplpath, model_path, datafile, runfile],stdout=outfile)
+    model_gen(indexes, combis, budget)
+    with open(f'{item}-out.txt', 'w+') as outfile:
+        subprocess.run([amplpath, model_path, path, runfile],stdout=outfile)
