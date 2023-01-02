@@ -12,7 +12,7 @@
                     {
                         "extend": {
                             "budget_MB": 100000,
-                            "max_index_width": 5
+                            "max_index_width": 10
                         }
                     },
                     {
@@ -32,20 +32,20 @@
                     {
                         "db2advis": {
                             "budget_MB": 100000,
-                            "max_index_width": 5,
+                            "max_index_width": 3,
                             "try_variations_seconds": 10
                         }
                     },
                     {
                         "relaxation": {
                             "budget_MB": 100000,
-                            "max_index_width": 5
+                            "max_index_width": 3
                         }
                     },
                     {
                         "extend": {
                             "budget_MB": 100000,
-                            "max_index_width": 5
+                            "max_index_width": 10
                         },
                         "anytime": {
                             "budget_MB": 100000,
