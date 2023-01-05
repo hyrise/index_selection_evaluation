@@ -39,5 +39,5 @@ for item in os.listdir(datafiles):
         combis = int(line[1:])
 
     model_gen(indexes, combis, budget)
-    with open(f'{item}-out.txt', 'w+') as outfile:
+    with open(f'{item}-out.solve', 'w+') as outfile:
         subprocess.run([amplpath, model_path, path, runfile],stdout=outfile)

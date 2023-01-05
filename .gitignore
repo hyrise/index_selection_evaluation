@@ -9,6 +9,11 @@ htmlcov/
 **.tbl
 query_0.sql
 **.dat
+<<<<<<< HEAD
+=======
+**.mod
+**.solve
+>>>>>>> 1816112 (changes gitignore!)
 
 misc/**
 
