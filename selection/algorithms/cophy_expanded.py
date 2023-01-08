@@ -84,10 +84,10 @@ class CoPhyExpandedAlgorithm(SelectionAlgorithm):
             file.write('data;\n\n')
             # file.write(f'set INDEXES := 1..{len(useful_indexes)};\n')
             # file.write(f'set COMBINATIONS := 0..{len(costs_for_index_combination)};\n')
-            file.write('set QUERIES := ')
-            for num in workload.queries:
-                file.write(f' {num.nr}')
-            file.write(';\n')
+            #file.write('set QUERIES := ')
+            #for num in workload.queries:
+            #    file.write(f' {num.nr}')
+            #file.write(';\n')
 
             # print size of index and determine index_ids, which are used in combinations
             index_ids = {}

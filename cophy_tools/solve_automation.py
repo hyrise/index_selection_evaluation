@@ -1,14 +1,15 @@
 import os
 from pathlib import Path
 import subprocess
+from typing import List
 
 
-def model_gen(indexes: int, combinations: int, budget: int):
+def model_gen(indexes: int, combinations: int, budget: int, query_string: str):
     modstring = f'''param budget := {budget};
 set INDEXES = 1..{indexes};
-set COMBINATIONS = 0..{combinations};\n'''
+set COMBINATIONS = 0..{combinations};\n
+set QUERIES = {query_string};'''
     modstring += '''
-set QUERIES;
 set combi {COMBINATIONS};
 param a {INDEXES}; # size of index
 param f4 {QUERIES, COMBINATIONS} default 99999999999; # costs of combination for query
@@ -23,6 +24,13 @@ subject to memory_consumption: sum {i in INDEXES} x[i] * a[i] <= budget;'''
     with open('temp.mod', 'w+') as file:
         file.write(modstring)
     return modstring
+
+def generate_query_string(number: int, out: List[int]) -> str:
+    query_list = []
+    for i in range(number):
+        if i+1 not in out:
+            query_list.append(f'{i+1}')
+    return ",".join(query_list)
 
 datafiles = "/Users/Julius/masterarbeit/J-Index-Selection/testificate/data/"
 runfile = "/Users/Julius/masterarbeit/J-Index-Selection/cophy_tools/run.run"
