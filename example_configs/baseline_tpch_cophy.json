@@ -1,0 +1,103 @@
+{
+    "database_system": "postgres",
+    "benchmark_name": "tpch",
+    "scale_factor": 10,
+    "algorithms": [
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 1,
+                "max_indexes_per_query": 1,
+                "extra_algorithms": [],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 1,
+                "max_indexes_per_query": 2,
+                "extra_algorithms": [],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 2,
+                "max_indexes_per_query": 1,
+                "extra_algorithms": [],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 2,
+                "max_indexes_per_query": 2,
+                "extra_algorithms": [],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 3,
+                "max_indexes_per_query": 1,
+                "extra_algorithms": [],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 1,
+                "max_indexes_per_query": 3,
+                "extra_algorithms": [],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        }
+    ],
+    "queries": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+    ]
+}
