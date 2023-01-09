@@ -51,21 +51,6 @@
         {
             "name": "cophy_expanded",
             "parameters": {
-                "max_index_width": 2,
-                "max_indexes_per_query": 2,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
-                "benchmark": "tpch",
-                "target_path": "baseline_measurements_tpch",
-                "overwrite": false
-            },
-            "timeout": 300
-        },
-        {
-            "name": "cophy_expanded",
-            "parameters": {
                 "max_index_width": 3,
                 "max_indexes_per_query": 1,
                 "extra_algorithms": [
@@ -83,6 +68,21 @@
             "parameters": {
                 "max_index_width": 1,
                 "max_indexes_per_query": 3,
+                "extra_algorithms": [
+                    {
+                        "None": {}
+                    }],
+                "benchmark": "tpch",
+                "target_path": "baseline_measurements_tpch",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_expanded",
+            "parameters": {
+                "max_index_width": 2,
+                "max_indexes_per_query": 2,
                 "extra_algorithms": [
                     {
                         "None": {}
