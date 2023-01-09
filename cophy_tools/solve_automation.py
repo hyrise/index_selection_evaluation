@@ -67,15 +67,21 @@ def solve(  in_path: str,
 
     print(f'completed {path.name} {budget}')
 
-datafiles = [   '/Users/Julius/masterarbeit/J-Index-Selection/testificate/data/tpch_2_1-None.dat',
-                '/Users/Julius/masterarbeit/J-Index-Selection/testificate/data/tpch_2_1-extend.dat']
+datafiles = [   '/home/Julius.Streit/index_selection_evaluation/baseline_measurements_tpch/data/tpch_1_1-None.dat',
+                '/home/Julius.Streit/index_selection_evaluation/baseline_measurements_tpch/data/tpch_2_1-None.dat',
+                '/home/Julius.Streit/index_selection_evaluation/baseline_measurements_tpch/data/tpch_1_2-None.dat',
+                '/home/Julius.Streit/index_selection_evaluation/baseline_measurements_tpch/data/tpch_2_2-None.dat',
+                '/home/Julius.Streit/index_selection_evaluation/baseline_measurements_tpch/data/tpch_3_1-None.dat',
+                '/home/Julius.Streit/index_selection_evaluation/baseline_measurements_tpch/data/tpch_1_3-None.dat'
+            ]
+
 model_path = "temp.mod"
-runfile = "/Users/Julius/masterarbeit/J-Index-Selection/cophy_tools/run.run"
-amplpath = '/Users/Julius/masterarbeit/ampl_macos64/ampl'
-solverpath = '/Users/Julius/masterarbeit/ampl_macos64/gurobi'
+runfile = "/home/Julius.Streit/index_selection_evaluation/run.run"
+amplpath = '/home/Julius.Streit/ampl_linux-intel64/ampl'
+solverpath = '/home/Julius.Streit/ampl_linux-intel64/gurobi'
 
 
-budgets = [2000000, 4000000]
+budgets = [1000000000, 2000000000, 3000000000, 4000000000, 5000000000, 6000000000, 7000000000, 8000000000, 9000000000, 10000000000, 11000000000, 12000000000, 13000000000, 14000000000, 15000000000]
 
 query_string = generate_query_string(22, [2, 17, 20])
 
