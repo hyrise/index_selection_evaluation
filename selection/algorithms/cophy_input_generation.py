@@ -9,7 +9,7 @@ import time
 DEFAULT_PARAMETERS = {"max_index_width": 2, "max_indexes_per_query": 1}
 
 
-class CoPhyAlgorithm(SelectionAlgorithm):
+class CoPhyInputGeneration(SelectionAlgorithm):
     def __init__(self, database_connector, parameters=None):
         if parameters is None:
             parameters = {}
@@ -45,14 +45,15 @@ class CoPhyAlgorithm(SelectionAlgorithm):
         for number_of_indexes_per_query in range(1, self.parameters['max_indexes_per_query'] + 1):
             for index_combination in itertools.combinations(candidate_indexes, number_of_indexes_per_query):
                 is_useful_combination = False
-                costs = []
+                costs_per_query = {}
                 for query in workload.queries:
                     query_cost = self.cost_evaluation.calculate_cost(Workload([query]), set(index_combination), store_size=True)
-                    costs.append(query_cost)
+                    # test if query_cost is lower than default cost
                     if query_cost < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
                         is_useful_combination = True
+                        costs_per_query[query] = query_cost
                 if is_useful_combination:
-                    costs_for_index_combination[index_combination] = costs
+                    costs_for_index_combination[index_combination] = costs_per_query
                     for index in index_combination:
                         useful_indexes.add(index)
         print(f'# what-if time: {time.time() - time_start}')
@@ -79,14 +80,13 @@ class CoPhyAlgorithm(SelectionAlgorithm):
 
         # print costs per query and index_combination
         print('\nparam f4 :=')
-        for query_id, query in enumerate(workload.queries):
+        for query in workload.queries:
             # Print cost without indexes
-            print(query_id + 1, 0, COSTS_PER_QUERY_WITHOUT_INDEXES[query])
+            print(query.nr, 0, COSTS_PER_QUERY_WITHOUT_INDEXES[query])
             for i, index_combination in enumerate(costs_for_index_combination):
-                costs = costs_for_index_combination[index_combination]
-                # print cost if they are lower than without indexes
-                if costs[query_id] < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
-                    print(query_id + 1, i + 1, costs[query_id])
+                # query is in dictionary if cost is lower than default
+                if query in costs_for_index_combination[index_combination]:
+                    print(query.nr, i + 1, costs_for_index_combination[index_combination][query])
         print(';\n')
 
         return []
