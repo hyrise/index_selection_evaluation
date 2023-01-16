@@ -1,18 +1,18 @@
 from pathlib import Path
-from run_dataclass import BenchmarkDataclass
+from benchmark_dataclass import BenchmarkDataclass
 from typing import List, Dict
 import ast
 import csv
+import json
 
 def convert_normal_row_to_dataclass(
     data_row: List[str],
-    sequence: str,
     description: str,
     queries: List[str],
 ) -> BenchmarkDataclass:
     data = BenchmarkDataclass(
         data_row[0],
-        sequence,
+        f'{data_row[2]}-{ast.literal_eval(data_row[3])["max_index_width"]}',
         ast.literal_eval(data_row[3]),
         data_row[5],
         data_row[4],
@@ -62,7 +62,7 @@ def calculate_overall_costs(query_results: List[Dict]) -> int:
         total += float(costs["Cost"])
     return total
 
-def extract_entries(path: Path, sequence: str, description: str) -> List:
+def extract_entries(path: Path, description: str) -> List:
     data_objects = []
     with open(path, newline = '') as file:
         reader = csv.reader(file, delimiter=';')
@@ -71,8 +71,14 @@ def extract_entries(path: Path, sequence: str, description: str) -> List:
         for row in reader:
             data_objects.append(convert_normal_row_to_dataclass(
                 row,
-                sequence,
                 description,
                 queries
             ))
     return data_objects
+
+def save_all_to_json(target_path: str, source_path: str, description: str):
+    # TODO test
+    objects = extract_entries(source_path, description)
+
+    with open(target_path, 'w+') as file:
+        file.write(json.dumps(objects))
