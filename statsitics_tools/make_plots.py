@@ -4,12 +4,8 @@ from benchmark_dataclass import BenchmarkDataclass
 import matplotlib.pyplot as plt
 import json
 
-def make_runtime_plots(data_paths: List[str]):
+def make_runtime_plots(data: List[BenchmarkDataclass]):
 
-    data: List[BenchmarkDataclass] = []
-
-    for item in data_paths:
-        data += extract_entries(item, 'for plotting')
 
     config_run_times = {}
     config_budgets = {}
@@ -31,12 +27,7 @@ def make_runtime_plots(data_paths: List[str]):
     plt.legend()
     plt.show()
 
-def make_overall_costs_plots(data_paths: List[str], removes: List[str], no_index_cost: float):
-
-    data: List[BenchmarkDataclass] = []
-
-    for item in data_paths:
-        data += extract_entries(item, 'for plotting')
+def make_overall_costs_plots(data: List[BenchmarkDataclass], removes: List[str], no_index_cost: float):
 
     config_overall_costs = {}
     config_budgets = {}
@@ -60,12 +51,7 @@ def make_overall_costs_plots(data_paths: List[str], removes: List[str], no_index
     plt.legend()
     plt.show()
 
-def overal_costs_breakdown(data_paths: List[str]):
-
-    data: List[BenchmarkDataclass] = []
-
-    for item in data_paths:
-        data += extract_entries(item, 'for plotting')
+def overal_costs_breakdown(data: List[BenchmarkDataclass]):
 
     budgets = {}
 
@@ -78,12 +64,7 @@ def overal_costs_breakdown(data_paths: List[str]):
 
     return budgets
 
-def equal_index_configs_by_budget(data_paths: List[str]):
-
-    data: List[BenchmarkDataclass] = []
-
-    for item in data_paths:
-        data += extract_entries(item, 'for plotting')
+def equal_index_configs_by_budget(data):
 
     budgets = {}
 
@@ -97,13 +78,21 @@ def equal_index_configs_by_budget(data_paths: List[str]):
 
     return budgets
 
+def combine_data_files(data_paths: List[str]) -> List[BenchmarkDataclass]:
+    data: List[BenchmarkDataclass] = []
 
-make_overall_costs_plots(['/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpcds_90_queries.csv', '/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpcds_90_queries.csv'], [])
+    for item in data_paths:
+        data += extract_entries(item, 'for plotting')
+    return data
 
-make_runtime_plots(['/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpcds_90_queries.csv', '/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpcds_90_queries.csv'])
+data = combine_data_files(['/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpch_19_queries.csv', '/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpch_19_queries.csv'])
+
+make_overall_costs_plots(data, [], 1)
+
+make_runtime_plots(data)
 
 with open('costs.json', 'w+') as file:
-    json.dump(overal_costs_breakdown(['/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpcds_90_queries.csv', '/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpcds_90_queries.csv']),file, indent=4)
+    json.dump(overal_costs_breakdown(data),file, indent=4)
 
 with open('indexes.json', 'w+') as file:
-    json.dump(equal_index_configs_by_budget(['/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpcds_90_queries.csv', '/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpcds_90_queries.csv']),file, indent=4)
+    json.dump(equal_index_configs_by_budget(data),file, indent=4)
