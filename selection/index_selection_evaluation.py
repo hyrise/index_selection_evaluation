@@ -7,6 +7,8 @@ import time
 
 from .algorithms.anytime_algorithm import AnytimeAlgorithm
 from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
+from .algorithms.cophy_algorithm import CoPhyAlgorithm
+from .algorithms.cophy_results import CoPhyResults
 from .algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
@@ -23,6 +25,8 @@ from .workload import Workload
 ALGORITHMS = {
     "anytime": AnytimeAlgorithm,
     "auto_admin": AutoAdminAlgorithm,
+    "cophy": CoPhyAlgorithm,
+    "cophy_results": CoPhyResults,
     "db2advis": DB2AdvisAlgorithm,
     "dexter": DexterAlgorithm,
     "drop": DropHeuristicAlgorithm,
@@ -93,14 +97,14 @@ class IndexSelection:
 
         # Set the random seed to obtain deterministic statistics (and cost estimations)
         # because ANALYZE (and alike) use sampling for large tables
-        self.db_connector.create_statistics()
+        # self.db_connector.create_statistics()
         self.db_connector.commit()
 
         for algorithm_config in config["algorithms"]:
             # CoPhy must be skipped and manually executed via AMPL because it is not
             # integrated yet.
-            if algorithm_config["name"] == "cophy":
-                continue
+            # if algorithm_config["name"] == "cophy":
+            #     continue
 
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
@@ -160,6 +164,37 @@ class IndexSelection:
         indexes = algorithm.calculate_best_indexes(self.workload)
         logging.info(f"Indexes found: {indexes}")
         what_if = algorithm.cost_evaluation.what_if
+        print(algorithm.cost_evaluation.cache)
+
+        # structures to store IDs
+        index_combinations = {}
+        indexes = {}
+        print('\nparam f4 :=')
+        for key in algorithm.cost_evaluation.cache:
+            query, index_set = key
+            costs = algorithm.cost_evaluation.cache[key]
+            if index_set not in index_combinations:
+                combination_id = len(index_combinations)
+                index_combinations[index_set] = combination_id
+                for index in index_set:
+                    if index not in indexes:
+                        index_id = len(indexes) + 1
+                        indexes[index] = index_id
+            else:
+                combination_id = index_combinations[index_set]
+
+            print(query.nr, combination_id, costs)
+        print(";\n")
+
+        print('\nparam a :=')
+        for index in indexes:
+            print(indexes[index], index.estimated_size, '\t#', index)
+        print(";\n")
+
+        for index_set in index_combinations:
+            index_id_list = [str(indexes[index]) for index in index_set]
+            print(f"set combi[{index_combinations[index_set]}]:= {' '.join(index_id_list)};")
+
 
         cost_requests = (
             self.db_connector.cost_estimations
