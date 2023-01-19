@@ -1,7 +1,23 @@
+from typing import List
 from .index import Index
 
+class Query:
+    def __init__(self, query_id, query_text, columns=None):
+        self.nr = query_id
+        self.text = query_text
+
+        # Indexable columns
+        if columns is None:
+            self.columns = []
+        else:
+            self.columns = columns
+
+    def __repr__(self):
+        return f"Q{self.nr}"
 
 class Workload:
+    queries: List[Query]
+
     def __init__(self, queries):
         self.queries = queries
 
@@ -67,17 +83,3 @@ class Table:
     def __hash__(self):
         return hash((self.name, tuple(self.columns)))
 
-
-class Query:
-    def __init__(self, query_id, query_text, columns=None):
-        self.nr = query_id
-        self.text = query_text
-
-        # Indexable columns
-        if columns is None:
-            self.columns = []
-        else:
-            self.columns = columns
-
-    def __repr__(self):
-        return f"Q{self.nr}"
