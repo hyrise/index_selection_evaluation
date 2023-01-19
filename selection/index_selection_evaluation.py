@@ -7,6 +7,7 @@ import time
 
 from .algorithms.anytime_algorithm import AnytimeAlgorithm
 from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
+from .algorithms.cophy_input_generation import CoPhyInputGeneration
 from .algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
@@ -23,6 +24,7 @@ from .workload import Workload
 ALGORITHMS = {
     "anytime": AnytimeAlgorithm,
     "auto_admin": AutoAdminAlgorithm,
+    "cophy_input": CoPhyInputGeneration,
     "db2advis": DB2AdvisAlgorithm,
     "dexter": DexterAlgorithm,
     "drop": DropHeuristicAlgorithm,
@@ -97,10 +99,8 @@ class IndexSelection:
         self.db_connector.commit()
 
         for algorithm_config in config["algorithms"]:
-            # CoPhy must be skipped and manually executed via AMPL because it is not
-            # integrated yet.
-            if algorithm_config["name"] == "cophy":
-                continue
+            if algorithm_config["name"] == "cophy_input":
+                logging.info(f"CoPhy input is generated; but results are not calculated.")
 
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
