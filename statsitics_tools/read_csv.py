@@ -82,3 +82,10 @@ def save_all_to_json(target_path: str, source_path: str, description: str):
 
     with open(target_path, 'w+') as file:
         file.write(json.dumps(objects))
+
+def noindex_costs(path):
+    #Hacky but leass annoying than the alternative
+    with open(path, 'r') as file:
+        reader = csv.reader(file, delimiter=';')
+        reader.__next__()
+        return calculate_overall_costs(retrieve_query_dicts(reader.__next__()))

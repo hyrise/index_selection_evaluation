@@ -39,7 +39,7 @@ def make_overall_costs_plots(data: List[BenchmarkDataclass], removes: List[str],
             config_overall_costs[item.sequence] = []
             config_budgets[item.sequence] = []
 
-        config_overall_costs[item.sequence].append(item.overall_costs)
+        config_overall_costs[item.sequence].append(item.overall_costs/no_index_cost)
         config_budgets[item.sequence].append(item.budget_in_bytes/1000**2)
 
     for item in config_budgets.keys():
@@ -78,6 +78,32 @@ def equal_index_configs_by_budget(data):
 
     return budgets
 
+def indexes_by_budget(data: List[BenchmarkDataclass]):
+
+    budgets = {}
+
+    for item in data:
+        if item.budget_in_bytes not in budgets.keys():
+            budgets[item.budget_in_bytes] = {}
+        for index in item.selected_indexes:
+            if index not in budgets[item.budget_in_bytes].keys():
+                budgets[item.budget_in_bytes][index] = []
+            budgets[item.budget_in_bytes][index].append(item.sequence)
+
+    return budgets
+
+def costs_by_query(data: List[BenchmarkDataclass]):
+    budgets = {}
+    for item in data:
+        if item.budget_in_bytes not in budgets.keys():
+            budgets[item.budget_in_bytes] = {}
+        for i, query_cost in enumerate(item.costs_by_query):
+            query = item.queries[i]
+            if query not in budgets[item.budget_in_bytes].keys():
+                budgets[item.budget_in_bytes][query] = []
+            budgets[item.budget_in_bytes][query].append(f'{query_cost["Cost"]} {item.sequence}')
+    return budgets
+
 def combine_data_files(data_paths: List[str]) -> List[BenchmarkDataclass]:
     data: List[BenchmarkDataclass] = []
 
@@ -87,12 +113,19 @@ def combine_data_files(data_paths: List[str]) -> List[BenchmarkDataclass]:
 
 data = combine_data_files(['/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpch_19_queries.csv', '/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpch_19_queries.csv'])
 
-make_overall_costs_plots(data, [], 1)
+# TPCH =46164891.51 TPCDS=121150974.81
+#make_overall_costs_plots(data, [], 46164891)
 
-make_runtime_plots(data)
+#make_runtime_plots(data)
 
 with open('costs.json', 'w+') as file:
     json.dump(overal_costs_breakdown(data),file, indent=4)
 
 with open('indexes.json', 'w+') as file:
     json.dump(equal_index_configs_by_budget(data),file, indent=4)
+
+with open('indexes_by_budget.json', 'w+') as file:
+    json.dump(indexes_by_budget(data),file, indent=4)
+
+with open('costbyquery.json', 'w+') as file:
+    json.dump(costs_by_query(data),file, indent=4)
