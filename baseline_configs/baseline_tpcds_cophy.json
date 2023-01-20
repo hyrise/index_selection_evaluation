@@ -8,12 +8,9 @@
             "parameters": {
                 "max_index_width": 1,
                 "max_indexes_per_query": 1,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
                 "benchmark": "tpcds",
-                "target_path": "baseline_measurements_tpcds",
+                "file_path": "baseline_measurements_tpcds",
+                "json_path": "baseline_measurements_tpcds_json",
                 "overwrite": false
             },
             "timeout": 300
@@ -23,12 +20,9 @@
             "parameters": {
                 "max_index_width": 1,
                 "max_indexes_per_query": 2,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
                 "benchmark": "tpcds",
-                "target_path": "baseline_measurements_tpcds",
+                "file_path": "baseline_measurements_tpcds",
+                "json_path": "baseline_measurements_tpcds_json",
                 "overwrite": false
             },
             "timeout": 300
@@ -38,12 +32,9 @@
             "parameters": {
                 "max_index_width": 2,
                 "max_indexes_per_query": 1,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
                 "benchmark": "tpcds",
-                "target_path": "baseline_measurements_tpcds",
+                "file_path": "baseline_measurements_tpcds",
+                "json_path": "baseline_measurements_tpcds_json",
                 "overwrite": false
             },
             "timeout": 300
@@ -53,12 +44,9 @@
             "parameters": {
                 "max_index_width": 2,
                 "max_indexes_per_query": 2,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
                 "benchmark": "tpcds",
-                "target_path": "baseline_measurements_tpcds",
+                "file_path": "baseline_measurements_tpcds",
+                "json_path": "baseline_measurements_tpcds_json",
                 "overwrite": false
             },
             "timeout": 300
@@ -68,12 +56,9 @@
             "parameters": {
                 "max_index_width": 3,
                 "max_indexes_per_query": 1,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
                 "benchmark": "tpcds",
-                "target_path": "baseline_measurements_tpcds",
+                "file_path": "baseline_measurements_tpcds",
+                "json_path": "baseline_measurements_tpcds_json",
                 "overwrite": false
             },
             "timeout": 300
@@ -83,12 +68,9 @@
             "parameters": {
                 "max_index_width": 1,
                 "max_indexes_per_query": 3,
-                "extra_algorithms": [
-                    {
-                        "None": {}
-                    }],
                 "benchmark": "tpcds",
-                "target_path": "baseline_measurements_tpcds",
+                "file_path": "baseline_measurements_tpcds",
+                "json_path": "baseline_measurements_tpcds_json",
                 "overwrite": false
             },
             "timeout": 300
