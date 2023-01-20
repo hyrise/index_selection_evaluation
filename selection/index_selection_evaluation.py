@@ -13,7 +13,7 @@ from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from .algorithms.extend_algorithm import ExtendAlgorithm
 from .algorithms.relaxation_algorithm import RelaxationAlgorithm
-from .algorithms.cophy_expanded import CoPhyExpandedAlgorithm
+from .algorithms.cophy_input_expanded import CoPhyExpandedAlgorithm
 from .benchmark import Benchmark
 from .dbms.hana_dbms import HanaDatabaseConnector
 from .dbms.postgres_dbms import PostgresDatabaseConnector

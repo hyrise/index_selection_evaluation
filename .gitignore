@@ -12,8 +12,11 @@ query_0.sql
 **.mod
 **.solve
 **.run
+cophy_json/**
+user_configs/**
 
 misc/**
+.vscode/**
 
 database_connection.json
 benchmark_results/plans
@@ -24,3 +27,4 @@ benchmark_results/parameters_tpcds
 benchmark_results/**/*_runtime.pdf
 benchmark_results/**/*_what_if_graph.pdf
 benchmark_results/**/*_cost_estimation.pdf
+
