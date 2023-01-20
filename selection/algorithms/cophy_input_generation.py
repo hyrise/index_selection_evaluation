@@ -73,6 +73,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
 
         accessed_columns_per_table = {}
         for query in workload.queries:
+            logging.info(f"extracting relevant columns for query {query.nr}")
             for column in query.columns:
                 if column.table not in accessed_columns_per_table:
                     accessed_columns_per_table[column.table] = set()
@@ -81,10 +82,12 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         candidate_indexes = set()
         for number_of_index_columns in range(1, self.parameters["max_index_width"] + 1):
             for table in accessed_columns_per_table:
+                logging.info(f"combing wider index combis for table {table}")
                 for index_columns in itertools.permutations(
                     accessed_columns_per_table[table], number_of_index_columns
                 ):
                     candidate_indexes.add(Index(index_columns))
+                    logging.info(f"Combined {index_columns}")
 
         # stores indexes that have a benefit in any combination (to prune indexes with no benefit)
         useful_indexes: Set[Index] = set()
@@ -98,6 +101,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             ):
                 is_useful_combination = False
                 costs_per_query = {}
+                logging.info(f"checking if usefull combination {index_combination}")
                 for query in workload.queries:
                     query_cost = self.cost_evaluation.calculate_cost(
                         Workload([query]), set(index_combination), store_size=True
@@ -111,6 +115,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                     for index in index_combination:
                         useful_indexes.add(index)
 
+        logging.info(f"constructing final dictionaries")
         cophy_dict = {}
         cophy_dict["what_if_time"] = time.time() - time_start
         cophy_dict["cost_requests"] = self.cost_evaluation.cost_requests
@@ -123,7 +128,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         for query in workload.queries:
             cophy_dict["queries"].append(query.nr)
 
-        # print size of index and determine index_ids, which are used in combinations
+        # save size of index and determine index_ids, which are used in combinations
         index_ids = {}
         cophy_dict["index_costs"] = []
         for i, index in enumerate(sorted(useful_indexes)):
@@ -136,6 +141,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                 }
             )
             index_ids[index] = i + 1
+        logging.info("Completed index costs moving to combis")
 
         # print index_ids per combination
         # combi 0 := no index
@@ -145,6 +151,8 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             cophy_dict["combi"].append(
                 {"combi_id": i + 1, "index_ids": " ".join(index_id_list)}
             )
+
+        logging.info("completed combi moving to f4")
 
         # print costs per query and index_combination
         cophy_dict["f4"] = []
@@ -169,6 +177,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                             ],
                         }
                     )
+        logging.info("completed f4 moving to file writing")
 
         if self.parameters["json_path"]:
             save_as_json(self.parameters["json_path"], json_file_path, cophy_dict)
@@ -211,6 +220,7 @@ def save_cophy_as_file(folder_path: str, file_path: str, cophy_dict: Dict) -> No
         for f4 in cophy_dict["f4"]:
             file.write(f'{f4["query_number"]} {f4["combi_number"]} {f4["costs"]}\n')
         file.write(";\n")
+    logging.info(f"Wrote file to {file_path}")
     return
 
 
@@ -220,4 +230,5 @@ def save_as_json(folder_path, json_path: str, cophy_dict: Dict) -> None:
         logging.info(f"Overwriting {json_path}")
     with open(json_path, "w+") as file:
         json.dump(cophy_dict, file, indent=4)
+        logging.info(f"Wrote file to {json_path}")
     return
