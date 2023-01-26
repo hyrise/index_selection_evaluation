@@ -10,6 +10,7 @@ import ast
 @dataclass
 class BenchmarkDataclass:
     """Class designed to save data about runs"""
+
     timestamp: str  # The timestamp associated with the run
     sequence: str  # If this belongs to some particular sequence/descriptor
     config: dict  # The config that this run was made with
