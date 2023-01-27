@@ -7,14 +7,13 @@ import logging
 import itertools
 import time
 import json
+import sys
 
 # The maximum width of index candidates and the number of applicable indexes per query can be specified
 DEFAULT_PARAMETERS = {
-    "max_index_width": 2,
+    "max_index_width": 1,
     "max_indexes_per_query": 1,
-    "benchmark_name": "benchmark",
-    "json_path": "cophy_json",
-    "file_path": "cophy_data",
+    "output_folder": "cophy",
     "overwrite": False,
 }
 
@@ -30,39 +29,6 @@ class CoPhyInputGeneration(SelectionAlgorithm):
     def _calculate_best_indexes(self, workload: Workload) -> List:
         logging.info("Creating AMPL input for CoPhy")
         logging.info("Parameters: " + str(self.parameters))
-
-        if self.parameters["file_path"]:
-            datafile_path = (
-                self.parameters["file_path"]
-                + f'/{self.parameters["benchmark_name"] }_{self.parameters["max_index_width"]}_{self.parameters["max_indexes_per_query"]}.dat'
-            )
-            if os.path.isfile(datafile_path) and not self.parameters["overwrite"]:
-                logging.info(
-                    f"A datafile already exists for at {datafile_path}. Set parameter overwrite to True if you want to overwrite. Aborting Run"
-                )
-                return []
-
-        # This is a bit clumsy as no dat file can be generated if a JSON already exists. However a tool to convert the json into a dat is somewhat trivial
-        if self.parameters["json_path"]:
-            json_file_path = (
-                self.parameters["json_path"]
-                + f'/{self.parameters["benchmark_name"]}_{self.parameters["max_index_width"]}_{self.parameters["max_indexes_per_query"]}.json'
-            )
-            if os.path.isfile(datafile_path) and not self.parameters["overwrite"]:
-                logging.info(
-                    f"A jsonfile already exists for at {json_file_path}. Set parameter overwrite to True if you want to overwrite. Aborting Run"
-                )
-                return []
-
-        if not self.parameters["file_path"] and not self.parameters["json_path"]:
-            logging.warning(
-                "No output files are being generated. The algorithm will run but no output will be available."
-            )
-
-        if self.parameters["benchmark_name"] == "benchmark":
-            logging.info(
-                'It is recommended to set the "benchmark_name" parameter to remember which benchmark this algorithm was executed on.'
-            )
 
         time_start = time.time()
         COSTS_PER_QUERY_WITHOUT_INDEXES = {}
@@ -179,56 +145,89 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                     )
         logging.info("completed f4 moving to file writing")
 
-        if self.parameters["json_path"]:
-            save_as_json(self.parameters["json_path"], json_file_path, cophy_dict)
+        ampl_file_path = None
+        json_file_path = None
+        if self.parameters["output_folder"]:
+            path_base = (
+                self.parameters["output_folder"]
+                + f'/{self.parameters["benchmark_name"]}_cophy_input_width{self.parameters["max_index_width"]}_number{self.parameters["max_indexes_per_query"]}'
+            )
+            if os.path.isfile(path_base + ".txt") and not self.parameters["overwrite"]:
+                logging.info(
+                    f"A datafile already exists for at {path_base + '.txt'}. Set parameter overwrite to True if you want to overwrite. Output to stdour"
+                )
+            else:
+                ampl_file_path = path_base + ".txt"
+            if os.path.isfile(path_base + ".json") and self.parameters["overwrite"]:
+                logging.info(
+                    f"A jsonfile already exists for at {path_base + '.json'}. Set parameter overwrite to True if you want to overwrite. Output to stdout"
+                )
+            else:
+                json_file_path = path_base + ".json"
 
-        if self.parameters["file_path"]:
-            save_cophy_as_file(self.parameters["file_path"], datafile_path, cophy_dict)
+        output_as_json(cophy_dict, json_file_path)
+        output_as_ampl(cophy_dict, ampl_file_path)
 
         return []
 
 
-def save_cophy_as_file(folder_path: str, file_path: str, cophy_dict: Dict) -> None:
-    os.makedirs(f"{folder_path}", exist_ok=True)
-    if os.path.isfile(file_path):
-        logging.info(f"Overwriting {file_path}")
-    with open(file_path, "w+") as file:
-        # Currently not writing the sizes as I had trouble with having those in the datafile when solving.
-        file.write(f'# what-if time: {cophy_dict["what_if_time"]}\n')
-        file.write(
-            f'# cost_requests: {cophy_dict["cost_requests"]}\tcache_hits: {cophy_dict["cache_hits"]}\n'
-        )
-        # This makes sure this file is treated as Data
-        file.write(f"data;\n")
-        file.write(
-            f'set QUERIES := {" ".join(str(q) for q in cophy_dict["queries"])}\n\n'
-        )
-        file.write("param a :=\n")
-        for index_size_dict in cophy_dict["index_costs"]:
-            file.write(
-                f'{index_size_dict["id"]} {index_size_dict["estimated_size"]} # {index_size_dict["column_names"]}\n'
-            )
-        file.write(";\n\n")
+def output_as_ampl(cophy_dict: Dict, file_path: str=None) -> None:
+    if file_path is not None:
+        folder = "/".join(file_path.split("/")[:-1])
+        os.makedirs(folder, exist_ok=True)
+        if os.path.isfile(file_path):
+            logging.info(f"Overwriting {file_path}")
+        handle = open(file_path, "w+")
+    else:
+        handle = sys.stdout
 
-        file.write("set combi[0]:= ;\n")
-        for combi_dict in cophy_dict["combi"]:
-            file.write(
-                f'set combi[{combi_dict["combi_id"]}]:= {combi_dict["index_ids"]};\n'
-            )
+    # Currently not writing the sizes as I had trouble with having those in the datafile when solving.
+    handle.write(f'# what-if time: {cophy_dict["what_if_time"]}\n')
+    handle.write(
+        f'# cost_requests: {cophy_dict["cost_requests"]}\tcache_hits: {cophy_dict["cache_hits"]}\n'
+    )
+    # This makes sure this file is treated as Data
+    handle.write(f"data;\n")
+    handle.write(
+        f'set QUERIES := {" ".join(str(q) for q in cophy_dict["queries"])}\n\n'
+    )
+    handle.write("param a :=\n")
+    for index_size_dict in cophy_dict["index_costs"]:
+        handle.write(
+            f'{index_size_dict["id"]} {index_size_dict["estimated_size"]} # {index_size_dict["column_names"]}\n'
+        )
+    handle.write(";\n\n")
 
-        file.write("\nparam f4 :=\n")
-        for f4 in cophy_dict["f4"]:
-            file.write(f'{f4["query_number"]} {f4["combi_number"]} {f4["costs"]}\n')
-        file.write(";\n")
+    handle.write("set combi[0]:= ;\n")
+    for combi_dict in cophy_dict["combi"]:
+        handle.write(
+            f'set combi[{combi_dict["combi_id"]}]:= {combi_dict["index_ids"]};\n'
+        )
+
+    handle.write("\nparam f4 :=\n")
+    for f4 in cophy_dict["f4"]:
+        handle.write(f'{f4["query_number"]} {f4["combi_number"]} {f4["costs"]}\n')
+    handle.write(";\n")
     logging.info(f"Wrote file to {file_path}")
+
+    if handle is not sys.stdout:
+        handle.close()
     return
 
 
-def save_as_json(folder_path, json_path: str, cophy_dict: Dict) -> None:
-    os.makedirs(f"{folder_path}", exist_ok=True)
-    if os.path.isfile(json_path):
-        logging.info(f"Overwriting {json_path}")
-    with open(json_path, "w+") as file:
-        json.dump(cophy_dict, file, indent=4)
-        logging.info(f"Wrote file to {json_path}")
+def output_as_json(cophy_dict: Dict, json_path: str=None) -> None:
+    if json_path is not None:
+        folder = "/".join(json_path.split("/")[:-1])
+        os.makedirs(folder, exist_ok=True)
+        if os.path.isfile(json_path):
+            logging.info(f"Overwriting {json_path}")
+        handle = open(json_path, "w+")
+    else:
+        handle = sys.stdout
+
+    json.dump(cophy_dict, handle, indent=4)
+    logging.info(f"Wrote file to {json_path}")
+
+    if handle is not sys.stdout:
+        handle.close()
     return

@@ -107,8 +107,8 @@ class IndexSelection:
             configs = self._find_parameter_list(algorithm_config)
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
-                cfg = algorithm_config_unfolded
-                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(cfg)
+                algorithm_config_unfolded["parameters"]["benchmark_name"] = config["benchmark_name"]
+                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(algorithm_config_unfolded)
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(
                     self.workload,
