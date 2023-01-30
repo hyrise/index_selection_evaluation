@@ -1,19 +1,10 @@
 set QUERIES;
+param NUMBER_OF_INDEXES integer;
+param NUMBER_OF_INDEX_COMBINATIONS integer;
 
-## TPC-H
-# 3 1
-# set INDEXES = 1..1215;
-# set COMBINATIONS = 0..1215;
-
-## TPC-DS
-# 2 1
-# set INDEXES = 1..1503;
-# set COMBINATIONS = 0..1503;
-
-## JOB
-# 3 1
-# set INDEXES = 1..630;
-# set COMBINATIONS = 0..630;
+set INDEXES = 1 .. NUMBER_OF_INDEXES;
+# 0 represents no index
+set COMBINATIONS = 0 .. NUMBER_OF_INDEX_COMBINATIONS;
 
 param budget;
 

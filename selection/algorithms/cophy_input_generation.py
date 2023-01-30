@@ -13,8 +13,8 @@ import sys
 DEFAULT_PARAMETERS = {
     "max_index_width": 1,
     "max_indexes_per_query": 1,
-    "output_folder": "cophy",
-    "overwrite": False,
+    "output_folder": "benchmark_results/cophy",
+    "overwrite": True,
 }
 
 
@@ -27,7 +27,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         )
 
     def _calculate_best_indexes(self, workload: Workload) -> List:
-        logging.info("Creating AMPL input for CoPhy")
+        logging.info("Creating input for CoPhy")
         logging.info("Parameters: " + str(self.parameters))
 
         time_start = time.time()
@@ -38,22 +38,21 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             ] = self.cost_evaluation.calculate_cost(Workload([query]), set())
 
         accessed_columns_per_table = {}
+        # Identify accessed columns per table (over all included queries), which are used to generate wider (multi-attribute) indexes next
         for query in workload.queries:
-            logging.info(f"extracting relevant columns for query {query.nr}")
             for column in query.columns:
                 if column.table not in accessed_columns_per_table:
                     accessed_columns_per_table[column.table] = set()
                 accessed_columns_per_table[column.table].add(column)
 
         candidate_indexes = set()
+        # Generate wider indexes per table
         for number_of_index_columns in range(1, self.parameters["max_index_width"] + 1):
             for table in accessed_columns_per_table:
-                logging.info(f"combing wider index combis for table {table}")
                 for index_columns in itertools.permutations(
                     accessed_columns_per_table[table], number_of_index_columns
                 ):
                     candidate_indexes.add(Index(index_columns))
-                    logging.info(f"Combined {index_columns}")
 
         # stores indexes that have a benefit in any combination (to prune indexes with no benefit)
         useful_indexes: Set[Index] = set()
@@ -62,12 +61,17 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         for number_of_indexes_per_query in range(
             1, self.parameters["max_indexes_per_query"] + 1
         ):
+            number_of_index_combinations = len(list(itertools.combinations(candidate_indexes, number_of_indexes_per_query)))
+            logging.info(f"Evaluate {number_of_index_combinations} index combinations with {number_of_indexes_per_query} indexes per query:")
+            i = 0
             for index_combination in itertools.combinations(
                 candidate_indexes, number_of_indexes_per_query
             ):
+                i += 1
+                if i % 10000 == 0:
+                    logging.info(f"  ... {i} / {number_of_index_combinations} done")
                 is_useful_combination = False
                 costs_per_query = {}
-                logging.info(f"checking if usefull combination {index_combination}")
                 for query in workload.queries:
                     query_cost = self.cost_evaluation.calculate_cost(
                         Workload([query]), set(index_combination), store_size=True
@@ -80,16 +84,15 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                     costs_for_index_combination[index_combination] = costs_per_query
                     for index in index_combination:
                         useful_indexes.add(index)
+            logging.info(f"  ... {i} / {number_of_index_combinations} done")
 
-        logging.info(f"constructing final dictionaries")
         cophy_dict = {}
         cophy_dict["what_if_time"] = time.time() - time_start
         cophy_dict["cost_requests"] = self.cost_evaluation.cost_requests
         cophy_dict["cache_hits"] = self.cost_evaluation.cache_hits
         cophy_dict["num_useful_indexes"] = len(useful_indexes)
         cophy_dict["num_combination_costs"] = len(costs_for_index_combination)
-        # generate AMPL input
-        # sorted_useful_indexes = sorted(useful_indexes)
+
         cophy_dict["queries"] = []
         for query in workload.queries:
             cophy_dict["queries"].append(query.nr)
@@ -109,7 +112,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             index_ids[index] = i + 1
         logging.info("Completed index costs moving to combis")
 
-        # print index_ids per combination
+        # index_ids per combination
         # combi 0 := no index
         cophy_dict["combi"] = []
         for i, index_combination in enumerate(costs_for_index_combination):
@@ -120,7 +123,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
 
         logging.info("completed combi moving to f4")
 
-        # print costs per query and index_combination
+        # costs per query and index_combination
         cophy_dict["f4"] = []
         for query in workload.queries:
             # Print cost without indexes
@@ -154,11 +157,11 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             )
             if os.path.isfile(path_base + ".txt") and not self.parameters["overwrite"]:
                 logging.info(
-                    f"A datafile already exists for at {path_base + '.txt'}. Set parameter overwrite to True if you want to overwrite. Output to stdour"
+                    f"A datafile already exists for at {path_base + '.txt'}. Set parameter overwrite to True if you want to overwrite. Output to stdout"
                 )
             else:
                 ampl_file_path = path_base + ".txt"
-            if os.path.isfile(path_base + ".json") and self.parameters["overwrite"]:
+            if os.path.isfile(path_base + ".json") and not self.parameters["overwrite"]:
                 logging.info(
                     f"A jsonfile already exists for at {path_base + '.json'}. Set parameter overwrite to True if you want to overwrite. Output to stdout"
                 )
@@ -181,15 +184,16 @@ def output_as_ampl(cophy_dict: Dict, file_path: str=None) -> None:
     else:
         handle = sys.stdout
 
-    # Currently not writing the sizes as I had trouble with having those in the datafile when solving.
     handle.write(f'# what-if time: {cophy_dict["what_if_time"]}\n')
     handle.write(
         f'# cost_requests: {cophy_dict["cost_requests"]}\tcache_hits: {cophy_dict["cache_hits"]}\n'
     )
-    # This makes sure this file is treated as Data
+    # This makes sure this file is treated as data
     handle.write(f"data;\n")
     handle.write(
-        f'set QUERIES := {" ".join(str(q) for q in cophy_dict["queries"])}\n\n'
+        f'set QUERIES := {" ".join(str(q) for q in cophy_dict["queries"])};\n'
+        f'param NUMBER_OF_INDEXES := {cophy_dict["num_useful_indexes"]};\n'
+        f'param aram NUMBER_OF_INDEX_COMBINATIONS := {cophy_dict["num_combination_costs"]};\n\n'
     )
     handle.write("param a :=\n")
     for index_size_dict in cophy_dict["index_costs"]:
