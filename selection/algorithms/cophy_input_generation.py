@@ -1,15 +1,17 @@
+import itertools
+import json
+import logging
 import os
-from typing import Any, Dict, Set, List
+import sys
+import time
+from typing import Dict, List, Set
+
+from ..index import Index
 from ..selection_algorithm import SelectionAlgorithm
 from ..workload import Workload
-from ..index import Index
-import logging
-import itertools
-import time
-import json
-import sys
 
-# The maximum width of index candidates and the number of applicable indexes per query can be specified
+# The maximum width of index candidates and the number of applicable indexes
+#   per query can be specified
 DEFAULT_PARAMETERS = {
     "max_index_width": 1,
     "max_indexes_per_query": 1,
@@ -33,12 +35,13 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         time_start = time.time()
         query_costs_without_indexes = {}
         for query in workload.queries:
-            query_costs_without_indexes[
-                query
-            ] = self.cost_evaluation.calculate_cost(Workload([query]), set())
+            query_costs_without_indexes[query] = self.cost_evaluation.calculate_cost(
+                Workload([query]), set()
+            )
 
         accessed_columns_per_table = {}
-        # Identify accessed columns per table (over all included queries), which are used to generate wider (multi-attribute) indexes next
+        # Identify accessed columns per table (over all included queries),
+        #   which are used to generate wider (multi-attribute) indexes next
         for query in workload.queries:
             for column in query.columns:
                 if column.table not in accessed_columns_per_table:
@@ -54,15 +57,23 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                 ):
                     candidate_indexes.add(Index(index_columns))
 
-        # stores indexes that have a benefit in any combination (to prune indexes with no benefit)
+        # stores indexes that have a benefit in any combination
+        #   (to prune indexes with no benefit)
         useful_indexes: Set[Index] = set()
         query_costs_for_index_combination = {}
 
         for number_of_indexes_per_query in range(
             1, self.parameters["max_indexes_per_query"] + 1
         ):
-            number_of_index_combinations = len(list(itertools.combinations(candidate_indexes, number_of_indexes_per_query)))
-            logging.info(f"Evaluate {number_of_index_combinations} index combinations with {number_of_indexes_per_query} indexes per query:")
+            number_of_index_combinations = len(
+                list(
+                    itertools.combinations(candidate_indexes, number_of_indexes_per_query)
+                )
+            )
+            logging.info(
+                f"Evaluate {number_of_index_combinations} index combinations "
+                f"with {number_of_indexes_per_query} indexes per query:"
+            )
             i = 0
             for index_combination in itertools.combinations(
                 candidate_indexes, number_of_indexes_per_query
@@ -96,7 +107,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             "queries": [],
             "index_sizes": [],
             "index_combinations": [],
-            "query_costs": []
+            "query_costs": [],
         }
 
         # store included workload queries
@@ -118,9 +129,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
 
         # store indexes per combination
         # combination 0 := no index
-        cophy_dict["index_combinations"].append(
-            {"combination_id": 0, "index_ids": ""}
-        )
+        cophy_dict["index_combinations"].append({"combination_id": 0, "index_ids": ""})
         for i, index_combination in enumerate(query_costs_for_index_combination):
             index_id_list = [str(index_ids[index]) for index in index_combination]
             cophy_dict["index_combinations"].append(
@@ -155,17 +164,23 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         if self.parameters["output_folder"]:
             path_base = (
                 self.parameters["output_folder"]
-                + f'/{self.parameters["benchmark_name"]}_cophy_input__width{self.parameters["max_index_width"]}__per_query{self.parameters["max_indexes_per_query"]}'
+                + f'/{self.parameters["benchmark_name"]}_cophy_input'
+                f'__width{self.parameters["max_index_width"]}'
+                f'__per_query{self.parameters["max_indexes_per_query"]}'
             )
             if os.path.isfile(path_base + ".txt") and not self.parameters["overwrite"]:
                 logging.info(
-                    f"A datafile already exists for at {path_base + '.txt'}. Set parameter overwrite to True if you want to overwrite. Output to stdout"
+                    f"A datafile already exists for at {path_base + '.txt'}. "
+                    f"Set parameter overwrite to True if you want to overwrite."
+                    f"Output to stdout"
                 )
             else:
                 ampl_file_path = path_base + ".txt"
             if os.path.isfile(path_base + ".json") and not self.parameters["overwrite"]:
                 logging.info(
-                    f"A jsonfile already exists for at {path_base + '.json'}. Set parameter overwrite to True if you want to overwrite. Output to stdout"
+                    f"A jsonfile already exists for at {path_base + '.json'}. "
+                    f"Set parameter overwrite to True if you want to overwrite."
+                    f"Output to stdout"
                 )
             else:
                 json_file_path = path_base + ".json"
@@ -176,7 +191,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         return []
 
 
-def output_as_ampl(cophy_dict: Dict, file_path: str=None) -> None:
+def output_as_ampl(cophy_dict: Dict, file_path: str = None) -> None:
     if file_path is not None:
         folder = "/".join(file_path.split("/")[:-1])
         os.makedirs(folder, exist_ok=True)
@@ -188,30 +203,38 @@ def output_as_ampl(cophy_dict: Dict, file_path: str=None) -> None:
 
     handle.write(f'# what-if time: {cophy_dict["what_if_time"]}\n')
     handle.write(
-        f'# cost_requests: {cophy_dict["cost_requests"]}\tcache_hits: {cophy_dict["cache_hits"]}\n\n'
+        f'# cost_requests: {cophy_dict["cost_requests"]}\t'
+        f'cache_hits: {cophy_dict["cache_hits"]}\n\n'
     )
     # This makes sure this file is treated as data
-    handle.write(f"data;\n")
+    handle.write("data;\n")
     handle.write(
         f'set QUERIES := {" ".join(str(q) for q in cophy_dict["queries"])};\n'
         f'param NUMBER_OF_INDEXES := {cophy_dict["number_of_indexes"]};\n'
-        f'param NUMBER_OF_INDEX_COMBINATIONS := {cophy_dict["number_of_index_combinations"]};\n\n\n'
+        f"param NUMBER_OF_INDEX_COMBINATIONS := "
+        f'{cophy_dict["number_of_index_combinations"]};\n\n\n'
     )
     handle.write("param size :=\n")
     for index_size_dict in cophy_dict["index_sizes"]:
         handle.write(
-            f'{index_size_dict["index_id"]} {index_size_dict["estimated_size"]} # {index_size_dict["column_names"]}\n'
+            f'{index_size_dict["index_id"]} {index_size_dict["estimated_size"]} '
+            f'# {index_size_dict["column_names"]}\n'
         )
     handle.write(";\n\n")
 
     for combi_dict in cophy_dict["index_combinations"]:
         handle.write(
-            f'set indexes_per_combination[{combi_dict["combination_id"]}]:= {combi_dict["index_ids"]};\n'
+            f'set indexes_per_combination[{combi_dict["combination_id"]}]:= '
+            f'{combi_dict["index_ids"]};\n'
         )
 
     handle.write("\nparam costs :=\n")
     for query_costs in cophy_dict["query_costs"]:
-        handle.write(f'{query_costs["query_number"]} {query_costs["combination_id"]} {query_costs["costs"]}\n')
+        handle.write(
+            f'{query_costs["query_number"]} '
+            f'{query_costs["combination_id"]} '
+            f'{query_costs["costs"]}\n'
+        )
     handle.write(";\n")
     logging.info(f"Wrote file to {file_path}")
 
@@ -220,7 +243,7 @@ def output_as_ampl(cophy_dict: Dict, file_path: str=None) -> None:
     return
 
 
-def output_as_json(cophy_dict: Dict, json_path: str=None) -> None:
+def output_as_json(cophy_dict: Dict, json_path: str = None) -> None:
     if json_path is not None:
         folder = "/".join(json_path.split("/")[:-1])
         os.makedirs(folder, exist_ok=True)

@@ -1,5 +1,7 @@
 from typing import List
+
 from .index import Index
+
 
 class Query:
     def __init__(self, query_id, query_text, columns=None):
@@ -14,6 +16,7 @@ class Query:
 
     def __repr__(self):
         return f"Q{self.nr}"
+
 
 class Workload:
     queries: List[Query]
@@ -82,4 +85,3 @@ class Table:
 
     def __hash__(self):
         return hash((self.name, tuple(self.columns)))
-
