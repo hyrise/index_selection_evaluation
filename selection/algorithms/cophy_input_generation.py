@@ -31,9 +31,9 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         logging.info("Parameters: " + str(self.parameters))
 
         time_start = time.time()
-        COSTS_PER_QUERY_WITHOUT_INDEXES = {}
+        query_costs_without_indexes = {}
         for query in workload.queries:
-            COSTS_PER_QUERY_WITHOUT_INDEXES[
+            query_costs_without_indexes[
                 query
             ] = self.cost_evaluation.calculate_cost(Workload([query]), set())
 
@@ -56,7 +56,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
 
         # stores indexes that have a benefit in any combination (to prune indexes with no benefit)
         useful_indexes: Set[Index] = set()
-        costs_for_index_combination = {}
+        query_costs_for_index_combination = {}
 
         for number_of_indexes_per_query in range(
             1, self.parameters["max_indexes_per_query"] + 1
@@ -77,83 +77,85 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                         Workload([query]), set(index_combination), store_size=True
                     )
                     # test if query_cost is lower than default cost
-                    if query_cost < COSTS_PER_QUERY_WITHOUT_INDEXES[query]:
+                    if query_cost < query_costs_without_indexes[query]:
                         is_useful_combination = True
                         costs_per_query[query] = query_cost
                 if is_useful_combination:
-                    costs_for_index_combination[index_combination] = costs_per_query
+                    query_costs_for_index_combination[index_combination] = costs_per_query
                     for index in index_combination:
                         useful_indexes.add(index)
             logging.info(f"  ... {i} / {number_of_index_combinations} done")
 
-        cophy_dict = {}
-        cophy_dict["what_if_time"] = time.time() - time_start
-        cophy_dict["cost_requests"] = self.cost_evaluation.cost_requests
-        cophy_dict["cache_hits"] = self.cost_evaluation.cache_hits
-        cophy_dict["num_useful_indexes"] = len(useful_indexes)
-        cophy_dict["num_combination_costs"] = len(costs_for_index_combination)
+        # construct data structures to output later
+        cophy_dict = {
+            "what_if_time": time.time() - time_start,
+            "cost_requests": self.cost_evaluation.cost_requests,
+            "cache_hits": self.cost_evaluation.cache_hits,
+            "number_of_indexes": len(useful_indexes),
+            "number_of_index_combinations": len(query_costs_for_index_combination),
+            "queries": [],
+            "index_sizes": [],
+            "index_combinations": [],
+            "query_costs": []
+        }
 
-        cophy_dict["queries"] = []
+        # store included workload queries
         for query in workload.queries:
             cophy_dict["queries"].append(query.nr)
 
-        # save size of index and determine index_ids, which are used in combinations
+        # store index sizes and determine index_ids for later use in combinations
         index_ids = {}
-        cophy_dict["index_costs"] = []
         for i, index in enumerate(sorted(useful_indexes)):
             assert index.estimated_size, "Index size must be set."
-            cophy_dict["index_costs"].append(
+            cophy_dict["index_sizes"].append(
                 {
-                    "id": i + 1,
+                    "index_id": i + 1,
                     "estimated_size": index.estimated_size,
                     "column_names": index._column_names(),
                 }
             )
             index_ids[index] = i + 1
-        logging.info("Completed index costs moving to combis")
 
-        # index_ids per combination
-        # combi 0 := no index
-        cophy_dict["combi"] = []
-        for i, index_combination in enumerate(costs_for_index_combination):
+        # store indexes per combination
+        # combination 0 := no index
+        cophy_dict["index_combinations"].append(
+            {"combination_id": 0, "index_ids": ""}
+        )
+        for i, index_combination in enumerate(query_costs_for_index_combination):
             index_id_list = [str(index_ids[index]) for index in index_combination]
-            cophy_dict["combi"].append(
-                {"combi_id": i + 1, "index_ids": " ".join(index_id_list)}
+            cophy_dict["index_combinations"].append(
+                {"combination_id": i + 1, "index_ids": " ".join(index_id_list)}
             )
 
-        logging.info("completed combi moving to f4")
-
-        # costs per query and index_combination
-        cophy_dict["f4"] = []
+        # store query costs per query and index_combination
         for query in workload.queries:
             # Print cost without indexes
-            cophy_dict["f4"].append(
+            cophy_dict["query_costs"].append(
                 {
                     "query_number": query.nr,
-                    "combi_number": 0,
-                    "costs": COSTS_PER_QUERY_WITHOUT_INDEXES[query],
+                    "combination_id": 0,
+                    "costs": query_costs_without_indexes[query],
                 }
             )
-            for i, index_combination in enumerate(costs_for_index_combination):
+            for i, index_combination in enumerate(query_costs_for_index_combination):
                 # query is in dictionary if cost is lower than default
-                if query in costs_for_index_combination[index_combination]:
-                    cophy_dict["f4"].append(
+                if query in query_costs_for_index_combination[index_combination]:
+                    cophy_dict["query_costs"].append(
                         {
                             "query_number": query.nr,
-                            "combi_number": i + 1,
-                            "costs": costs_for_index_combination[index_combination][
+                            "combination_id": i + 1,
+                            "costs": query_costs_for_index_combination[index_combination][
                                 query
                             ],
                         }
                     )
-        logging.info("completed f4 moving to file writing")
 
         ampl_file_path = None
         json_file_path = None
         if self.parameters["output_folder"]:
             path_base = (
                 self.parameters["output_folder"]
-                + f'/{self.parameters["benchmark_name"]}_cophy_input_width{self.parameters["max_index_width"]}_number{self.parameters["max_indexes_per_query"]}'
+                + f'/{self.parameters["benchmark_name"]}_cophy_input__width{self.parameters["max_index_width"]}__per_query{self.parameters["max_indexes_per_query"]}'
             )
             if os.path.isfile(path_base + ".txt") and not self.parameters["overwrite"]:
                 logging.info(
@@ -186,31 +188,30 @@ def output_as_ampl(cophy_dict: Dict, file_path: str=None) -> None:
 
     handle.write(f'# what-if time: {cophy_dict["what_if_time"]}\n')
     handle.write(
-        f'# cost_requests: {cophy_dict["cost_requests"]}\tcache_hits: {cophy_dict["cache_hits"]}\n'
+        f'# cost_requests: {cophy_dict["cost_requests"]}\tcache_hits: {cophy_dict["cache_hits"]}\n\n'
     )
     # This makes sure this file is treated as data
     handle.write(f"data;\n")
     handle.write(
         f'set QUERIES := {" ".join(str(q) for q in cophy_dict["queries"])};\n'
-        f'param NUMBER_OF_INDEXES := {cophy_dict["num_useful_indexes"]};\n'
-        f'param aram NUMBER_OF_INDEX_COMBINATIONS := {cophy_dict["num_combination_costs"]};\n\n'
+        f'param NUMBER_OF_INDEXES := {cophy_dict["number_of_indexes"]};\n'
+        f'param NUMBER_OF_INDEX_COMBINATIONS := {cophy_dict["number_of_index_combinations"]};\n\n\n'
     )
-    handle.write("param a :=\n")
-    for index_size_dict in cophy_dict["index_costs"]:
+    handle.write("param size :=\n")
+    for index_size_dict in cophy_dict["index_sizes"]:
         handle.write(
-            f'{index_size_dict["id"]} {index_size_dict["estimated_size"]} # {index_size_dict["column_names"]}\n'
+            f'{index_size_dict["index_id"]} {index_size_dict["estimated_size"]} # {index_size_dict["column_names"]}\n'
         )
     handle.write(";\n\n")
 
-    handle.write("set combi[0]:= ;\n")
-    for combi_dict in cophy_dict["combi"]:
+    for combi_dict in cophy_dict["index_combinations"]:
         handle.write(
-            f'set combi[{combi_dict["combi_id"]}]:= {combi_dict["index_ids"]};\n'
+            f'set indexes_per_combination[{combi_dict["combination_id"]}]:= {combi_dict["index_ids"]};\n'
         )
 
-    handle.write("\nparam f4 :=\n")
-    for f4 in cophy_dict["f4"]:
-        handle.write(f'{f4["query_number"]} {f4["combi_number"]} {f4["costs"]}\n')
+    handle.write("\nparam costs :=\n")
+    for query_costs in cophy_dict["query_costs"]:
+        handle.write(f'{query_costs["query_number"]} {query_costs["combination_id"]} {query_costs["costs"]}\n')
     handle.write(";\n")
     logging.info(f"Wrote file to {file_path}")
 
