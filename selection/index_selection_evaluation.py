@@ -47,8 +47,7 @@ class IndexSelection:
         self.database_system = None
 
     def run(self):
-        """This is called when running `python3 -m selection`.
-        """
+        """This is called when running `python3 -m selection`."""
         logging.getLogger().setLevel(logging.DEBUG)
         config_file = self._parse_command_line_args()
         if not config_file:
@@ -100,15 +99,19 @@ class IndexSelection:
 
         for algorithm_config in config["algorithms"]:
             if algorithm_config["name"] == "cophy_input":
-                logging.info(f"CoPhy input is generated; but results are not calculated.")
+                logging.info("CoPhy input is generated; but results are not calculated.")
 
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
             configs = self._find_parameter_list(algorithm_config)
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
-                cfg = algorithm_config_unfolded
-                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(cfg)
+                algorithm_config_unfolded["parameters"]["benchmark_name"] = config[
+                    "benchmark_name"
+                ]
+                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(
+                    algorithm_config_unfolded
+                )
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(
                     self.workload,

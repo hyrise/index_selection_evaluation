@@ -1,6 +1,7 @@
 import unittest
 
 from mock_connector import column_A_0, column_A_1, column_A_2, query_0, query_1
+
 from selection.index import Index
 from selection.workload import Column, Query, Table, Workload
 
@@ -189,13 +190,16 @@ class TestWorkload(unittest.TestCase):
         index_set_2 = set([Index([column_A_0]), Index([column_A_1]), Index([column_A_2])])
 
         self.assertEqual(
-            set(Workload([query_0]).potential_indexes()), index_set_1,
+            set(Workload([query_0]).potential_indexes()),
+            index_set_1,
         )
         self.assertEqual(
-            set(Workload([query_1]).potential_indexes()), index_set_2,
+            set(Workload([query_1]).potential_indexes()),
+            index_set_2,
         )
         self.assertEqual(
-            set(Workload([query_0, query_1]).potential_indexes()), index_set_2,
+            set(Workload([query_0, query_1]).potential_indexes()),
+            index_set_2,
         )
 
 
