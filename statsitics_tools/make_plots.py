@@ -94,6 +94,13 @@ def plot_costs_by_query_individual(
                 algorithms.append(algorithm)
                 costs.append(dict[budget][query][algorithm])
                 colors.append(plot_helper.get_color(algorithm))
+
+            # This makes sure that the costs are not all the same, and therefor worthless.
+            costs_set = set(costs)
+            if len(costs_set) == 1:
+                continue
+
+
             plt.bar(algorithms, costs, color=colors)
             plt.xlabel("Algorithm")
             plt.ylabel("Cost")
@@ -104,6 +111,8 @@ def plot_costs_by_query_individual(
 def plot_costs_by_query_combined(
     dict: Dict[str, Dict[str, Dict[str, str]]], budget: int, plot_helper: PlotHelper
 ):
+    # THIS CODE DOES NOT MEANINGFULLY WORK AS IS
+    # It does the thing but it does not do it well
     data = dict[budget]
     size = len(data)
     algorithm_dict = {}
@@ -192,11 +201,15 @@ def combine_data_files(data_paths: List[str]) -> List[BenchmarkDataclass]:
         data += extract_entries(item, "for plotting")
     return data
 
+def compare_algorithm_costs():
+    pass
+
 
 data = combine_data_files(
     [
         "/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpcds_90_queries.csv",
         "/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpcds_90_queries.csv",
+        "/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_db2advis_tpcds_90_queries.csv"
     ]
 )
 
@@ -220,10 +233,9 @@ with open("costbyquery.json", "w+") as file:
     json.dump(costs_by_query(data), file, indent=4)
     pass
 
-plot_costs_by_query_combined(costs_by_query(data), 20000000000, plot_helper)
 
 # TPCH =46164891.51 TPCDS=121150974.81
-plot_overall_costs(data, [], 46164891, plot_helper)
+plot_overall_costs(data, [], 121150974, plot_helper)
 
 plot_runtime(data, plot_helper)
 
