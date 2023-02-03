@@ -24,7 +24,7 @@ class BenchmarkDataclass:
     algorithm_indexes_by_query: dict  # The dictionary that describes indexes by query as according to the algorithm
     optimizer_indexes_by_query: dict  # The indexes chosen by the optimizer when running a given query
     overall_costs: int  # The overall costs according to the algorithm.
-    costs_by_query: dict
+    costs_by_query: dict[str, Dict[str, str]]
     time_run_total: float  # how long the algorithm ran
     time_run_by_component: dict  # if the algorithm produces different runtime components they can be saved here
     what_if_time: float  # all the information we have about what if times

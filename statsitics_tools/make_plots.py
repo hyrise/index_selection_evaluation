@@ -100,7 +100,6 @@ def plot_costs_by_query_individual(
             if len(costs_set) == 1:
                 continue
 
-
             plt.bar(algorithms, costs, color=colors)
             plt.xlabel("Algorithm")
             plt.ylabel("Cost")
@@ -128,115 +127,17 @@ def plot_costs_by_query_combined(
     increm = 0
     fig, ax = plt.subplots()
     for algorithm in algorithm_dict:
-        ax.bar(offsets + increm, algorithm_dict[algorithm], color=plot_helper.get_color(algorithm), width = 0.25)
+        ax.bar(
+            offsets + increm,
+            algorithm_dict[algorithm],
+            color=plot_helper.get_color(algorithm),
+            width=0.25,
+        )
         increm += 0.25
 
     ax.set_ylabel("cost")
-    ax.set_title(' Costs by individual Querries')
+    ax.set_title(" Costs by individual Querries")
     ax.set_xticks(offsets, queries)
 
     plt.show()
     fig.show()
-
-
-def overal_costs_breakdown(data: List[BenchmarkDataclass]):
-
-    budgets = {}
-
-    for item in data:
-        if item.budget_in_bytes not in budgets.keys():
-            budgets[item.budget_in_bytes] = {}
-        if item.overall_costs not in budgets[item.budget_in_bytes].keys():
-            budgets[item.budget_in_bytes][item.overall_costs] = []
-        budgets[item.budget_in_bytes][item.overall_costs].append(item.sequence)
-
-    return budgets
-
-
-def equal_index_configs_by_budget(data):
-    budgets = {}
-    for item in data:
-        if item.budget_in_bytes not in budgets.keys():
-            budgets[item.budget_in_bytes] = {}
-        sorted_indexes = str(sorted(item.selected_indexes))
-        if sorted_indexes not in budgets[item.budget_in_bytes].keys():
-            budgets[item.budget_in_bytes][sorted_indexes] = []
-        budgets[item.budget_in_bytes][sorted_indexes].append(item.sequence)
-
-    return budgets
-
-
-def indexes_by_budget(data: List[BenchmarkDataclass]):
-    budgets = {}
-    for item in data:
-        if item.budget_in_bytes not in budgets.keys():
-            budgets[item.budget_in_bytes] = {}
-        for index in item.selected_indexes:
-            if index not in budgets[item.budget_in_bytes].keys():
-                budgets[item.budget_in_bytes][index] = []
-            budgets[item.budget_in_bytes][index].append(item.sequence)
-
-    return budgets
-
-
-def costs_by_query(data: List[BenchmarkDataclass]):
-    budgets = {}
-    for item in data:
-        if item.budget_in_bytes not in budgets.keys():
-            budgets[item.budget_in_bytes] = {}
-        for i, query_cost in enumerate(item.costs_by_query):
-            query = item.queries[i]
-            if query not in budgets[item.budget_in_bytes].keys():
-                budgets[item.budget_in_bytes][query] = {}
-            budgets[item.budget_in_bytes][query].update(
-                {item.sequence: query_cost["Cost"]}
-            )
-    return budgets
-
-
-def combine_data_files(data_paths: List[str]) -> List[BenchmarkDataclass]:
-    data: List[BenchmarkDataclass] = []
-
-    for item in data_paths:
-        data += extract_entries(item, "for plotting")
-    return data
-
-def compare_algorithm_costs():
-    pass
-
-
-data = combine_data_files(
-    [
-        "/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_extend_tpcds_90_queries.csv",
-        "/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_relaxation_tpcds_90_queries.csv",
-        "/Users/Julius/masterarbeit/Masterarbeit-JStreit/data/baseline_measures/results_db2advis_tpcds_90_queries.csv"
-    ]
-)
-
-
-plot_helper = PlotHelper()
-
-
-with open("costs.json", "w+") as file:
-    json.dump(overal_costs_breakdown(data),file, indent=4)
-    pass
-
-with open("indexes.json", "w+") as file:
-    json.dump(equal_index_configs_by_budget(data),file, indent=4)
-    pass
-
-with open("indexes_by_budget.json", "w+") as file:
-    json.dump(indexes_by_budget(data),file, indent=4)
-    pass
-
-with open("costbyquery.json", "w+") as file:
-    json.dump(costs_by_query(data), file, indent=4)
-    pass
-
-
-# TPCH =46164891.51 TPCDS=121150974.81
-plot_overall_costs(data, [], 121150974, plot_helper)
-
-plot_runtime(data, plot_helper)
-
-plot_costs_by_query_individual(costs_by_query(data), [20000000000], plot_helper)
