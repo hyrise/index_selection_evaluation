@@ -28,3 +28,7 @@ benchmark_results/**/*_runtime.pdf
 benchmark_results/**/*_what_if_graph.pdf
 benchmark_results/**/*_cost_estimation.pdf
 
+costbyquery.json
+costs.json
+indexes_by_budget.json
+indexes.json
