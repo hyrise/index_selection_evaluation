@@ -2,7 +2,7 @@ import os
 from typing import Any, Dict, Set
 from selection.algorithms.anytime_algorithm import AnytimeAlgorithm
 from selection.algorithms.auto_admin_algorithm import AutoAdminAlgorithm
-from selection.algorithms.cophy_input_generation import CoPhyInputGeneration, save_as_json, save_cophy_as_file
+from selection.algorithms.cophy_input_generation import CoPhyInputGeneration
 from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from selection.algorithms.dexter_algorithm import DexterAlgorithm
 from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
@@ -179,14 +179,11 @@ class CoPhyExpandedAlgorithm(SelectionAlgorithm):
                         }
                     )
 
-        if self.parameters["json_path"]:
-            save_as_json(self.parameters["json_path"], json_file_path, cophy_dict)
+       # if self.parameters["json_path"]:
+       #     save_as_json(self.parameters["json_path"], json_file_path, cophy_dict)
 
-        if self.parameters["file_path"]:
-            save_cophy_as_file(self.parameters["file_path"], datafile_path, cophy_dict)
-
-        return []
-
+       # if self.parameters["file_path"]:
+       #     save_cophy_as_file(self.parameters["file_path"], datafile_path, cophy_dict)
 
         return []
 
