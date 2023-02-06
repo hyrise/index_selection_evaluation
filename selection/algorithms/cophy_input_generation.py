@@ -15,7 +15,7 @@ from ..workload import Workload
 DEFAULT_PARAMETERS = {
     "max_index_width": 1,
     "max_indexes_per_query": 1,
-    "enumeration": "full",
+    "enumeration": "query-based",
     "output_folder": "benchmark_results/cophy",
     "overwrite": True,
 }
@@ -37,6 +37,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             )
 
     def full_enumeration(self, workload):
+        logging.info("Full enumeration of index combinations")
         # generate all indexes and combinations based on all accessed attributes
 
         accessed_columns_per_table = {}
@@ -99,6 +100,68 @@ class CoPhyInputGeneration(SelectionAlgorithm):
 
         return useful_indexes, query_costs_for_index_combination
 
+    def query_based_enumeration(self, workload):
+        logging.info("Query-based enumeration of index combinations")
+        # generate all indexes and combinations based on their appearance in queries
+
+        index_combinations_for_workload = set()
+        # Iterate over queries and build relevant index combinations
+        for query in workload.queries:
+            accessed_columns_per_table = {}
+            # Identify accessed columns per table for a single query,
+            #   which are used to generate wider (multi-attribute) indexes next
+            for column in query.columns:
+                if column.table not in accessed_columns_per_table:
+                    accessed_columns_per_table[column.table] = set()
+                accessed_columns_per_table[column.table].add(column)
+
+            indexes_for_query = set()
+            # Add single and multi-attribute indexes for the query
+            for table in accessed_columns_per_table:
+                for index_width in range(1, self.parameters["max_index_width"] + 1):
+                    for column_permutation in itertools.permutations(
+                        accessed_columns_per_table[table], index_width
+                    ):
+                        indexes_for_query.add(Index(list(column_permutation)))
+
+            # Build index combinations based on added indexes
+            for number_of_indexes_per_query in range(
+                1, self.parameters["max_indexes_per_query"] + 1
+            ):
+                for index_combination in itertools.combinations(
+                    indexes_for_query, number_of_indexes_per_query
+                ):
+                    index_combinations_for_workload.add(index_combination)
+
+        # stores indexes that have a benefit in any combination
+        #   (to prune indexes with no benefit)
+        useful_indexes: Set[Index] = set()
+        query_costs_for_index_combination = {}
+        number_of_index_combinations = len(index_combinations_for_workload)
+        logging.info(f"Evaluate {number_of_index_combinations} index combinations ")
+        i = 0
+        for index_combination in index_combinations_for_workload:
+            i += 1
+            if i % 10000 == 0:
+                logging.info(f"  ... {i} / {number_of_index_combinations} done")
+            is_useful_combination = False
+            costs_per_query = {}
+            for query in workload.queries:
+                query_cost = self.cost_evaluation.calculate_cost(
+                    Workload([query]), set(index_combination), store_size=True
+                )
+                # test if query_cost is lower than default cost
+                if query_cost < self.query_costs_without_indexes[query]:
+                    is_useful_combination = True
+                    costs_per_query[query] = query_cost
+            if is_useful_combination:
+                query_costs_for_index_combination[index_combination] = costs_per_query
+                for index in index_combination:
+                    useful_indexes.add(index)
+        logging.info(f"  ... {i} / {number_of_index_combinations} done")
+
+        return useful_indexes, query_costs_for_index_combination
+
     def _calculate_best_indexes(self, workload: Workload) -> List:
         logging.info("Creating input for CoPhy")
         logging.info("Parameters: " + str(self.parameters))
@@ -111,12 +174,19 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             useful_indexes, query_costs_for_index_combination = self.full_enumeration(
                 workload
             )
+        elif self.parameters["enumeration"] == "query-based":
+            (
+                useful_indexes,
+                query_costs_for_index_combination,
+            ) = self.query_based_enumeration(workload)
         else:
             assert False, f'Invalid enumeration type: {self.parameters["enumeration"]}'
 
+        what_if_time = time.time() - time_start
+        logging.info(f"What-if time: {what_if_time} s")
         # construct data structures to output later
         cophy_dict = {
-            "what_if_time": time.time() - time_start,
+            "what_if_time": what_if_time,
             "cost_requests": self.cost_evaluation.cost_requests,
             "cache_hits": self.cost_evaluation.cache_hits,
             "number_of_indexes": len(useful_indexes),
