@@ -15,6 +15,7 @@ from ..workload import Workload
 DEFAULT_PARAMETERS = {
     "max_index_width": 1,
     "max_indexes_per_query": 1,
+    "enumeration": "full",
     "output_folder": "benchmark_results/cophy",
     "overwrite": True,
 }
@@ -27,17 +28,16 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         SelectionAlgorithm.__init__(
             self, database_connector, parameters, DEFAULT_PARAMETERS
         )
+        self.query_costs_without_indexes = {}
 
-    def _calculate_best_indexes(self, workload: Workload) -> List:
-        logging.info("Creating input for CoPhy")
-        logging.info("Parameters: " + str(self.parameters))
-
-        time_start = time.time()
-        query_costs_without_indexes = {}
+    def init_query_costs_without_indexes(self, workload):
         for query in workload.queries:
-            query_costs_without_indexes[query] = self.cost_evaluation.calculate_cost(
+            self.query_costs_without_indexes[query] = self.cost_evaluation.calculate_cost(
                 Workload([query]), set()
             )
+
+    def full_enumeration(self, workload):
+        # generate all indexes and combinations based on all accessed attributes
 
         accessed_columns_per_table = {}
         # Identify accessed columns per table (over all included queries),
@@ -88,7 +88,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                         Workload([query]), set(index_combination), store_size=True
                     )
                     # test if query_cost is lower than default cost
-                    if query_cost < query_costs_without_indexes[query]:
+                    if query_cost < self.query_costs_without_indexes[query]:
                         is_useful_combination = True
                         costs_per_query[query] = query_cost
                 if is_useful_combination:
@@ -96,6 +96,23 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                     for index in index_combination:
                         useful_indexes.add(index)
             logging.info(f"  ... {i} / {number_of_index_combinations} done")
+
+        return useful_indexes, query_costs_for_index_combination
+
+    def _calculate_best_indexes(self, workload: Workload) -> List:
+        logging.info("Creating input for CoPhy")
+        logging.info("Parameters: " + str(self.parameters))
+
+        time_start = time.time()
+
+        self.init_query_costs_without_indexes(workload)
+
+        if self.parameters["enumeration"] == "full":
+            useful_indexes, query_costs_for_index_combination = self.full_enumeration(
+                workload
+            )
+        else:
+            assert False, f'Invalid enumeration type: {self.parameters["enumeration"]}'
 
         # construct data structures to output later
         cophy_dict = {
@@ -143,7 +160,7 @@ class CoPhyInputGeneration(SelectionAlgorithm):
                 {
                     "query_number": query.nr,
                     "combination_id": 0,
-                    "costs": query_costs_without_indexes[query],
+                    "costs": self.query_costs_without_indexes[query],
                 }
             )
             for i, index_combination in enumerate(query_costs_for_index_combination):
