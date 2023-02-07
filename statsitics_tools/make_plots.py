@@ -1,13 +1,13 @@
 from typing import Dict, List
-from read_csv import extract_entries
-from benchmark_dataclass import BenchmarkDataclass
+
 import matplotlib.pyplot as plt
-import json
-from plot_helper import PlotHelper
 import numpy as np
+from benchmark_dataclass import BenchmarkDataclass
+from plot_helper import PlotHelper
 
 
 def plot_runtime(data: List[BenchmarkDataclass], plot_helper: PlotHelper):
+    """Plots the runtime of algorithms."""
     config_run_times = {}
     config_budgets = {}
 
@@ -16,10 +16,10 @@ def plot_runtime(data: List[BenchmarkDataclass], plot_helper: PlotHelper):
             config_run_times[item.sequence] = []
             config_budgets[item.sequence] = []
 
-        config_run_times[item.sequence].append(item.time_run_total)
+        config_run_times[item.sequence].append(float(item.time_run_total))
         config_budgets[item.sequence].append(item.budget_in_bytes / 1000**2)
 
-    for algorithm in config_budgets.keys():
+    for algorithm, _ in config_budgets.items():
         plt.step(
             config_budgets[algorithm],
             config_run_times[algorithm],
@@ -32,7 +32,7 @@ def plot_runtime(data: List[BenchmarkDataclass], plot_helper: PlotHelper):
 
     plt.xlabel("Budget")
     plt.ylabel("Runtime Algorithm")
-    plt.title(f"Algortihm Runtime on {data[0].benchmark}")
+    plt.title(f"Algorithm Runtime on {data[0].benchmark}")
     plt.legend()
     plt.show()
 
@@ -43,6 +43,7 @@ def plot_overall_costs(
     no_index_cost: float,
     plot_helper: PlotHelper,
 ):
+    """Plots the overall costs of algorithms"""
 
     config_overall_costs: Dict[str, List[float]] = {}
     config_budgets: Dict[str, List[float]] = {}
@@ -50,7 +51,7 @@ def plot_overall_costs(
     for data_object in data:
         if data_object.sequence in removes:
             continue
-        if data_object.sequence not in config_overall_costs.keys():
+        if data_object.sequence not in config_overall_costs:
             config_overall_costs[data_object.sequence] = []
             config_budgets[data_object.sequence] = []
 
@@ -61,9 +62,9 @@ def plot_overall_costs(
             data_object.budget_in_bytes / 1000**2
         )
 
-    for algorithm in config_budgets.keys():
+    for algorithm, value in config_budgets.items():
         plt.step(
-            config_budgets[algorithm],
+            value,
             config_overall_costs[algorithm],
             where="mid",
             label=algorithm,
@@ -108,11 +109,11 @@ def plot_costs_by_query_individual(
 
 
 def plot_costs_by_query_combined(
-    dict: Dict[str, Dict[str, Dict[str, str]]], budget: int, plot_helper: PlotHelper
+    dictionary: Dict[str, Dict[str, Dict[str, str]]], budget: int, plot_helper: PlotHelper
 ):
     # THIS CODE DOES NOT MEANINGFULLY WORK AS IS
     # It does the thing but it does not do it well
-    data = dict[budget]
+    data = dictionary[budget]
     size = len(data)
     algorithm_dict = {}
     queries = []
@@ -124,16 +125,16 @@ def plot_costs_by_query_combined(
             algorithm_dict[algorithm_name].append(data[query_name][algorithm_name])
 
     offsets = np.arange(size)
-    increm = 0
+    increment = 0
     fig, ax = plt.subplots()
-    for algorithm in algorithm_dict:
+    for algorithm, value in algorithm_dict.items():
         ax.bar(
-            offsets + increm,
-            algorithm_dict[algorithm],
+            offsets + increment,
+            value,
             color=plot_helper.get_color(algorithm),
             width=0.25,
         )
-        increm += 0.25
+        increment += 0.25
 
     ax.set_ylabel("cost")
     ax.set_title(" Costs by individual Querries")
@@ -141,3 +142,7 @@ def plot_costs_by_query_combined(
 
     plt.show()
     fig.show()
+
+def plot_cost_comparison():
+
+    pass

@@ -77,7 +77,6 @@ solverpath = '/Users/Julius/masterarbeit/ampl_macos64/gurobi'
 
 budgets = [1000000000, 2000000000, 3000000000, 4000000000, 5000000000, 6000000000, 7000000000, 8000000000, 9000000000, 10000000000, 11000000000, 12000000000, 13000000000, 14000000000, 15000000000]
 
-query_string = generate_query_string(22, [2, 17, 20])
 
 generate_run_file(runfile, solverpath)
 for item in datafiles:

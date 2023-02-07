@@ -1,10 +1,15 @@
-from pathlib import Path
-from benchmark_dataclass import BenchmarkDataclass
-from typing import List, Dict, Set
+"""
+Module reads selection module output csvs and converts them into a dataclass for easier handling
+"""
+
 import ast
 import csv
 import json
 import os
+from pathlib import Path
+from typing import Dict, List, Set
+
+from benchmark_dataclass import BenchmarkDataclass
 
 
 def convert_normal_row_to_dataclass(
@@ -13,6 +18,7 @@ def convert_normal_row_to_dataclass(
     queries: List[str],
     plans_path: str,
 ) -> BenchmarkDataclass:
+    """Converts a csv row into a BenchmarkDataclass"""
     data = BenchmarkDataclass(
         data_row[0],
         f'{data_row[2]}-{ast.literal_eval(data_row[3])["max_index_width"]}',
@@ -24,7 +30,7 @@ def convert_normal_row_to_dataclass(
         convert_budget(ast.literal_eval(data_row[3])),
         queries,
         convert_index(data_row[-1]),
-        combi_extract(data_row[0], plans_path),
+        index_combination_extraction(data_row[0], plans_path),
         {},
         calculate_overall_costs(retrieve_query_dicts(data_row)),
         convert_query_costs_list_to_dict(queries, retrieve_query_dicts(data_row)),
@@ -34,7 +40,7 @@ def convert_normal_row_to_dataclass(
         0,
         0,
         description=description,
-    )  # TODO What if time, what if cache hits, algoirthm indexes, optimizer indexes
+    )  #TODO What if time, what if cache hits, algoirthm indexes, optimizer indexes
     return data
 
 
@@ -78,7 +84,7 @@ def calculate_overall_costs(query_results: List[Dict]) -> int:
 
 def extract_entries(path: Path, description: str, plans_path: str) -> List:
     data_objects = []
-    with open(path, newline="") as file:
+    with open(path, newline="", encoding='utf-8') as file:
         reader = csv.reader(file, delimiter=";")
         queries = retrieve_query_names(reader.__next__())
         for row in reader:
@@ -88,17 +94,32 @@ def extract_entries(path: Path, description: str, plans_path: str) -> List:
     return data_objects
 
 
-def save_all_to_json(target_path: str, source_path: str, description: str):
-    # TODO test
-    objects = extract_entries(source_path, description)
-
-    with open(target_path, "w+") as file:
+def save_all_to_json(target_path: str, source_path: str, description: str, plans_path: str):
+    """ Saves all files to json."""
+    #TODO test
+    objects = extract_entries(source_path, description, plans_path)
+    with open(target_path, "w+", encoding='utf-8') as file:
         file.write(json.dumps(objects))
 
+def normalize_index_name(name: str) -> None:
+    """Removes the id from the beginning of an index name so it can be compared."""
+    cutoff = name.find('>')
+    if not cutoff == -1:
+        return name[cutoff+1:]
+    return name
 
-def rec_plan_search(node: Dict, indexes: Set):
-    if "index" in node["Node Type"]:
-        indexes.add(node["Index Name"])
+
+def rec_plan_search(node: Dict, indexes: Set[str]) -> None:
+    """
+    Checks if a node is an index, and if so adds it to the list of used indexes.
+    Then does the same for all subnodes.
+    node: the node to check
+    indexes: the indexes set that is added to.
+    """
+    # None return type because it works in place
+
+    if "Index" in node["Node Type"]:
+        indexes.add(normalize_index_name(node["Index Name"]))
 
     if "Plans" in node.keys():
         for sub_node in node["Plans"]:
@@ -107,7 +128,12 @@ def rec_plan_search(node: Dict, indexes: Set):
         return
 
 
-def combi_extract(timestamp: str, plans_dir: str) -> Dict[str, List[str]]:
+def index_combination_extraction(timestamp: str, plans_dir: str) -> Dict[str, List[str]]:
+    """
+    Extracts the index combinations used from plans Json.
+    timestamp: the timestamp associated with the run, this is the title of the target json.
+    plans_dir: the directory where the plans can be found
+    """
 
     filepath = f"{plans_dir}/{timestamp}.json"
 
@@ -115,19 +141,21 @@ def combi_extract(timestamp: str, plans_dir: str) -> Dict[str, List[str]]:
         print('was not')
         return {}
 
-    with open(filepath, "r") as file:
+    with open(filepath, "r", encoding='utf-8') as file:
         plans = json.load(file)
         indexes: Dict[str, Set[str]] = {}
         for query in plans.keys():
-            indexes[query] = set()
+            indexes[f'q{query}'] = set()
             for node in plans[query]:
-                rec_plan_search(node, indexes[query])
+                rec_plan_search(node, indexes[f'q{query}'])
+            indexes[f'q{query}'] = list(indexes[f'q{query}'])
     return indexes
 
 
-def noindex_costs(path):
-    # Hacky but leass annoying than the alternative
-    with open(path, "r") as file:
+def no_index_costs(path):
+    """Gets the costs for a no index run."""
+    # Hacky but less annoying than the alternative
+    with open(path, "r", encoding='utf-8') as file:
         reader = csv.reader(file, delimiter=";")
-        reader.__next__()
-        return calculate_overall_costs(retrieve_query_dicts(reader.__next__()))
+        reader.next()
+        return calculate_overall_costs(retrieve_query_dicts(reader.next()))
