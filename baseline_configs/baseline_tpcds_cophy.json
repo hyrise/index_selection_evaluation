@@ -9,8 +9,7 @@
                 "max_index_width": 1,
                 "max_indexes_per_query": 1,
                 "benchmark": "tpcds",
-                "file_path": "baseline_measurements_tpcds",
-                "json_path": "baseline_measurements_tpcds_json",
+                "output_folder": "benchmark_results/cophy",
                 "overwrite": false
             },
             "timeout": 300
@@ -21,8 +20,7 @@
                 "max_index_width": 1,
                 "max_indexes_per_query": 2,
                 "benchmark": "tpcds",
-                "file_path": "baseline_measurements_tpcds",
-                "json_path": "baseline_measurements_tpcds_json",
+                "output_folder": "benchmark_results/cophy",
                 "overwrite": false
             },
             "timeout": 300
@@ -33,20 +31,7 @@
                 "max_index_width": 2,
                 "max_indexes_per_query": 1,
                 "benchmark": "tpcds",
-                "file_path": "baseline_measurements_tpcds",
-                "json_path": "baseline_measurements_tpcds_json",
-                "overwrite": false
-            },
-            "timeout": 300
-        },
-        {
-            "name": "cophy_input",
-            "parameters": {
-                "max_index_width": 2,
-                "max_indexes_per_query": 2,
-                "benchmark": "tpcds",
-                "file_path": "baseline_measurements_tpcds",
-                "json_path": "baseline_measurements_tpcds_json",
+                "output_folder": "benchmark_results/cophy",
                 "overwrite": false
             },
             "timeout": 300
@@ -57,8 +42,7 @@
                 "max_index_width": 3,
                 "max_indexes_per_query": 1,
                 "benchmark": "tpcds",
-                "file_path": "baseline_measurements_tpcds",
-                "json_path": "baseline_measurements_tpcds_json",
+                "output_folder": "benchmark_results/cophy",
                 "overwrite": false
             },
             "timeout": 300
@@ -69,8 +53,18 @@
                 "max_index_width": 1,
                 "max_indexes_per_query": 3,
                 "benchmark": "tpcds",
-                "file_path": "baseline_measurements_tpcds",
-                "json_path": "baseline_measurements_tpcds_json",
+                "output_folder": "benchmark_results/cophy",
+                "overwrite": false
+            },
+            "timeout": 300
+        },
+        {
+            "name": "cophy_input",
+            "parameters": {
+                "max_index_width": 2,
+                "max_indexes_per_query": 2,
+                "benchmark": "tpcds",
+                "output_folder": "benchmark_results/cophy",
                 "overwrite": false
             },
             "timeout": 300
