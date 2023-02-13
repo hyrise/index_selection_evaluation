@@ -1,5 +1,0 @@
-option solver '/Users/Julius/masterarbeit/ampl_macos64/gurobi';
-solve;
-display x;
-display y;
-display z;
