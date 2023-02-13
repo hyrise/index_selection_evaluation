@@ -11,7 +11,7 @@ query_0.sql
 **.dat
 **.mod
 **.solve
-**.run
+cophy_tools/**.run
 cophy_json/**
 user_configs/**
 
@@ -27,6 +27,7 @@ benchmark_results/parameters_tpcds
 benchmark_results/**/*_runtime.pdf
 benchmark_results/**/*_what_if_graph.pdf
 benchmark_results/**/*_cost_estimation.pdf
+benchmark_results/cophy/**.**
 
 costbyquery.json
 costs.json
