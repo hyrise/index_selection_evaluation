@@ -1,6 +1,5 @@
 from typing import Dict, List
 from benchmark_dataclass import BenchmarkDataclass
-from read_csv import extract_entries
 
 
 def overall_costs_breakdown(data: List[BenchmarkDataclass]):
@@ -92,9 +91,9 @@ def compare_algorithm_costs(
     out_dict["totals"] = [f"{base.sequence} : {base.overall_costs}"]
     out_dict["total_index_configs"] = {"Base_indexes": base.selected_indexes}
 
-    out_dict['queries'] = {}
+    out_dict["queries"] = {}
     for q in base.costs_by_query:
-        out_dict['queries'].update({q: {'base': base.costs_by_query[q]['Cost']}})
+        out_dict["queries"].update({q: {"base": base.costs_by_query[q]["Cost"]}})
 
     base_selected_indexes_set = set(base.selected_indexes)
     for item in compare:
@@ -105,45 +104,55 @@ def compare_algorithm_costs(
         out_dict["total_index_configs"].update(
             {
                 item.sequence: {
-                    "shared": list(base_selected_indexes_set.intersection(compare_selected_indexes_set)),
-                    "compare_only": list(compare_selected_indexes_set.difference(base_selected_indexes_set)),
-                    "base_only": list(base_selected_indexes_set.difference(compare_selected_indexes_set)),
+                    "shared": list(
+                        base_selected_indexes_set.intersection(
+                            compare_selected_indexes_set
+                        )
+                    ),
+                    "compare_only": list(
+                        compare_selected_indexes_set.difference(
+                            base_selected_indexes_set
+                        )
+                    ),
+                    "base_only": list(
+                        base_selected_indexes_set.difference(
+                            compare_selected_indexes_set
+                        )
+                    ),
                 }
             }
         )
         for query in item.costs_by_query:
-            base_query_set = set(item.algorithm_indexes_by_query) #TODO rename
-            compare_query_set = set(item.algorithm_indexes_by_query[query]) #TODO rename
-            out_dict['queries'][query][item.sequence] = {
-                'cost': item.costs_by_query[query]["Cost"],
-                'Difference': item.costs_by_query[query]["Cost"] - base.costs_by_query[query]["Cost"],
-                'shared': list(base_query_set.intersection(compare_query_set)),
-                'compare_only': list(compare_query_set.difference(base_query_set)),
-                'base_only': list(base_query_set.difference(base_query_set)) }
+            base_query_set = set(item.algorithm_indexes_by_query)  # TODO rename
+            compare_query_set = set(
+                item.algorithm_indexes_by_query[query]
+            )  # TODO rename
+            out_dict["queries"][query][item.sequence] = {
+                "cost": item.costs_by_query[query]["Cost"],
+                "Difference": item.costs_by_query[query]["Cost"]
+                - base.costs_by_query[query]["Cost"],
+                "shared": list(base_query_set.intersection(compare_query_set)),
+                "compare_only": list(compare_query_set.difference(base_query_set)),
+                "base_only": list(base_query_set.difference(base_query_set)),
+            }
     return out_dict
+
 
 def compare_absolute_differences(comparisons_dict: dict) -> list[str]:
     difference_list = []
-    for query, value in comparisons_dict['queries'].items():
+    for query, value in comparisons_dict["queries"].items():
         for algorithm, costs in value.items():
-            if algorithm == 'base':
+            if algorithm == "base":
                 continue
-            difference_list.append({
-                'query': query,
-                'algorithm': algorithm,
-                'difference': costs["Difference"],
-                'absolute_difference': abs(costs['Difference']),
-                'percentage_total': abs(costs['Difference'])/79382931.60999997 #TODO CRITICAL THIS CANNOT BE HARDCODED!!!!!!!
-                })
+            difference_list.append(
+                {
+                    "query": query,
+                    "algorithm": algorithm,
+                    "difference": costs["Difference"],
+                    "absolute_difference": abs(costs["Difference"]),
+                    "percentage_total": abs(costs["Difference"])
+                    / 79382931.60999997,  # TODO CRITICAL THIS CANNOT BE HARDCODED!!!!!!!
+                }
+            )
 
     return sorted(difference_list, reverse=True, key=lambda x: x["absolute_difference"])
-
-
-def combine_data_files(
-    data_paths: List[str], plans_path: str
-) -> List[BenchmarkDataclass]:
-    data: List[BenchmarkDataclass] = []
-
-    for item in data_paths:
-        data += extract_entries(item, "for plotting", plans_path)
-    return data

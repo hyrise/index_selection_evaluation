@@ -1,3 +1,4 @@
+"""Plotting functions for analysis"""
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ def plot_runtime(data: List[BenchmarkDataclass], plot_helper: PlotHelper):
     config_budgets = {}
 
     for item in data:
-        if item.sequence not in config_run_times.keys():
+        if item.sequence not in config_run_times:
             config_run_times[item.sequence] = []
             config_budgets[item.sequence] = []
 
@@ -75,25 +76,25 @@ def plot_overall_costs(
 
     plt.xlabel("Budget")
     plt.ylabel("Costs Algorithm")
-    plt.title(f"Algortihm Total costs on {data[0].benchmark}")
+    plt.title(f"Algorithm Total costs on {data[0].benchmark}")
     plt.legend()
     plt.show()
 
 
 def plot_costs_by_query_individual(
-    dict: Dict[str, Dict[str, Dict[str, str]]],
+    costs_dict: Dict[str, Dict[str, Dict[str, str]]],
     budgets: List[int],
     plot_helper: PlotHelper,
 ):
-
+    """Creates a bar chart comparison fpr every queries costs."""
     for budget in budgets:
-        for query in dict[budget]:
+        for query in costs_dict[budget]:
             algorithms = []
             costs = []
             colors = []
-            for algorithm in dict[budget][query]:
+            for algorithm in costs_dict[budget][query]:
                 algorithms.append(algorithm)
-                costs.append(dict[budget][query][algorithm])
+                costs.append(costs_dict[budget][query][algorithm])
                 colors.append(plot_helper.get_color(algorithm))
 
             # This makes sure that the costs are not all the same, and therefor worthless.
@@ -109,8 +110,11 @@ def plot_costs_by_query_individual(
 
 
 def plot_costs_by_query_combined(
-    dictionary: Dict[str, Dict[str, Dict[str, str]]], budget: int, plot_helper: PlotHelper
+    dictionary: Dict[str, Dict[str, Dict[str, str]]],
+    budget: int,
+    plot_helper: PlotHelper,
 ):
+    """BROKEN DOCSTRING FOR BROKEN CODE"""
     # THIS CODE DOES NOT MEANINGFULLY WORK AS IS
     # It does the thing but it does not do it well
     data = dictionary[budget]
@@ -126,9 +130,9 @@ def plot_costs_by_query_combined(
 
     offsets = np.arange(size)
     increment = 0
-    fig, ax = plt.subplots()
+    fig, axis = plt.subplots()
     for algorithm, value in algorithm_dict.items():
-        ax.bar(
+        axis.bar(
             offsets + increment,
             value,
             color=plot_helper.get_color(algorithm),
@@ -136,13 +140,9 @@ def plot_costs_by_query_combined(
         )
         increment += 0.25
 
-    ax.set_ylabel("cost")
-    ax.set_title(" Costs by individual Querries")
-    ax.set_xticks(offsets, queries)
+    axis.set_ylabel("cost")
+    axis.set_title(" Costs by individual Queries")
+    axis.set_xticks(offsets, queries)
 
     plt.show()
     fig.show()
-
-def plot_cost_comparison():
-
-    pass
