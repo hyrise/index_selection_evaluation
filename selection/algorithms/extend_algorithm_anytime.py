@@ -28,11 +28,11 @@ DEFAULT_PARAMETERS = {
 # IMPORTANT: This version has been adapted to also offer anytime
 # capabilities similar to anytime_algorithm.py.
 class ExtendAlgorithmAnytime(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters=None):
+    def __init__(self, database_connector, global_config, name, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
         self.budget = mb_to_b(self.parameters["budget_MB"])
         self.max_index_width = self.parameters["max_index_width"]

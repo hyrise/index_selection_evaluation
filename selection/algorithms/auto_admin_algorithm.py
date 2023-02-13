@@ -24,9 +24,9 @@ DEFAULT_PARAMETERS = {
 # Please note, that this implementation does not reflect the behavior and performance
 # of the original algorithm, which might be continuously enhanced and optimized.
 class AutoAdminAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters):
+    def __init__(self, database_connector, global_config, name, parameters):
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
         self.max_indexes = self.parameters["max_indexes"]
         self.max_indexes_naive = min(

@@ -17,9 +17,9 @@ DEFAULT_PARAMETERS = {"min_saving_percentage": 5}
 # https://medium.com/@ankane/introducing-dexter-the-automatic-indexer-for-postgres-5f8fa8b28f27
 # and the source code is published at: https://github.com/ankane/dexter/
 class DexterAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters):
+    def __init__(self, database_connector, global_config, name, parameters):
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
 
     def _calculate_best_indexes(self, workload):

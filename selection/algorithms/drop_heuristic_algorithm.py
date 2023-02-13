@@ -10,11 +10,11 @@ DEFAULT_PARAMETERS = {"max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"]}
 # Details can be found in the original paper:
 # Kyu-Young Whang: Index Selection in Relational Databases. FODO 1985: 487-500
 class DropHeuristicAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters=None):
+    def __init__(self, database_connector, global_config, name, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
 
     def _calculate_best_indexes(self, workload):

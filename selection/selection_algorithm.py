@@ -2,6 +2,7 @@ import logging
 from typing import Optional, Set
 
 from selection.index import Index
+from selection.workload import Workload
 
 from .cost_evaluation import CostEvaluation
 
@@ -18,7 +19,14 @@ class SelectionAlgorithm:
 
     result_indexes: Optional[Set[Index]]
 
-    def __init__(self, database_connector, parameters, default_parameters=None):
+    def __init__(
+        self,
+        database_connector,
+        parameters,
+        global_config,
+        name,
+        default_parameters=None,
+    ):
         if default_parameters is None:
             default_parameters = {}
         logging.debug("Init selection algorithm")
@@ -37,17 +45,22 @@ class SelectionAlgorithm:
             estimation = self.parameters["cost_estimation"]
             self.cost_evaluation.cost_estimation = estimation
 
-    def calculate_best_indexes(self, workload):
+        self.global_config = global_config
+        self.name = name
+
+    def calculate_best_indexes(self, workload: Workload):
         assert self.did_run is False, "Selection algorithm can only run once."
         self.did_run = True
         indexes = self._calculate_best_indexes(workload)
         self._log_cache_hits()
         self.cost_evaluation.complete_cost_estimation()
 
+        if 'dump_cache' in self.global_config and self.global_config['dump_cache']:
+            self._dump_cache()
         return indexes
 
     def _calculate_best_indexes(self, workload):
-        raise NotImplementedError("_calculate_best_indexes(self, " "workload) missing")
+        raise NotImplementedError("_calculate_best_indexes(self, workload) missing")
 
     def _log_cache_hits(self):
         hits = self.cost_evaluation.cache_hits
@@ -59,22 +72,30 @@ class SelectionAlgorithm:
         ratio = round(hits * 100 / requests, 2)
         logging.debug(f"Cost cache hit ratio:\t{ratio}%")
 
+    def _dump_cache(self) -> None:
+        print(f'----------\n{self.parameters}\n{self.global_config}')
+        path = (
+            f'cache-{self.global_config["benchmark_name"]}-{self.name}-'
+            + f'{self.parameters["max_index_width"]}-{self.parameters["budget_MB"]}.json'
+        )
+        self.cost_evaluation.dump_cache(path)
+
 
 class NoIndexAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters=None):
+    def __init__(self, database_connector, global_config, name, parameters=None):
         if parameters is None:
             parameters = {}
-        SelectionAlgorithm.__init__(self, database_connector, parameters)
+        SelectionAlgorithm.__init__(self, database_connector, parameters, name, global_config)
 
     def _calculate_best_indexes(self, workload):
         return []
 
 
 class AllIndexesAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters=None):
+    def __init__(self, database_connector, global_config, name, parameters=None):
         if parameters is None:
             parameters = {}
-        SelectionAlgorithm.__init__(self, database_connector, parameters)
+        SelectionAlgorithm.__init__(self, database_connector, global_config, name, parameters)
 
     # Returns single column index for each indexable column
     def _calculate_best_indexes(self, workload):

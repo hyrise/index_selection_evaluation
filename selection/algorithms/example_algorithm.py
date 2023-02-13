@@ -7,9 +7,9 @@ DEFAULT_PARAMETERS = {"example_parameter": 3}
 
 
 class ExampleAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters):
+    def __init__(self, database_connector, global_config, name, parameters):
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
         self.example_parameter = self.parameters["example_parameter"]
 

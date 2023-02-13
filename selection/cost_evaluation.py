@@ -1,4 +1,5 @@
 import logging
+import json
 
 from .what_if_index_creation import WhatIfIndexCreation
 
@@ -33,7 +34,9 @@ class CostEvaluation:
         if result:
             # Index does currently exist and size can be queried
             if not index.estimated_size:
-                index.estimated_size = self.what_if.estimate_index_size(result.hypopg_oid)
+                index.estimated_size = self.what_if.estimate_index_size(
+                    result.hypopg_oid
+                )
         else:
             self._simulate_or_create_index(index, store_size=True)
 
@@ -140,3 +143,15 @@ class CostEvaluation:
             x for x in indexes if any(c in query.columns for c in x.columns)
         ]
         return frozenset(relevant_indexes)
+
+    def dump_cache(self, path: str) -> None:
+        """
+        Dumps the cache into a Json found at 'path'
+        path: The path to dump the cache to. Has to be a real folder.
+        """
+        out_cache = {}
+        for key, value in self.cache.items():
+            out_cache[str(key)] = value
+        logging.info('Dumping to %s',(path))
+        with open(path, "w+", encoding="utf-8") as file:
+            json.dump(out_cache, file, indent=4)

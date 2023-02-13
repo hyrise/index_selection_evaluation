@@ -28,11 +28,11 @@ DEFAULT_PARAMETERS = {
 # Please note, that this implementation does not reflect the behavior and performance
 # of the original algorithm, which might be continuously enhanced and optimized.
 class AnytimeAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters=None):
+    def __init__(self, database_connector, global_config, name, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
         self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
         self.max_index_width = self.parameters["max_index_width"]

@@ -4,6 +4,7 @@ import logging
 import pickle
 import sys
 import time
+from typing import Any, Dict, Type
 
 from .algorithms.anytime_algorithm import AnytimeAlgorithm
 from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
@@ -18,7 +19,11 @@ from .benchmark import Benchmark
 from .dbms.hana_dbms import HanaDatabaseConnector
 from .dbms.postgres_dbms import PostgresDatabaseConnector
 from .query_generator import QueryGenerator
-from .selection_algorithm import AllIndexesAlgorithm, NoIndexAlgorithm
+from .selection_algorithm import (
+    AllIndexesAlgorithm,
+    NoIndexAlgorithm,
+    SelectionAlgorithm,
+)
 from .table_generator import TableGenerator
 from .workload import Workload
 
@@ -33,7 +38,7 @@ ALGORITHMS = {
     "relaxation": RelaxationAlgorithm,
     "no_index": NoIndexAlgorithm,
     "all_indexes": AllIndexesAlgorithm,
-    "cophy_expanded": CoPhyExpandedAlgorithm
+    "cophy_expanded": CoPhyExpandedAlgorithm,
 }
 
 DBMSYSTEMS = {"postgres": PostgresDatabaseConnector, "hana": HanaDatabaseConnector}
@@ -47,6 +52,8 @@ class IndexSelection:
         self.disable_output_files = False
         self.database_name = None
         self.database_system = None
+        self.workload = None
+        self.global_config = None
 
     def run(self):
         """This is called when running `python3 -m selection`."""
@@ -60,7 +67,7 @@ class IndexSelection:
 
         self._run_algorithms(config_file)
 
-    def _setup_config(self, config):
+    def _setup_config(self, config: Dict[str, Any]):
         dbms_class = DBMSYSTEMS[config["database_system"]]
         generating_connector = dbms_class(None, autocommit=True)
         table_generator = TableGenerator(
@@ -80,8 +87,9 @@ class IndexSelection:
             table_generator.columns,
         )
         self.workload = Workload(query_generator.queries)
+        self.global_config = config.copy()
 
-        if "pickle_workload" in config and config["pickle_workload"] is True:
+        if "pickle_workload" in config and config["pickle_workload"]:
             pickle_filename = (
                 f"benchmark_results/workload_{config['benchmark_name']}"
                 f"_{len(self.workload.queries)}_queries.pickle"
@@ -101,8 +109,9 @@ class IndexSelection:
 
         for algorithm_config in config["algorithms"]:
             if algorithm_config["name"] == "cophy_input":
-                logging.info("CoPhy input is generated; but results are not calculated.")
-
+                logging.info(
+                    "CoPhy input is generated; but results are not calculated."
+                )
 
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
@@ -177,8 +186,12 @@ class IndexSelection:
         )
         return indexes, what_if, cost_requests, cache_hits
 
-    def create_algorithm_object(self, algorithm_name, parameters):
-        algorithm = ALGORITHMS[algorithm_name](self.db_connector, parameters)
+    def create_algorithm_object(
+        self, algorithm_name, parameters
+    ) -> Type[SelectionAlgorithm]:
+        algorithm = ALGORITHMS[algorithm_name](
+            self.db_connector, self.global_config, algorithm_name, parameters,
+        )
         return algorithm
 
     def _parse_command_line_args(self):

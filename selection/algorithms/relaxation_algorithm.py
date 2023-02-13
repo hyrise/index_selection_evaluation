@@ -26,11 +26,11 @@ DEFAULT_PARAMETERS = {
 # Nicolas Bruno, Surajit Chaudhuri: Automatic Physical Database Tuning:
 # A Relaxation-based Approach. SIGMOD Conference 2005: 227-238
 class RelaxationAlgorithm(SelectionAlgorithm):
-    def __init__(self, database_connector, parameters=None):
+    def __init__(self, database_connector, global_config, name, parameters=None):
         if parameters is None:
             parameters = {}
         SelectionAlgorithm.__init__(
-            self, database_connector, parameters, DEFAULT_PARAMETERS
+            self, database_connector, parameters, global_config, name, DEFAULT_PARAMETERS
         )
         self.disk_constraint = mb_to_b(self.parameters["budget_MB"])
         self.transformations = self.parameters["allowed_transformations"]

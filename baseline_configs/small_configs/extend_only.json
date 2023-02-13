@@ -2,6 +2,8 @@
     "database_system": "postgres",
     "benchmark_name": "tpch",
     "scale_factor": 10,
+    "dump_cache": true,
+    "pickle_workload": true,
     "algorithms": [
         {
             "name": "extend",
