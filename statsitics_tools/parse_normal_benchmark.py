@@ -1,5 +1,5 @@
 """
-Module reads selection module output csvs and converts them into a dataclass for easier handling
+Module has function to read selection module output csvs and converts them into a dataclass for easier handling
 """
 
 import ast
@@ -27,66 +27,33 @@ def convert_normal_row_to_dataclass(
         data_row[4],
         data_row[6],
         data_row[2],
-        convert_budget(ast.literal_eval(data_row[3])),
+        convert_budget_to_mb(ast.literal_eval(data_row[3])),
         queries,
         convert_index(data_row[-1]),
         index_combination_extraction(data_row[0], plans_path),
-        {},
+        index_combination_extraction(
+            data_row[0], plans_path
+        ),  # Optimizer indexes == Algorithm indexes in this context
         calculate_overall_costs(retrieve_query_dicts(data_row)),
         convert_query_costs_list_to_dict(queries, retrieve_query_dicts(data_row)),
-        data_row[7],
+        float(data_row[7]),
         {"algorithm_time": data_row[6]},
         0,
-        0,
-        0,
+        data_row[14],
+        data_row[15],
         description=description,
-    )  #TODO What if time, what if cache hits, algoirthm indexes, optimizer indexes
+    )
     return data
 
 
-def convert_budget(config: Dict) -> int:
-    if "budget_MB" in config.keys():
-        return int(config["budget_MB"]) * 1000 * 1000
-    else:
-        return int(config["budget"])
-
-
-def convert_index(index_string: str) -> List[str]:
-    # cuts off the brackets
-    index_string = index_string[1:-1]
-    return index_string.split(", ")
-
-
-def retrieve_query_dicts(line: List) -> List[Dict]:
-    old = line[16:-1]
-    new = []
-    for item in old:
-        new.append(ast.literal_eval(item))
-    return new
-
-def convert_query_costs_list_to_dict(queries: List[str], costs: List[Dict[str, str]]):
-    dict = {}
-    for num, query in enumerate(queries):
-        dict[query] = costs[num]
-    return dict
-
-
-def retrieve_query_names(row: List[str]) -> List[str]:
-    return row[16:-1]
-
-
-def calculate_overall_costs(query_results: List[Dict]) -> int:
-    total = 0
-    for costs in query_results:
-        total += float(costs["Cost"])
-    return total
-
-
-def extract_entries(path: Path, description: str, plans_path: str) -> List:
+def extract_entries(
+    path: Path, description: str, plans_path: str
+) -> List[BenchmarkDataclass]:
+    """Turns every non header row of a CSV into a Benchmark Data Object."""
     data_objects = []
-    with open(path, newline="", encoding='utf-8') as file:
+    with open(path, newline="", encoding="utf-8") as file:
         reader = csv.reader(file, delimiter=";")
-        queries = retrieve_query_names(reader.__next__())
+        queries = retrieve_query_names(next(reader))
         for row in reader:
             data_objects.append(
                 convert_normal_row_to_dataclass(row, description, queries, plans_path)
@@ -94,18 +61,65 @@ def extract_entries(path: Path, description: str, plans_path: str) -> List:
     return data_objects
 
 
-def save_all_to_json(target_path: str, source_path: str, description: str, plans_path: str):
-    """ Saves all files to json."""
-    #TODO test
+def convert_budget_to_mb(config: Dict) -> int:
+    """Converts a byte size to a megabyte size"""
+    if "budget_MB" in config.keys():
+        return int(config["budget_MB"]) * 1000 * 1000
+    else:
+        return int(config["budget"])
+
+
+def convert_index(index_string: str) -> List[str]:
+    """Removes brackets from an index for consistency and legibility"""
+    # cuts off the brackets
+    index_string = index_string[1:-1]
+    return index_string.split(", ")
+
+
+def retrieve_query_dicts(line: List) -> List[Dict]:
+    """Retrieves the cost dict for all queries."""
+    old = line[16:-1]
+    new = []
+    for item in old:
+        new.append(ast.literal_eval(item))
+    return new
+
+
+def convert_query_costs_list_to_dict(queries: List[str], costs: List[Dict[str, str]]):
+    """Turns a list of query cots into a dict of query costs with the query number as a key"""
+    query_dict = {}
+    for num, query in enumerate(queries):
+        query_dict[query] = costs[num]
+    return query_dict
+
+
+def retrieve_query_names(row: List[str]) -> List[str]:
+    """Gets the query names. Must be given the header row."""
+    return row[16:-1]
+
+
+def calculate_overall_costs(query_results: List[Dict]) -> int:
+    """Combines the total costs from every query."""
+    total = 0
+    for costs in query_results:
+        total += float(costs["Cost"])
+    return total
+
+
+def save_all_to_json(
+    target_path: str, source_path: str, description: str, plans_path: str
+):
+    """Saves all files to json."""
     objects = extract_entries(source_path, description, plans_path)
-    with open(target_path, "w+", encoding='utf-8') as file:
+    with open(target_path, "w+", encoding="utf-8") as file:
         file.write(json.dumps(objects))
+
 
 def normalize_index_name(name: str) -> None:
     """Removes the id from the beginning of an index name so it can be compared."""
-    cutoff = name.find('>')
+    cutoff = name.find(">")
     if not cutoff == -1:
-        return name[cutoff+1:]
+        return name[cutoff + 1 :]
     return name
 
 
@@ -128,7 +142,9 @@ def rec_plan_search(node: Dict, indexes: Set[str]) -> None:
         return
 
 
-def index_combination_extraction(timestamp: str, plans_dir: str) -> Dict[str, List[str]]:
+def index_combination_extraction(
+    timestamp: str, plans_dir: str
+) -> Dict[str, List[str]]:
     """
     Extracts the index combinations used from plans Json.
     timestamp: the timestamp associated with the run, this is the title of the target json.
@@ -138,24 +154,15 @@ def index_combination_extraction(timestamp: str, plans_dir: str) -> Dict[str, Li
     filepath = f"{plans_dir}/{timestamp}.json"
 
     if not os.path.isfile(filepath):
-        print('was not')
+        print("was not")
         return {}
 
-    with open(filepath, "r", encoding='utf-8') as file:
+    with open(filepath, "r", encoding="utf-8") as file:
         plans = json.load(file)
         indexes: Dict[str, Set[str]] = {}
         for query in plans.keys():
-            indexes[f'q{query}'] = set()
+            indexes[f"q{query}"] = set()
             for node in plans[query]:
-                rec_plan_search(node, indexes[f'q{query}'])
-            indexes[f'q{query}'] = list(indexes[f'q{query}'])
+                rec_plan_search(node, indexes[f"q{query}"])
+            indexes[f"q{query}"] = list(indexes[f"q{query}"])
     return indexes
-
-
-def no_index_costs(path):
-    """Gets the costs for a no index run."""
-    # Hacky but less annoying than the alternative
-    with open(path, "r", encoding='utf-8') as file:
-        reader = csv.reader(file, delimiter=";")
-        reader.next()
-        return calculate_overall_costs(retrieve_query_dicts(reader.next()))
