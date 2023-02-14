@@ -1,6 +1,6 @@
 import logging
 
-from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
+from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 
 # max_indexes: The algorithm stops as soon as it has selected #max_indexes indexes
 DEFAULT_PARAMETERS = {"max_indexes": DEFAULT_PARAMETER_VALUES["max_indexes"]}

@@ -1,9 +1,9 @@
 import logging
 import time
 
-from ..index import Index
-from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
-from ..utils import b_to_mb, mb_to_b
+from selection.index import Index
+from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
+from selection.utils import b_to_mb, mb_to_b
 
 # budget_MB: The algorithm can utilize the specified storage budget in MB.
 # max_index_width: The number of columns an index can contain at maximum.

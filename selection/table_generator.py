@@ -4,8 +4,8 @@ import platform
 import re
 import subprocess
 
-from .utils import b_to_mb
-from .workload import Column, Table
+from selection.utils import b_to_mb
+from selection.workload import Column, Table
 
 
 class TableGenerator:
