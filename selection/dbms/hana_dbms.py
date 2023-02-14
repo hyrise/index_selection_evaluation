@@ -6,7 +6,7 @@ import time
 
 import pyhdb
 
-from ..database_connector import DatabaseConnector
+from selection.database_connector import DatabaseConnector
 
 
 class HanaDatabaseConnector(DatabaseConnector):

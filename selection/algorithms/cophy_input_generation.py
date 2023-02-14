@@ -6,9 +6,9 @@ import sys
 import time
 from typing import Dict, List, Set
 
-from ..index import Index
-from ..selection_algorithm import SelectionAlgorithm
-from ..workload import Workload
+from selection.index import Index
+from selection.selection_algorithm import SelectionAlgorithm
+from selection.workload import Workload
 
 # The maximum width of index candidates and the number of applicable indexes
 #   per query can be specified

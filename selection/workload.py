@@ -1,6 +1,5 @@
 from typing import List
-
-from .index import Index
+from selection.index import Index
 
 
 class Query:

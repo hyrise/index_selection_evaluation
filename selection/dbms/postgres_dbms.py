@@ -3,7 +3,7 @@ import re
 
 import psycopg2
 
-from ..database_connector import DatabaseConnector
+from selection.database_connector import DatabaseConnector
 
 
 class PostgresDatabaseConnector(DatabaseConnector):
