@@ -1,20 +1,22 @@
+import itertools
+import logging
 import os
+import time
 from typing import Any, Dict, Set
+
 from selection.algorithms.anytime_algorithm import AnytimeAlgorithm
 from selection.algorithms.auto_admin_algorithm import AutoAdminAlgorithm
 from selection.algorithms.cophy_input_generation import CoPhyInputGeneration
 from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from selection.algorithms.dexter_algorithm import DexterAlgorithm
-from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
-
+from selection.algorithms.drop_heuristic_algorithm import \
+    DropHeuristicAlgorithm
 from selection.algorithms.extend_algorithm import ExtendAlgorithm
 from selection.algorithms.relaxation_algorithm import RelaxationAlgorithm
-from ..selection_algorithm import AllIndexesAlgorithm, SelectionAlgorithm
-from ..workload import Workload
-from ..index import Index
-import logging
-import itertools
-import time
+from selection.index import Index
+from selection.selection_algorithm import (AllIndexesAlgorithm,
+                                           SelectionAlgorithm)
+from selection.workload import Workload
 
 # The maximum width of index candidates and the number of applicable indexes per query can be specified
 DEFAULT_PARAMETERS = {

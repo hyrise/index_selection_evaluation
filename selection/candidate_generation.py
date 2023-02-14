@@ -1,7 +1,7 @@
 import itertools
 import logging
 
-from .index import Index
+from selection.index import Index
 
 
 def candidates_per_query(workload, max_index_width, candidate_generator):

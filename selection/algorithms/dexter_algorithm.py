@@ -2,8 +2,8 @@ import logging
 import os
 import subprocess
 
-from ..index import Index
-from ..selection_algorithm import SelectionAlgorithm
+from selection.index import Index
+from selection.selection_algorithm import SelectionAlgorithm
 
 # Parameter is passed to dexter command line tool.
 # min_saving_percentage: The mimimum percentage that an index candidate must reduce the

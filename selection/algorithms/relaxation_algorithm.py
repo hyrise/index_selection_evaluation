@@ -1,10 +1,10 @@
 import itertools
 import logging
 
-from ..candidate_generation import candidates_per_query, syntactically_relevant_indexes
-from ..index import Index, index_merge, index_split
-from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
-from ..utils import get_utilized_indexes, indexes_by_table, mb_to_b
+from selection.candidate_generation import candidates_per_query, syntactically_relevant_indexes
+from selection.index import Index, index_merge, index_split
+from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
+from selection.utils import get_utilized_indexes, indexes_by_table, mb_to_b
 
 # allowed_transformations: The algorithm transforms index configurations. Via this
 #                          parameter, the allowed transformations can be chosen.

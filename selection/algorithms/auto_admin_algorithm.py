@@ -1,9 +1,9 @@
 import itertools
 import logging
 
-from ..index import Index
-from ..selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
-from ..workload import Workload
+from selection.index import Index
+from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
+from selection.workload import Workload
 
 # max_indexes: The algorithm stops as soon as it has selected #max_indexes indexes
 # max_indexes_naive: Number of indexes selected by a naive enumeration, see
