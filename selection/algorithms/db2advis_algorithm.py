@@ -2,7 +2,10 @@ import logging
 import random
 import time
 
-from selection.candidate_generation import candidates_per_query, syntactically_relevant_indexes
+from selection.candidate_generation import (
+    candidates_per_query,
+    syntactically_relevant_indexes,
+)
 from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from selection.utils import get_utilized_indexes, mb_to_b
 

@@ -1,7 +1,10 @@
 import itertools
 import logging
 
-from selection.candidate_generation import candidates_per_query, syntactically_relevant_indexes
+from selection.candidate_generation import (
+    candidates_per_query,
+    syntactically_relevant_indexes,
+)
 from selection.index import Index, index_merge, index_split
 from selection.selection_algorithm import DEFAULT_PARAMETER_VALUES, SelectionAlgorithm
 from selection.utils import get_utilized_indexes, indexes_by_table, mb_to_b
