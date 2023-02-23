@@ -163,37 +163,8 @@ class IndexSelection:
         indexes = algorithm.calculate_best_indexes(self.workload)
         logging.info(f"Indexes found: {indexes}")
         what_if = algorithm.cost_evaluation.what_if
-        print(algorithm.cost_evaluation.cache)
-
-        # structures to store IDs
-        index_combinations = {}
-        indexes = {}
-        print('\nparam f4 :=')
-        for key in algorithm.cost_evaluation.cache:
-            query, index_set = key
-            costs = algorithm.cost_evaluation.cache[key]
-            if index_set not in index_combinations:
-                combination_id = len(index_combinations)
-                index_combinations[index_set] = combination_id
-                for index in index_set:
-                    if index not in indexes:
-                        index_id = len(indexes) + 1
-                        indexes[index] = index_id
-            else:
-                combination_id = index_combinations[index_set]
-
-            print(query.nr, combination_id, costs)
-        print(";\n")
-
-        print('\nparam a :=')
-        for index in indexes:
-            print(indexes[index], index.estimated_size, '\t#', index)
-        print(";\n")
-
-        for index_set in index_combinations:
-            index_id_list = [str(indexes[index]) for index in index_set]
-            print(f"set combi[{index_combinations[index_set]}]:= {' '.join(index_id_list)};")
-
+        if "export_cache" in config and config["export_cache"] is True:
+            algorithm.cost_evaluation.export_cache()
 
         cost_requests = (
             self.db_connector.cost_estimations

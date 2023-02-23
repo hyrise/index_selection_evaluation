@@ -134,6 +134,38 @@ class CostEvaluation:
             self.cache[(query, relevant_indexes)] = cost
             return cost
 
+    def export_cache(self):
+        logging.info("Cost estimation: export cached what-if calls ")
+
+        # structures to store IDs
+        index_combinations = {}
+        indexes = {}
+        print('\nparam f4 :=')
+        for key in self.cache:
+            query, index_set = key
+            costs = self.cache[key]
+            if index_set not in index_combinations:
+                combination_id = len(index_combinations)
+                index_combinations[index_set] = combination_id
+                for index in index_set:
+                    if index not in indexes:
+                        index_id = len(indexes) + 1
+                        indexes[index] = index_id
+            else:
+                combination_id = index_combinations[index_set]
+
+            print(query.nr, combination_id, costs)
+        print(";\n")
+
+        print('\nparam a :=')
+        for index in indexes:
+            print(indexes[index], index.estimated_size, '\t#', index)
+        print(";\n")
+
+        for index_set in index_combinations:
+            index_id_list = [str(indexes[index]) for index in index_set]
+            print(f"set combi[{index_combinations[index_set]}]:= {' '.join(index_id_list)};")
+
     @staticmethod
     def _relevant_indexes(query, indexes):
         relevant_indexes = [
