@@ -8,6 +8,7 @@ htmlcov/
 **.DS_Store
 **.tbl
 query_0.sql
+**.dat
 
 misc/**
 

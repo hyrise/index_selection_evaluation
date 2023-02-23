@@ -7,8 +7,7 @@ import time
 
 from .algorithms.anytime_algorithm import AnytimeAlgorithm
 from .algorithms.auto_admin_algorithm import AutoAdminAlgorithm
-from .algorithms.cophy_algorithm import CoPhyAlgorithm
-from .algorithms.cophy_results import CoPhyResults
+from .algorithms.cophy_input_generation import CoPhyInputGeneration
 from .algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from .algorithms.dexter_algorithm import DexterAlgorithm
 from .algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
@@ -25,8 +24,7 @@ from .workload import Workload
 ALGORITHMS = {
     "anytime": AnytimeAlgorithm,
     "auto_admin": AutoAdminAlgorithm,
-    "cophy": CoPhyAlgorithm,
-    "cophy_results": CoPhyResults,
+    "cophy_input": CoPhyInputGeneration,
     "db2advis": DB2AdvisAlgorithm,
     "dexter": DexterAlgorithm,
     "drop": DropHeuristicAlgorithm,
@@ -49,8 +47,7 @@ class IndexSelection:
         self.database_system = None
 
     def run(self):
-        """This is called when running `python3 -m selection`.
-        """
+        """This is called when running `python3 -m selection`."""
         logging.getLogger().setLevel(logging.DEBUG)
         config_file = self._parse_command_line_args()
         if not config_file:
@@ -101,18 +98,20 @@ class IndexSelection:
         self.db_connector.commit()
 
         for algorithm_config in config["algorithms"]:
-            # CoPhy must be skipped and manually executed via AMPL because it is not
-            # integrated yet.
-            # if algorithm_config["name"] == "cophy":
-            #     continue
+            if algorithm_config["name"] == "cophy_input":
+                logging.info("CoPhy input is generated; but results are not calculated.")
 
             # There are multiple configs if there is a parameter list
             # configured (as a list in the .json file)
             configs = self._find_parameter_list(algorithm_config)
             for algorithm_config_unfolded in configs:
                 start_time = time.time()
-                cfg = algorithm_config_unfolded
-                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(cfg)
+                algorithm_config_unfolded["parameters"]["benchmark_name"] = config[
+                    "benchmark_name"
+                ]
+                indexes, what_if, cost_requests, cache_hits = self._run_algorithm(
+                    algorithm_config_unfolded
+                )
                 calculation_time = round(time.time() - start_time, 2)
                 benchmark = Benchmark(
                     self.workload,
