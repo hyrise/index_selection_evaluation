@@ -1,4 +1,4 @@
-from .workload import Workload
+from selection.workload import Workload
 
 
 # --- Unit conversions ---

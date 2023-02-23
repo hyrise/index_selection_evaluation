@@ -4,7 +4,7 @@ import platform
 import re
 import subprocess
 
-from .workload import Query
+from selection.workload import Query
 
 
 class QueryGenerator:

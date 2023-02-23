@@ -7,7 +7,7 @@ import random
 import subprocess
 import time
 
-from .utils import s_to_ms
+from selection.utils import s_to_ms
 
 
 class Benchmark:
