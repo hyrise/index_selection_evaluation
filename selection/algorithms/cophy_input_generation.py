@@ -15,7 +15,7 @@ from selection.workload import Workload
 DEFAULT_PARAMETERS = {
     "max_index_width": 1,
     "max_indexes_per_query": 1,
-    "enumeration": "query-based",
+    "enumeration": "full",
     "output_folder": "benchmark_results/cophy",
     "overwrite": True,
 }
@@ -197,63 +197,18 @@ class CoPhyInputGeneration(SelectionAlgorithm):
             "query_costs": [],
         }
 
-        # store included workload queries
-        for query in workload.queries:
-            cophy_dict["queries"].append(query.nr)
-
-        # store index sizes and determine index_ids for later use in combinations
-        index_ids = {}
-        for i, index in enumerate(sorted(useful_indexes)):
-            assert index.estimated_size, "Index size must be set."
-            cophy_dict["index_sizes"].append(
-                {
-                    "index_id": i + 1,
-                    "estimated_size": index.estimated_size,
-                    "column_names": index._column_names(),
-                }
-            )
-            index_ids[index] = i + 1
-
-        # store indexes per combination
-        # combination 0 := no index
-        cophy_dict["index_combinations"].append({"combination_id": 0, "index_ids": ""})
-        for i, index_combination in enumerate(query_costs_for_index_combination):
-            index_id_list = [str(index_ids[index]) for index in index_combination]
-            cophy_dict["index_combinations"].append(
-                {"combination_id": i + 1, "index_ids": " ".join(index_id_list)}
-            )
-
-        # store query costs per query and index_combination
-        for query in workload.queries:
-            # Print cost without indexes
-            cophy_dict["query_costs"].append(
-                {
-                    "query_number": query.nr,
-                    "combination_id": 0,
-                    "costs": self.query_costs_without_indexes[query],
-                }
-            )
-            for i, index_combination in enumerate(query_costs_for_index_combination):
-                # query is in dictionary if cost is lower than default
-                if query in query_costs_for_index_combination[index_combination]:
-                    cophy_dict["query_costs"].append(
-                        {
-                            "query_number": query.nr,
-                            "combination_id": i + 1,
-                            "costs": query_costs_for_index_combination[index_combination][
-                                query
-                            ],
-                        }
-                    )
+        fill_ilp_dict(cophy_dict, workload, useful_indexes, query_costs_for_index_combination, self.query_costs_without_indexes)
 
         ampl_file_path = None
         json_file_path = None
         if self.parameters["output_folder"]:
             path_base = (
                 self.parameters["output_folder"]
-                + f'/{self.parameters["benchmark_name"]}_cophy_input'
+                + f'/{self.parameters["benchmark_name"]}_cophy'
                 f'__width{self.parameters["max_index_width"]}'
                 f'__per_query{self.parameters["max_indexes_per_query"]}'
+                f'__{self.parameters["enumeration"]}'
+                f'_input'
             )
             if os.path.isfile(path_base + ".txt") and not self.parameters["overwrite"]:
                 logging.info(
@@ -276,6 +231,58 @@ class CoPhyInputGeneration(SelectionAlgorithm):
         output_as_ampl(cophy_dict, ampl_file_path)
 
         return []
+
+
+def fill_ilp_dict(ilp_dict: Dict, workload: Workload, indexes: Set, query_costs_for_index_combination: Dict, query_costs_without_indexes: Dict) -> None:
+    # store included workload queries
+    for query in workload.queries:
+        ilp_dict["queries"].append(query.nr)
+
+    # store index sizes and determine index_ids for later use in combinations
+    index_ids = {}
+    for i, index in enumerate(sorted(indexes)):
+        assert index.estimated_size, "Index size must be set."
+        ilp_dict["index_sizes"].append(
+            {
+                "index_id": i + 1,
+                "estimated_size": index.estimated_size,
+                "column_names": index._column_names(),
+            }
+        )
+        index_ids[index] = i + 1
+
+    # store indexes per combination
+    # combination 0 := no index
+    ilp_dict["index_combinations"].append({"combination_id": 0, "index_ids": ""})
+    for i, index_combination in enumerate(query_costs_for_index_combination):
+        index_id_list = [str(index_ids[index]) for index in index_combination]
+        ilp_dict["index_combinations"].append(
+            {"combination_id": i + 1, "index_ids": " ".join(index_id_list)}
+        )
+
+    # store query costs per query and index_combination
+    for query in workload.queries:
+        # query costs without indexes may be missing when exporting the cache
+        if query in query_costs_without_indexes:
+            ilp_dict["query_costs"].append(
+                {
+                    "query_number": query.nr,
+                    "combination_id": 0,
+                    "costs": query_costs_without_indexes[query],
+                }
+            )
+        for i, index_combination in enumerate(query_costs_for_index_combination):
+            # query is in dictionary if cost is lower than default or present in cache
+            if query in query_costs_for_index_combination[index_combination]:
+                ilp_dict["query_costs"].append(
+                    {
+                        "query_number": query.nr,
+                        "combination_id": i + 1,
+                        "costs": query_costs_for_index_combination[index_combination][
+                            query
+                        ],
+                    }
+                )
 
 
 def output_as_ampl(cophy_dict: Dict, file_path: str = None) -> None:

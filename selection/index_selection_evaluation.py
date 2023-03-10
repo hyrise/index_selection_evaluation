@@ -7,13 +7,14 @@ import time
 
 from selection.algorithms.anytime_algorithm import AnytimeAlgorithm
 from selection.algorithms.auto_admin_algorithm import AutoAdminAlgorithm
-from selection.algorithms.cophy_input_generation import CoPhyInputGeneration
+from selection.algorithms.cophy_input_generation import CoPhyInputGeneration, fill_ilp_dict, output_as_ampl, output_as_json
 from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from selection.algorithms.dexter_algorithm import DexterAlgorithm
 from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from selection.algorithms.extend_algorithm import ExtendAlgorithm
 from selection.algorithms.relaxation_algorithm import RelaxationAlgorithm
 from selection.benchmark import Benchmark
+from selection.cost_evaluation import CostEvaluation
 from selection.dbms.hana_dbms import HanaDatabaseConnector
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 from selection.query_generator import QueryGenerator
@@ -164,16 +165,11 @@ class IndexSelection:
         logging.info(f"Indexes found: {indexes}")
         what_if = algorithm.cost_evaluation.what_if
         if "export_cache" in config and config["export_cache"] is True:
-            algorithm.cost_evaluation.export_cache()
+            self.export_cache(algorithm.cost_evaluation, config)
 
-        cost_requests = (
-            self.db_connector.cost_estimations
-            if config["name"] == "db2advis"
-            else algorithm.cost_evaluation.cost_requests
-        )
-        cache_hits = (
-            0 if config["name"] == "db2advis" else algorithm.cost_evaluation.cache_hits
-        )
+        cost_requests = algorithm.cost_evaluation.cost_requests
+        cache_hits =  algorithm.cost_evaluation.cache_hits
+        assert cost_requests == cache_hits + self.db_connector.cost_estimations
         return indexes, what_if, cost_requests, cache_hits
 
     def create_algorithm_object(self, algorithm_name, parameters):
@@ -199,3 +195,27 @@ class IndexSelection:
             logging.info("Create new database connector (closing old)")
             self.db_connector.close()
         self.db_connector = DBMSYSTEMS[database_system](database_name)
+
+    def export_cache(self, cost_evaluation: CostEvaluation, config: dict) -> None:
+        indexes, query_costs_for_index_combination, query_costs_without_indexes = cost_evaluation.export_cache_info()
+        # construct data structures to output later
+        ilp_dict = {
+            "what_if_time": None,
+            "cost_requests": cost_evaluation.cost_requests,
+            "cache_hits": cost_evaluation.cache_hits,
+            "number_of_indexes": len(indexes),
+            "number_of_index_combinations": len(query_costs_for_index_combination),
+            "queries": [],
+            "index_sizes": [],
+            "index_combinations": [],
+            "query_costs": [],
+        }
+        fill_ilp_dict(ilp_dict, self.workload, indexes, query_costs_for_index_combination, query_costs_without_indexes)
+        if config['name'] in ['extend', 'anytime', 'relaxation', 'db2advis']:
+            name_extension = f'_{config["parameters"]["max_index_width"]}'
+        else:
+            name_extension = ''
+        output_as_ampl(ilp_dict,
+                       f"ILP/{config['parameters']['benchmark_name']}_{config['name']}{name_extension}_cache_input.txt")
+        output_as_json(ilp_dict,
+                       f"ILP/{config['parameters']['benchmark_name']}_{config['name']}{name_extension}_cache_input.json")

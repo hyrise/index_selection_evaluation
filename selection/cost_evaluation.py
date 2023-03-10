@@ -41,6 +41,7 @@ class CostEvaluation:
         self._prepare_cost_calculation(indexes, store_size=True)
 
         plan = self.db_connector.get_plan(query)
+        self.cost_requests += 1
         cost = plan["Total Cost"]
         plan_str = str(plan)
 
@@ -60,6 +61,9 @@ class CostEvaluation:
             if index.hypopg_name not in plan_str:
                 continue
             recommended_indexes.add(index)
+
+        if (query, frozenset(recommended_indexes)) not in self.cache:
+            self.cache[(query, frozenset(recommended_indexes))] = cost
 
         return recommended_indexes, cost
 
@@ -134,37 +138,31 @@ class CostEvaluation:
             self.cache[(query, relevant_indexes)] = cost
             return cost
 
-    def export_cache(self):
-        logging.info("Cost estimation: export cached what-if calls ")
+    def export_cache_info(self):
+        logging.info("Cost estimation: export cache info")
 
-        # structures to store IDs
-        index_combinations = {}
-        indexes = {}
-        print('\nparam f4 :=')
+        indexes: Set[Index] = set()
+        query_costs_for_index_combination = {}
+        query_costs_without_indexes = {}
+
         for key in self.cache:
-            query, index_set = key
+            query, index_combination = key
             costs = self.cache[key]
-            if index_set not in index_combinations:
-                combination_id = len(index_combinations)
-                index_combinations[index_set] = combination_id
-                for index in index_set:
-                    if index not in indexes:
-                        index_id = len(indexes) + 1
-                        indexes[index] = index_id
-            else:
-                combination_id = index_combinations[index_set]
 
-            print(query.nr, combination_id, costs)
-        print(";\n")
+            for index in index_combination:
+                indexes.add(index)
 
-        print('\nparam a :=')
-        for index in indexes:
-            print(indexes[index], index.estimated_size, '\t#', index)
-        print(";\n")
+            if len(index_combination) == 0:
+                # costs without indexes are stored separately
+                query_costs_without_indexes[query] = costs
+                continue
 
-        for index_set in index_combinations:
-            index_id_list = [str(indexes[index]) for index in index_set]
-            print(f"set combi[{index_combinations[index_set]}]:= {' '.join(index_id_list)};")
+            if index_combination not in query_costs_for_index_combination:
+                query_costs_for_index_combination[index_combination] = {}
+            query_costs_for_index_combination[index_combination][query] = costs
+
+        return indexes, query_costs_for_index_combination, query_costs_without_indexes
+
 
     @staticmethod
     def _relevant_indexes(query, indexes):
