@@ -253,11 +253,12 @@ def fill_ilp_dict(ilp_dict: Dict, workload: Workload, indexes: Set, query_costs_
 
     # store indexes per combination
     # combination 0 := no index
-    ilp_dict["index_combinations"].append({"combination_id": 0, "index_ids": ""})
-    for i, index_combination in enumerate(query_costs_for_index_combination):
-        index_id_list = [str(index_ids[index]) for index in index_combination]
+    ilp_dict["index_combinations"].append({"combination_id": 0, "index_ids": []})
+    sorted_index_combinations = sorted(query_costs_for_index_combination.keys(), key=lambda combination: (len(combination), combination))
+    for i, index_combination in enumerate(sorted_index_combinations):
+        index_id_list = [index_ids[index] for index in index_combination]
         ilp_dict["index_combinations"].append(
-            {"combination_id": i + 1, "index_ids": " ".join(index_id_list)}
+            {"combination_id": i + 1, "index_ids": index_id_list}
         )
 
     # store query costs per query and index_combination
@@ -271,7 +272,7 @@ def fill_ilp_dict(ilp_dict: Dict, workload: Workload, indexes: Set, query_costs_
                     "costs": query_costs_without_indexes[query],
                 }
             )
-        for i, index_combination in enumerate(query_costs_for_index_combination):
+        for i, index_combination in enumerate(sorted_index_combinations):
             # query is in dictionary if cost is lower than default or present in cache
             if query in query_costs_for_index_combination[index_combination]:
                 ilp_dict["query_costs"].append(
@@ -317,9 +318,10 @@ def output_as_ampl(cophy_dict: Dict, file_path: str = None) -> None:
     handle.write(";\n\n")
 
     for combi_dict in cophy_dict["index_combinations"]:
+        index_ids_str = ' '.join(map(str, combi_dict["index_ids"]))
         handle.write(
             f'set indexes_per_combination[{combi_dict["combination_id"]}]:= '
-            f'{combi_dict["index_ids"]};\n'
+            f'{index_ids_str};\n'
         )
 
     handle.write("\nparam costs :=\n")
