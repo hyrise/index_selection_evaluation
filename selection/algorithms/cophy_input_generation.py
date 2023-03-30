@@ -254,7 +254,7 @@ def fill_ilp_dict(ilp_dict: Dict, workload: Workload, indexes: Set, query_costs_
     # store indexes per combination
     # combination 0 := no index
     ilp_dict["index_combinations"].append({"combination_id": 0, "index_ids": []})
-    sorted_index_combinations = sorted(query_costs_for_index_combination.keys(), key=lambda combination: (len(combination), combination))
+    sorted_index_combinations = sorted(query_costs_for_index_combination.keys(), key=lambda combination: (len(combination), sorted(list(combination))))
     for i, index_combination in enumerate(sorted_index_combinations):
         index_id_list = [index_ids[index] for index in index_combination]
         ilp_dict["index_combinations"].append(

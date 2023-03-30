@@ -35,8 +35,11 @@ if __name__ == "__main__":
     pass
     # Examples:
     # main('tpch', 'cophy__width2__per_query2__query-based')
+
     # main('tpcds', "extend_1_cache")
-    # main('tpch', "extend_2_cache")
-    # for width, per_query in [(1,2), (2,1), (2,2)]:
-    #     for enumeration in ['full', 'query-based']:
-    #         main('tpch', f"cophy__width{width}__per_query{per_query}__{enumeration}")
+    # main('tpcds', "extend_2_cache")
+    # main('tpcds', "extend_3_cache")
+
+    # for width, per_query in [(1,1), (1,2), (2,1)]:
+    #     for enumeration in ['query-based']:
+    #         main('tpcds', f"cophy__width{width}__per_query{per_query}__{enumeration}")

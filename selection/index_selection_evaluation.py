@@ -12,6 +12,7 @@ from selection.algorithms.db2advis_algorithm import DB2AdvisAlgorithm
 from selection.algorithms.dexter_algorithm import DexterAlgorithm
 from selection.algorithms.drop_heuristic_algorithm import DropHeuristicAlgorithm
 from selection.algorithms.extend_algorithm import ExtendAlgorithm
+from selection.algorithms.ilp_actual_results import ILPActualResults
 from selection.algorithms.relaxation_algorithm import RelaxationAlgorithm
 from selection.benchmark import Benchmark
 from selection.cost_evaluation import CostEvaluation
@@ -30,6 +31,7 @@ ALGORITHMS = {
     "dexter": DexterAlgorithm,
     "drop": DropHeuristicAlgorithm,
     "extend": ExtendAlgorithm,
+    "ilp_actual_results": ILPActualResults,
     "relaxation": RelaxationAlgorithm,
     "no_index": NoIndexAlgorithm,
     "all_indexes": AllIndexesAlgorithm,
