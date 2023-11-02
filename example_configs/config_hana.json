@@ -5,13 +5,13 @@
     "algorithms": [
         {
             "name": "all_indexes",
-            "parameters": null,
+            "parameters": {},
             "number_of_actual_runs": 5,
             "timeout": 30
         },
         {
             "name": "no_index",
-            "parameters": null,
+            "parameters": {},
             "number_of_actual_runs": 5,
             "timeout": 30
         }

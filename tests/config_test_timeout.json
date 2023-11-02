@@ -6,7 +6,7 @@
     "algorithms": [
         {
             "name": "no_index",
-            "parameters": null,
+            "parameters": {},
             "number_of_actual_runs": 1,
             "timeout": 1
         }
