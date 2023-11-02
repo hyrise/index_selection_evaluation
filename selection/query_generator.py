@@ -144,7 +144,7 @@ class QueryGenerator:
             # SQLSERVER, SYBASE, ORACLE, VECTORWISE, POSTGRESQL
             self.make_command = ["make", "DATABASE=POSTGRESQL"]
             if platform.system() == "Darwin":
-                self.make_command.append("OS=MACOS")
+                self.make_command.append("MACHINE=MACOS")
 
             self._generate_tpch()
         elif self.benchmark_name == "tpcds":
