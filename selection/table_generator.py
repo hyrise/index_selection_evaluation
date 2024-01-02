@@ -29,14 +29,14 @@ class TableGenerator:
             self._generate()
             self.create_database()
         else:
-            logging.debug("Database with given scale factor already " "existing")
+            logging.debug("Database with given scale factor already existing")
         self._read_column_names()
 
     def database_name(self):
         if self.explicit_database_name:
             return self.explicit_database_name
 
-        name = "indexselection_" + self.benchmark_name + "___"
+        name = f"indexselection_{self.benchmark_name}___"
         name += str(self.scale_factor).replace(".", "_")
         return name
 
@@ -60,15 +60,15 @@ class TableGenerator:
                 self.columns.append(column_object)
 
     def _generate(self):
-        logging.info("Generating {} data".format(self.benchmark_name))
-        logging.info("scale factor: {}".format(self.scale_factor))
+        logging.info(f"Generating {self.benchmark_name} data")
+        logging.info(f"scale factor: {self.scale_factor}")
         self._run_make()
         self._run_command(self.cmd)
         if self.benchmark_name == "tpcds":
             self._run_command(["bash", "../../scripts/replace_in_dat.sh"])
         logging.info("[Generate command] " + " ".join(self.cmd))
         self._table_files()
-        logging.info("Files generated: {}".format(self.table_files))
+        logging.info(f"Files generated: {self.table_files}")
 
     def create_database(self):
         self.db_connector.create_database(self.database_name())
@@ -92,7 +92,7 @@ class TableGenerator:
     def _load_table_data(self, database_connector):
         logging.info("Loading data into the tables")
         for filename in self.table_files:
-            logging.debug("    Loading file {}".format(filename))
+            logging.debug(f"    Loading file {filename}")
 
             table = filename.replace(".tbl", "").replace(".dat", "")
             path = self.directory + "/" + filename
@@ -105,7 +105,7 @@ class TableGenerator:
 
     def _run_make(self):
         if "dbgen" not in self._files() and "dsdgen" not in self._files():
-            logging.info("Running make in {}".format(self.directory))
+            logging.info(f"Running make in {self.directory}")
             self._run_command(self.make_command)
         else:
             logging.info("No need to run make")
@@ -130,12 +130,13 @@ class TableGenerator:
         return os.listdir(self.directory)
 
     def _prepare(self):
+        file_path = os.path.dirname(os.path.abspath(__file__))
         if self.benchmark_name == "tpch":
             self.make_command = ["make", "DATABASE=POSTGRESQL"]
             if platform.system() == "Darwin":
                 self.make_command.append("MACHINE=MACOS")
 
-            self.directory = "./tpch-kit/dbgen"
+            self.directory = file_path + "/../tpch-kit/dbgen"
             self.create_table_statements_file = "dss.ddl"
             self.cmd = ["./dbgen", "-s", str(self.scale_factor), "-f"]
         elif self.benchmark_name == "tpcds":
@@ -143,7 +144,7 @@ class TableGenerator:
             if platform.system() == "Darwin":
                 self.make_command.append("OS=MACOS")
 
-            self.directory = "./tpcds-kit/tools"
+            self.directory = file_path + "/../tpcds-kit/tools"
             self.create_table_statements_file = "tpcds.sql"
             self.cmd = ["./dsdgen", "-SCALE", str(self.scale_factor), "-FORCE"]
 
@@ -152,6 +153,6 @@ class TableGenerator:
                 int(self.scale_factor) - self.scale_factor != 0
                 and self.scale_factor != 0.001
             ):
-                raise Exception("Wrong TPCDS scale factor")
+                raise Exception("Wrong TPC-DS scale factor")
         else:
-            raise NotImplementedError("only tpch/ds implemented.")
+            raise NotImplementedError("only TPC-H/DS implemented.")
