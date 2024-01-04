@@ -40,7 +40,7 @@ class SelectionAlgorithm:
         return indexes
 
     def _calculate_best_indexes(self, workload):
-        raise NotImplementedError("_calculate_best_indexes(self, " "workload) missing")
+        raise NotImplementedError("_calculate_best_indexes(self, workload) missing")
 
     def _log_cache_hits(self):
         hits = self.cost_evaluation.cache_hits

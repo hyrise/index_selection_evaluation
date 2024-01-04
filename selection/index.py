@@ -93,6 +93,7 @@ class Index:
 # columns S: I = (K;S). If the database system does not support suffix columns, only
 # key columns are considered.
 
+
 # A merged index is the best index that can answer all requests that either previous
 # index did. Merging I_1(K_1;S_1) and I_2(K_2;S_2) results in
 # I_1_2 = (K1;(S_1 ∪ K_2 ∪ S_2) - K_1).

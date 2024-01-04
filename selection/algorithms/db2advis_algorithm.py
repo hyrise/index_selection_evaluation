@@ -153,7 +153,9 @@ class DB2AdvisAlgorithm(SelectionAlgorithm):
                 [index_benefit.size() for index_benefit in new_variaton]
             )
 
-            indexes_to_add = random.sample(list(not_used_index_benefits), k=number_of_exchanges)
+            indexes_to_add = random.sample(
+                list(not_used_index_benefits), k=number_of_exchanges
+            )
             assert len(indexes_to_add) == len(
                 indexes_to_remove
             ), "_try_variations must remove the same number of indexes that are added."
