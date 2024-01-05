@@ -20,7 +20,7 @@ def parse_file(file_name):
             for query_cost_str in row[16:-1]:
                 query_cost = json.loads(query_cost_str)["Cost"]
                 query_costs.append(query_cost)
-            results.append((memory, algorithm_runtime, sum(query_costs)))
+            results.append((memory, algorithm_runtime, query_costs))
     return results
 
 
@@ -40,8 +40,8 @@ if __name__ == "__main__":
                 f"../benchmark_results/results_{algorithm}_tpch_19_queries.csv"
             )
             for line in result:
-                print(algorithm, line)
+                print(algorithm, (line[0], line[1], sum(line[2])))
     else:
         result = parse_file(sys.argv[1])
         for line in result:
-            print(line)
+            print(line[0], line[1], sum(line[2]))
