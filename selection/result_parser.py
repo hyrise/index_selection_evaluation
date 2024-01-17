@@ -20,8 +20,24 @@ def parse_file(file_name):
             for query_cost_str in row[16:-1]:
                 query_cost = json.loads(query_cost_str)["Cost"]
                 query_costs.append(query_cost)
-            results.append((memory, algorithm_runtime, query_costs))
+            indexes = parse_index_string_list(row[-1])
+            results.append((memory, algorithm_runtime, query_costs, indexes))
     return results
+
+
+def parse_index_string_list(index_string_list):
+    indexes = []
+    if index_string_list == '[]':
+        return []
+    index_string_list = index_string_list.strip('[]')
+    index_string_list = index_string_list.split(', ')
+    for index_string in index_string_list:
+        index_string = index_string[2:-1]
+        index = []
+        for index_attribute in index_string.split(','):
+            index.append(index_attribute[2:])
+        indexes.append(index)
+    return indexes
 
 
 if __name__ == "__main__":
@@ -40,8 +56,8 @@ if __name__ == "__main__":
                 f"../benchmark_results/results_{algorithm}_tpch_19_queries.csv"
             )
             for line in result:
-                print(algorithm, (line[0], line[1], sum(line[2])))
+                print(algorithm, (line[0], line[1], sum(line[2]), line[3]))
     else:
         result = parse_file(sys.argv[1])
         for line in result:
-            print(line[0], line[1], sum(line[2]))
+            print(line[0], line[1], sum(line[2]), line[3])
