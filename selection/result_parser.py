@@ -22,7 +22,8 @@ def parse_file(file_name):
                 query_costs.append(query_cost)
             indexes = parse_index_string_list(row[-1])
             parameters = json.loads(row[3])
-            results.append((memory, algorithm_runtime, query_costs, indexes, parameters))
+            run_time = json.loads(row[7])
+            results.append((memory, algorithm_runtime, query_costs, indexes, parameters, run_time))
     return results
 
 
