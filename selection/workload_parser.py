@@ -11,6 +11,14 @@ class WorkloadParser:
         self.database_name = database_name
         self.benchmark_name = benchmark_name
 
+    @staticmethod
+    def is_custom_workload(benchmark_name):
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        if benchmark_name in os.listdir(f"{file_path}/../custom_workloads/"):
+            return True
+        else:
+            return False
+
     def get_tables(self):
         assert self.database_system == "postgres"
         db_connector = PostgresDatabaseConnector(self.database_name)

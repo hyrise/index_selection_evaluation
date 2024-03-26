@@ -30,3 +30,8 @@ class TestWorkloadParser(unittest.TestCase):
         self.assertEqual(len(orders_columns), 9)
         self.assertEqual(type(orders_columns[0]), Column)
         self.assertEqual(orders_columns[0].name, "o_orderkey")
+
+    def test_is_custom_workload(self):
+        self.assertEqual(WorkloadParser.is_custom_workload("tpch"), False)
+        self.assertEqual(WorkloadParser.is_custom_workload("tpcds"), False)
+        self.assertEqual(WorkloadParser.is_custom_workload("example"), True)
