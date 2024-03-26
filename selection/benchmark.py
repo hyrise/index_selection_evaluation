@@ -41,7 +41,10 @@ class Benchmark:
         self.index_simulation_duration = self.db_connector.index_simulation_duration
         self.simulated_indexes = self.db_connector.simulated_indexes
 
-        self.scale_factor = global_config["scale_factor"]
+        if "scale_factor" in global_config:
+            self.scale_factor = global_config["scale_factor"]
+        else:
+            self.scale_factor = None
         self.benchmark_name = global_config["benchmark_name"]
         self.db_system = global_config["database_system"]
         self.seed = None
@@ -89,7 +92,10 @@ class Benchmark:
             "cache hits",
         ]
         for query in self.workload.queries:
-            header.append("q" + str(query.nr))
+            if type(query.nr) == int:
+                header.append("q" + str(query.nr))
+            else:
+                header.append(query.nr)
         header.append("indexed columns")
         return ";".join(header)
 

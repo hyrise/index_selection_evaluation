@@ -1,0 +1,24 @@
+{
+    "database_system": "postgres",
+    "database_name": "indexselection_tpch___1",
+    "benchmark_name": "example",
+    "algorithms": [
+        {
+            "name": "no_index",
+            "parameters": {
+            },
+            "timeout": 300
+        },
+        {
+            "name": "extend",
+            "parameters": {
+                "budget_MB": [250, 500, 1000, 1500, 2000],
+                "max_index_width": 2
+            },
+            "timeout": 300
+        }
+    ],
+    "queries": [
+        "1.sql"
+    ]
+}

@@ -20,6 +20,7 @@ from selection.query_generator import QueryGenerator
 from selection.selection_algorithm import AllIndexesAlgorithm, NoIndexAlgorithm
 from selection.table_generator import TableGenerator
 from selection.workload import Workload
+from selection.workload_parser import WorkloadParser
 
 ALGORITHMS = {
     "anytime": AnytimeAlgorithm,
@@ -59,25 +60,37 @@ class IndexSelection:
         self._run_algorithms(config_file)
 
     def _setup_config(self, config):
-        dbms_class = DBMSYSTEMS[config["database_system"]]
-        generating_connector = dbms_class(None, autocommit=True)
-        table_generator = TableGenerator(
-            config["benchmark_name"], config["scale_factor"], generating_connector
-        )
-        self.database_name = table_generator.database_name()
         self.database_system = config["database_system"]
-        self.setup_db_connector(self.database_name, self.database_system)
 
-        if "queries" not in config:
-            config["queries"] = None
-        query_generator = QueryGenerator(
-            config["benchmark_name"],
-            config["scale_factor"],
-            self.db_connector,
-            config["queries"],
-            table_generator.columns,
-        )
-        self.workload = Workload(query_generator.queries)
+        if WorkloadParser.is_custom_workload(config["benchmark_name"]):
+            # use a custom workload on existing an existing database
+            self.database_name = config["database_name"]
+            workload_parser = WorkloadParser(
+                self.database_system, self.database_name, config["benchmark_name"]
+            )
+            self.workload = workload_parser.execute()
+            self.setup_db_connector(self.database_name, self.database_system)
+
+        else:
+            # use an integrated benchmark with data and query generation
+            dbms_class = DBMSYSTEMS[self.database_system]
+            generating_connector = dbms_class(None, autocommit=True)
+            table_generator = TableGenerator(
+                config["benchmark_name"], config["scale_factor"], generating_connector
+            )
+            self.database_name = table_generator.database_name()
+            self.setup_db_connector(self.database_name, self.database_system)
+
+            if "queries" not in config:
+                config["queries"] = None
+            query_generator = QueryGenerator(
+                config["benchmark_name"],
+                config["scale_factor"],
+                self.db_connector,
+                config["queries"],
+                table_generator.columns,
+            )
+            self.workload = Workload(query_generator.queries)
 
         if "pickle_workload" in config and config["pickle_workload"] is True:
             pickle_filename = (
