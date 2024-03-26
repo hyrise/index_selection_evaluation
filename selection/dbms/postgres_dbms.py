@@ -169,6 +169,10 @@ class PostgresDatabaseConnector(DatabaseConnector):
         self._cleanup_query(query)
         return result
 
+    def exec_fetchall(self, query):
+        self._cursor.execute(query)
+        return self._cursor.fetchall()
+
     def _cleanup_query(self, query):
         for query_statement in query.text.split(";"):
             if "drop view" in query_statement:

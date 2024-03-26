@@ -1,7 +1,7 @@
 import glob
 import os
 
-from selection.workload import Query, Workload
+from selection.workload import Column, Query, Table, Workload
 from selection.dbms.postgres_dbms import PostgresDatabaseConnector
 
 
@@ -14,16 +14,28 @@ class WorkloadParser:
     def get_tables(self):
         assert self.database_system == "postgres"
         db_connector = PostgresDatabaseConnector(self.database_name)
-        table_names = db_connector.exec_fetchall("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public';")
-        for table_name in table_names:
-            print(table_name)
-            column_names = db_connector.exec_fetchall("SELECT * " +
-                                       "FROM information_schema.columns " +
-                                       "WHERE table_schema = 'public' " +
-                                       f"AND table_name = '{table_name}';")
-            for column_name in column_names:
-                print(f"\tcolumn_name")
+        result = db_connector.exec_fetchall(
+            "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public';"
+        )
+        table_names = [row[0] for row in result]
 
+        tables = {}
+
+        for table_name in table_names:
+            table = Table(table_name)
+            result = db_connector.exec_fetchall(
+                "SELECT column_name "
+                + "FROM information_schema.columns "
+                + "WHERE table_schema = 'public' "
+                + f"AND table_name = '{table_name}';"
+            )
+            column_names = [row[0] for row in result]
+            for column_name in column_names:
+                table.add_column(Column(column_name))
+
+            tables[table_name] = table
+
+        return tables
 
     def execute(self):
         file_path = os.path.dirname(os.path.abspath(__file__))
