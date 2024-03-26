@@ -37,11 +37,23 @@ class WorkloadParser:
 
         return tables
 
+    def store_indexable_columns(self, query, tables):
+        for table_name in tables:
+            if table_name in query.text:
+                table = tables[table_name]
+                for column in table.columns:
+                    if column.name in query.text:
+                        query.columns.append(column)
+
     def execute(self):
         file_path = os.path.dirname(os.path.abspath(__file__))
         query_files = glob.glob(
             f"{file_path}/../custom_workloads/{self.benchmark_name}/*.sql"
         )
+        query_files.sort()
+
+        # Retrieve schema to search for indexable columns
+        tables = self.get_tables()
 
         queries = []
 
@@ -50,6 +62,7 @@ class WorkloadParser:
                 query_text = f.read()
                 query_id = file_name.split("/")[-1]
                 query = Query(query_id, query_text)
+                self.store_indexable_columns(query, tables)
                 queries.append(query)
 
         return Workload(queries)

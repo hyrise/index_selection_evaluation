@@ -10,10 +10,14 @@ class TestWorkloadParser(unittest.TestCase):
         workload = workload_parser.execute()
 
         self.assertEqual(type(workload), Workload)
-        self.assertEqual(len(workload.queries), 1)
+        self.assertEqual(len(workload.queries), 2)
         query = workload.queries[0]
         self.assertEqual(type(query), Query)
         self.assertEqual(query.nr, "1.sql")
+        self.assertEqual(len(query.columns), 1)
+
+        query = workload.queries[1]
+        self.assertEqual(len(query.columns), 3)
 
     def test_get_tables(self):
         workload_parser = WorkloadParser("postgres", "indexselection_tpch___1", "example")
