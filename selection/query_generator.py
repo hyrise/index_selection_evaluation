@@ -81,7 +81,8 @@ class QueryGenerator:
             "../..",
         ]
         self._run_command(command)
-        with open("query_0.sql", "r") as file:
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        with open(file_path + "/../query_0.sql", "r") as file:
             queries_string = file.read()
         for query_string in queries_string.split("-- start query"):
             id_and_text = query_string.split(".tpl\n", 1)
